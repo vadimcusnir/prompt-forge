@@ -40,6 +40,17 @@ module.exports = {
         
         // Pointer events
         'pointer-events-none',
+        
+        // Glass effect utilities
+        'glass-effect',
+        'proof-bar',
+        'backdrop-blur-sm',
+        'backdrop-blur-md',
+        'backdrop-blur-lg',
+        
+        // Opacity utilities
+        'opacity-90',
+        'opacity-95',
       ],
     },
   },

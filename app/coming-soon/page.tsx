@@ -3,9 +3,9 @@
 export default function ComingSoonPage() {
   return (
     <>
-      <main className="relative z-10 min-h-screen">
-        {/* Hero Section - Mobile First */}
-        <section className="pf-hero container max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-8 py-12 sm:py-16 lg:py-24">
+      <main className="relative z-10 min-h-[calc(100vh-80px)]">
+        {/* Hero Section - Stabil cu dimensiuni fixe */}
+        <section className="hero-wrapper container max-w-[1240px] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-24">
           <div className="text-center max-w-4xl mx-auto">
             {/* Hero Badge - dimensiuni fixe pentru a evita CLS */}
             <span className="inline-flex items-center justify-center rounded-md border font-medium whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90 mb-4 sm:mb-6 text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 min-h-[32px] sm:min-h-[36px] min-w-[200px] sm:min-w-[250px]">
@@ -29,6 +29,34 @@ export default function ComingSoonPage() {
               <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors min-h-[48px] min-w-[140px] font-medium">
                 Join Waitlist
               </button>
+            </div>
+
+            {/* Proof Bar - Glass Effect */}
+            <div className="proof-bar mt-8 sm:mt-12">
+              <div className="glass-effect max-w-2xl mx-auto p-4 sm:p-6 rounded-xl border border-white/10">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-center">
+                  {/* TTA < 60s */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl sm:text-3xl mb-2">⚡</div>
+                    <div className="text-sm font-medium text-white">TTA &lt; 60s</div>
+                    <div className="text-xs text-white/70">Lightning Fast</div>
+                  </div>
+                  
+                  {/* AI Score >= 80 */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl sm:text-3xl mb-2">🎯</div>
+                    <div className="text-sm font-medium text-white">AI Score &gt;= 80</div>
+                    <div className="text-xs text-white/70">High Quality</div>
+                  </div>
+                  
+                  {/* Export Formats */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl sm:text-3xl mb-2">📁</div>
+                    <div className="text-sm font-medium text-white">Export .md/.json/.pdf</div>
+                    <div className="text-xs text-white/70">Flexible Output</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

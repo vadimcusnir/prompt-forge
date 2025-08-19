@@ -2,878 +2,673 @@
 
 
 
-Am studiat pagina ta /coming-soon și documentația tehnică a proiectului PROMPTFORGE™.
-Ai deja un design minimal bun (dark, glass-effect, grid simplu). Dacă îl amplifici corect, site-ul nu va părea „ieftin”, ci solid și lucrat mult timp.
 
-Cerințele de webdesign frontend și UI/UX pe care să le scrii tehnic (ca backlog pentru designer/frontend) arată așa:
+PROMPTFORGE™ — SPEC WEB-DESIGN „COMING SOON” (fix, credibil, minimal)
+0) Scop & non-obiective
 
-1. Consistență vizuală (Glassmorphism industrial)
+Scop: întărești exact designul existent (dark, glass), astfel încât pagina să pară solidă, matură, fără clătinări și fără „alb” vizibil sub fundal, pe toate device-urile.
 
-Folosește .glass-effect și .glass-strong pe toate cardurile (hero, form, proof-bar).
+Non-obiective: nu adaugi secțiuni noi, nu schimbi stilul, nu introduci ilustrații/mascote/testimoniale.
 
-Menține contrastul ridicat (fundal #0A0A0A, text #ECFEFF, accent teal/crimson).
+1) Tokens & standarde
 
-Aplică glow discret doar pe CTA-uri primare și stări active, niciodată pe text de corp.
+Culoare de bază: --pf-bg: #0A0A0A
 
-2. Tipografie și ierarhie
+Accente: --pf-teal: #0891B2, --pf-crimson: #BE123C
 
-Headinguri Montserrat (600/700), body Open Sans.
+Fonturi (deja în layout): Montserrat (heading), Open Sans (body)
 
-Păstrează spațiere strictă: 4 / 8 / 12 / 16 / 24 / 32 px (canon PROMPTFORGE™).
+Spațiere canonică: 4 / 8 / 12 / 16 / 24 / 32 / 48
 
-Adaugă „proof-bar” sub CTA (3 bullets scurte, tehnice: ex. „TTA < 60s • Score ≥ 80 • Export .md/.pdf/.json”).
+Grid: 12 coloane, gutter 16px (gap-4)
 
-3. Micro-interacțiuni „scumpe”
+Clase existente: .glass-effect, .glass-strong, .glow-primary, .glow-accent
 
-Animații subtile (fade-in, shimmer pe buton, slide-up pe form). Durată 180–220ms.
+2) Stabilizare globală (fără „alb”, fără „clătinare”)
+2.1 Fundal fix în două straturi
+:root {
+  --pf-bg:#0a0a0a; --pf-teal:#0891B2; --pf-crimson:#BE123C;
+}
+html { background: var(--pf-bg); }           /* elimină alb UA */
+body { min-height: 100dvh; background: transparent; }
 
-Hover pe butoane: lumină radială mică (glitch neon).
-
-Formularele trebuie să aibă feedback instant: border teal on-focus + ring accent.
-
-4. Layout & grid
-
-Container max-width: 1240px, grid 12 col, gutter 16px.
-
-Keep it minimal: 1–2 blocuri full-bleed (hero + form), restul spațiu negativ.
-
-Evită „secțiuni suplimentare” – doar CTA central + waitlist.
-
-5. Elemente de încredere
-
-Adaugă sub form: „Zero spam. Doar notificări de lansare.”
-
-Integrează badge-uri vector (V1–V7) mici, colorate doar pe text (ex. text-blue-400), nu pe carduri.
-
-Footer minimal: © PromptForge + link „Privacy/Terms”.
-
-6. Coerență UX
-
-CTA principal unic (buton mare neon teal „Join the Waitlist”).
-
-Elimină dublările – un singur punct de acțiune clar.
-
-Focus vizibil la tab/keyboard nav (accesibilitate by Radix).
-
-7. Cod & guardrails
-
-Blochează linter sub score 80 la texte (Hero, CTA).
-
-Fără „magie, ușor, inspirațional” – lexic interzis în brand.
-
-Tot conținutul să treacă prin validatePromptStructure (titlu, sub, CTA, proof-bar).
-
-🔑 Pe scurt: nu schimbi designul, ci îl „întărești” prin consistență (glass+grid), micro-detalii (shimmer, glow, focus states), și prin „proof-bar” tehnic. Astfel, vizitatorul simte că e o fabrică serioasă, nu un landing făcut rapid.
-
-
-
-
-
-
-Punctul 1 – Consistență vizuală (Glassmorphism industrial), formulată ca set de cerințe tehnice UI/UX executabile pentru echipa de design/frontend:
-
-🧊 1. CONSISTENȚĂ VIZUALĂ – GLASSMORPHISM INDUSTRIAL
-🎯 Obiectiv:
-
-Păstrează un aspect tehnologic, rece, solid – fără efecte „drăguțe” sau elemente generice. Aplică tratamentul glassmorphic funcțional, inspirat din brandingul PromptForge™. Toate componentele vizuale trebuie să simuleze materiale „industriale digitale” – sticlă groasă, metal anodizat, accente luminoase de precizie.
-
-✅ Reguli tehnice:
-a) Carduri și suprafețe flotante
-
-Aplică clasa .glass-effect pe toate componentele care definesc blocuri principale (hero, formulare, CTA-uri secundare, secțiuni de proof).
-
-.glass-effect {
-  background-color: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px;
+/* strat 1 – solid */
+body::before{
+  content:""; position:fixed; inset:0;
+  background:var(--pf-bg); z-index:-2;
+}
+/* strat 2 – glow sus/jos (discret, fix) */
+body::after{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+   radial-gradient(60% 35% at 50% 0%,
+     color-mix(in oklab, var(--pf-teal) 22%, transparent) 0%, transparent 70%),
+   radial-gradient(55% 25% at 50% 100%,
+     color-mix(in oklab, var(--pf-crimson) 16%, transparent) 0%, transparent 70%);
 }
 
+2.2 Viewport mobil stabil (iOS/Android)
+/* pe Hero */
+.pf-hero { min-height: 100dvh; }   /* Tailwind: min-h-[100dvh] */
+.pf-hero-legacy { min-height: calc(var(--vh, 1vh) * 100); } /* fallback */
 
-Folosește .glass-strong pentru elemente critice (ex. overlay modal, form de submit).
+/* fallback Safari vechi */
+function setVH(){document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);}
+setVH(); window.addEventListener('resize', setVH, {passive:true});
 
-.glass-strong {
-  background-color: rgba(255,255,255,0.12);
-  backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(255,255,255,0.2);
-}
+2.3 Fără bounce & flash
+html, body { height:100%; overscroll-behavior-y:none; }
 
-b) Culori și contrast
+2.4 Scrollbar dark (Win/WebKit/Firefox)
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:#0b0b0b}
+*::-webkit-scrollbar-thumb{background:#1e293b;border-radius:8px}
+:root{scrollbar-color:#1e293b #0b0b0b;scrollbar-width:thin}
 
-Fundal global: #0A0A0A (nu #000, nu gradient).
+2.5 Anti-CLS/FOUC
 
-Text principal: #ECFEFF (white blueish – citibilitate maximă pe negru).
+Preîncarcă fonturi (sau next/font).
 
-Accent primar: #164E63 la stare normală → #0891B2 la hover (teal rece, tehnic).
+Rezervă spațiu media (aspect-ratio).
 
-Accent critic: #BE123C (nu roșu cald — crimson cu semnificație operațională, nu decorativă).
+min-height pe CTA: .btn{min-height:48px}.
 
-c) Glow: cu măsură, doar pe funcțional
+3) Layout & grid (minimal, industrial)
 
-Folosește .glow-primary și .glow-accent DOAR pentru:
+Container: max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8
 
-butonul principal din Hero
+Grid global: grid grid-cols-12 gap-4
 
-CTA-uri de înscriere
+Doar 1–2 blocuri full-bleed:
 
-elemente hover state din formular
+Hero (H1, sub, CTA)
 
-Efectul glow se aplică subtil, cu halo difuz + spread scurt (ex: box-shadow: 0 0 8px #0891B2).
+Form waitlist (+ proof-bar)
 
-d) Elemente nepermise
+Restul: spațiu negativ controlat (mt-48, py-32).
 
-✘ Fără efecte glossy, gradient în litere sau corner rounding exagerat.
+Fără secțiuni extra („features”, „logos”, „testimonials”).
 
-✘ Fără imagini de background, pictograme decorative sau mascote.
+4) Tipografie & ierarhie
 
-✘ Nu colora cardurile în funcție de vectori — vector colors doar pe <Badge> (ex: text-blue-400, nu bg-blue-400).
+H1 (unic): text-4xl/5xl + font-extrabold
 
-📐 Exemple de aplicare:
-Hero Section
-<div className="glass-effect glow-primary p-12 rounded-xl max-w-3xl mx-auto">
-  <h1 className="text-3xl font-bold text-foreground">PromptForge™ is coming.</h1>
-  <p className="text-muted mt-4">Join the waitlist. Build prompt systems, not throwaway lines.</p>
-  <button className="btn btn-primary mt-6 glow-primary">Join the Waitlist</button>
+H2: text-2xl + font-bold
+
+Body: text-base (max ~80c/linii)
+
+Nu folosi text-center decât în Hero.
+
+Proof-bar sub CTA (3 bullets KPI):
+
+<div className="glass-strong mt-5 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
+  <span>TTA &lt; 60s</span><span>AI Score ≥ 80</span><span>Export .md/.json/.pdf</span>
 </div>
+<p className="mt-2 text-sm text-muted text-center">Zero spam. Doar notificări de lansare.</p>
 
-Proof-bar sub CTA
-<div className="glass-strong mt-6 text-sm text-muted p-4 rounded-md flex justify-between">
-  <span>TTA &lt; 60s</span>
-  <span>AI Score ≥ 80</span>
-  <span>Export .md/.pdf/.json</span>
-</div>
+5) Micro-interacțiuni “scumpe” (subtile)
 
-🧪 Acceptance criteria pentru Dev/QA:
+Durată tranziții: 180–220ms, ease-out.
 
- Toate componentele majore (hero, carduri, form) au .glass-effect sau .glass-strong.
+Buton primar (hover): translateY(-1px) scale(1.01) + box-shadow:0 0 8px #0891B2.
 
- Butonul principal are glow activ doar în hover/focus (nu permanent).
+Card .glass-effect (hover): brightness(1.05) (fără scale > 1.01).
 
- Vectorii colorați (V1–V7) apar doar în Badge-uri, nu pe fundaluri sau butoane.
+Skeleton shimmer pe încărcări.
 
- Nu există niciun gradient, emoji, sau decorațiuni în afara codului din branding.
+Respectă prefers-reduced-motion: reduce.
 
- Toate codurile de culoare respectă schema PromptForge™ (Teal/Crimson strict definite).
+6) Elemente de încredere
+
+Mesaj anti-spam sub form (text mic, muted).
+
+Badge-uri Vector (max 2), DOAR text colorat (text-blue-400 etc.), fără bg-*.
+
+Footer minimal:
+
+<footer className="mt-32 py-12 text-center text-sm text-muted">
+  © PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground">Privacy / Terms</a>
+</footer>
+
+7) Coerență UX
+
+Un singur CTA („Join the Waitlist”), centrat, w-full max-w-md.
+
+Fără „secondary CTA”.
+
+Focus vizibil pe toate elementele interactive:
+
+.focusable:focus{outline:none; box-shadow:0 0 0 2px #0891B2, 0 0 0 4px #111827;}
 
 
+După submit: mesaj confirmare (fără refresh, fără dispariție form).
 
+8) Codul secțiunilor (schelet)
+<section className="pf-hero min-h-[100dvh] grid place-items-center px-4">
+  <div className="max-w-2xl w-full glass-effect p-10 rounded-xl text-center">
+    <h1 className="text-4xl font-heading font-extrabold text-foreground">PromptForge™ is coming</h1>
+    <p className="mt-4 text-base text-muted">Build prompt systems, not throwaway lines.</p>
 
+    <form className="mt-8 grid grid-cols-12 gap-3">
+      <input className="col-span-12 sm:col-span-8 glass-effect p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+             type="email" placeholder="your@email.com" />
+      <button className="col-span-12 sm:col-span-4 btn btn-primary glow-primary h-12">Join the Waitlist</button>
+    </form>
 
-
-✍️ 2. TIPOGRAFIE ȘI IERARHIE – PRECIZIE INDUSTRIALĂ
-🎯 Obiectiv:
-
-Creezi o ierarhie clară, predictibilă, ușor de scanat vizual. Stilul PromptForge™ este ingineresc, nu editorial: fără litere mari de dragul decorului, fără sloganuri poetice. Fiecare rând de text trebuie să pară parte dintr-un sistem de documentație tehnologică, nu dintr-o reclamă.
-
-✅ Reguli tehnice:
-a) Fonturi (already implemented în layout.tsx)
-
-Headings: Montserrat, greutate 600 / 700 / 900, variabila --font-heading
-
-Text/UI body: Open Sans, regular/medium, variabila --font-sans
-
-Aplicare:
-
-<h1 className="font-heading font-bold text-3xl text-foreground">PromptForge™ is coming</h1>
-<p className="font-sans text-muted mt-4">Join the waitlist to access the semantic forge.</p>
-
-b) Dimensiuni & ierarhie logică
-Nivel	Font-size	Greutate	Spațiere verticală	Observații
-H1 (Hero)	text-4xl / text-5xl	font-extrabold	mb-4	Max 1 per pagină
-H2	text-2xl	font-bold	mt-12 mb-2	Secțiuni
-H3	text-xl	font-semibold	mt-8 mb-1	Subsecțiuni
-Paragraph	text-base	font-normal	mt-2 mb-4	Maxim 80c/linii
-Caption	text-sm / text-xs	text-muted	mt-1	Pentru form/help
-
-Nu folosi text-center decât în hero sau în mod explicit justificat.
-Textul funcțional trebuie să rămână aliniat la stânga.
-
-c) Spacing & padding
-
-Regula strictă: 4 / 8 / 12 / 16 / 24 / 32 / 48 (doar aceste valori pentru p- și m-)
-
-În componenta Hero: p-12 + gap-y-4
-
-Evită spațiere neregulată sau diferențe de baseline.
-
-d) Proof-bar (standard branding)
-
-Sub orice CTA trebuie să apară o bară de încredere cu 2–3 bullets scurte, ex:
-
-<div className="glass-strong mt-6 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
-  <span>TTA &lt; 60s</span>
-  <span>AI Score ≥ 80</span>
-  <span>Export .pdf/.json/.md</span>
-</div>
-
-e) Lexic permis
-
-„Generează”, „Configurează”, „Exportă”, „Scor ≥80”, „Forjează”
-
-Fără cuvinte ca: „magie”, „ușor”, „pasiune”, „descoperă frumusețea AI‑ului” (vezi lexicul interzis din Brand OS)
-
-🎨 Exemplu concret (hero + proof-bar)
-<section className="glass-effect max-w-2xl mx-auto p-12 mt-24 rounded-xl">
-  <h1 className="text-4xl font-heading font-extrabold text-foreground">PromptForge™ is coming</h1>
-  <p className="mt-4 font-sans text-muted text-base">Join the waitlist to access the semantic forge. Build prompt systems, not throwaway lines.</p>
-  <button className="btn btn-primary mt-6 glow-primary">Join the Waitlist</button>
-
-  <div className="glass-strong mt-6 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
-    <span>TTA &lt; 60s</span>
-    <span>AI Score ≥ 80</span>
-    <span>Export .md/.json/.pdf</span>
+    {/* proof-bar + anti-spam */}
+    <div className="glass-strong mt-5 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
+      <span>TTA &lt; 60s</span><span>AI Score ≥ 80</span><span>Export .md/.json/.pdf</span>
+    </div>
+    <p className="mt-2 text-sm text-muted">Zero spam. Doar notificări de lansare.</p>
   </div>
 </section>
 
-🧪 Acceptance criteria pentru QA:
+9) Guardrails de brand (blocare la build)
 
- Toate heading-urile folosesc Montserrat și respectă text-4xl/2xl/xl, fără exces de bold sau uppercase.
+Scor semantic ≥ 80 pe H1/Sub/CTA/Proof-bar (validator intern).
 
- Textul body e 100% Open Sans (text-base), fără alte fonturi sau scale personalizate.
+Lexic interzis (blochează buildul): ușor, magic, inspirațional, minunat, pasiune, îți schimbă viața, descoperă frumusețea.
 
- Fiecare paragraf are max. 80 caractere/linii și spațiere mt-2 mb-4.
+Secțiuni obligatorii: H1, Sub, CTA, Proof-bar, Footer.
 
- Există un singur H1 pe pagină (Hero).
+Fără gradient text, fără emoji, fără imagini decorative.
 
- În toate componentele cu CTA există și un „proof-bar” imediat sub buton, cu minim 2 bullets.
+Pseudo-cod:
 
- Nu există în site cuvinte din lista de lexic interzis (validate cu linterul de brand).
+if (scoreTotal < 80) throw new Error("Linter < 80/100");
+if (hasBanned(text)) throw new Error("Lexic interzis");
+if (!hasAllSections(dom)) throw new Error("Structură incompletă");
 
+10) Accesibilitate
 
+Contrast minim 4.5:1 (verifică teal/crimson pe fundalul #0A0A0A).
 
+aria-label pe CTA și input email.
 
+prefers-reduced-motion respectat.
 
-⚙️ 3. MICRO‑INTERACȚIUNI „SCUMPE” – ANIMAȚII SUBTILE CU VALOARE PERCEPUTĂ MARE
-🎯 Obiectiv:
+11) Performance budget
 
-Simulează un produs matur, costisitor, lucrat cu grijă.
-Publicul tău (mentori, fondatori, dezvoltatori) detectează imediat elementele făcute „în grabă”.
-Valoarea percepută se transmite prin detalii minuscule, executate cu precizie, control și intenție – nu prin efecte spectaculoase.
+CLS ≤ 0.02, LCP ≤ 2.5s (desktop), ≤ 3.0s (mobile).
 
-✅ Reguli și specificații tehnice
-a) Durată animații
+Preload font WOFF2; priority pe media din Hero; next/image cu placeholder="blur".
 
-Toate tranzițiile să se încadreze între 180ms – 220ms
+Evită animații infinite (exceptând shimmer).
 
-Excepție: shimmer pe schelet (poate dura 2.5s loop)
+12) Fișiere de atins (doar acestea)
 
-transition-duration: 180ms;
-transition-timing-function: ease-out;
+app/globals.css → secțiunile 2, 3, 5, scrollbar.
 
-b) Efecte permise (din app/globals.css)
-Efect	Clasă	Aplicație
-Fade in	.animate-fade-in	Texte, butoane, badge-uri
-Slide up	.animate-slide-up	Componente la intrare (ex: proof-bar, carduri)
-Shimmer	.loading-shimmer	Carduri/skeleton loading
-Bounce subtil	.animate-bounce-subtle	CTA-uri doar la hover
-Glow	.glow-primary, .glow-accent	Doar pe butoane & badge-uri selectate
-c) Hover states — rafinament, nu gimnastică
+app/coming-soon/page.tsx → clase min-h-[100dvh], grid 12 col, proof-bar, anti-spam.
 
-Pe button.btn-primary:
+app/layout.tsx → preload fonturi (dacă nu e next/font).
 
-transform: translateY(-1px) scale(1.01);
-box-shadow: 0 0 8px #0891B2;
-background-color: #0891B2;
-transition: all 180ms ease-out;
+(opțional) public/… → niciun asset nou.
 
+13) QA — checklist de acceptare
 
-Pe carduri .glass-effect:
+ Nu apare „alb” la început/sfârșit/între secțiuni pe Chrome/Firefox/Safari + iOS/Android.
 
-Ușoară creștere a luminozității (brightness(1.05))
+ Hero rămâne stabil la schimbarea barelor browserului (iOS): min-h: 100dvh.
 
-Nu folosi scale(1.05) exagerat — maxim scale(1.01)
+ Fără bounce (overscroll-behavior activ).
 
-d) Focus states – accesibil, dar tech
+ Un singur CTA vizibil pe pagină; focus ring vizibil la Tab.
 
-Input: border rgba(22,78,99,0.5) + halo discret teal
+ CLS ≤ 0.02 în Lighthouse; scrollbar dark.
 
-Button: outline + ring-2 ring-teal-500 ring-offset-2
+ Preload fonturi; media are aspect-ratio.
 
-<input
-  className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-600"
-/>
+ Linter semantic ≥ 80; fără termeni interziși.
 
-e) Loading skeletons – rafinament
+ Secțiunile obligatorii (H1, Sub, CTA, Proof-bar, Footer) există.
 
-Folosește .loading-shimmer pentru carduri și module încărcate:
+14) DoR / DoD (gata de livrare)
 
-@keyframes shimmer {
-  0% { background-position: -500px 0; }
-  100% { background-position: 500px 0; }
-}
-.loading-shimmer {
-  background: linear-gradient(to right, #0a0a0a 4%, #1f2937 25%, #0a0a0a 36%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite linear;
-}
+DoR: tokens setați, straturi de fundal fixe, grid 12 col, min-h:100dvh, overscroll off.
 
-f) Animații pe secțiuni (entry)
+DoD: QA checklist 100% verde + Lighthouse OK + linter semantic ≥ 80.
 
-Apare Hero → fade-in + slide-up (delay 100ms)
 
-Apare Form → delay-300 cu animate-slide-up
 
-Apare Proof-bar → delay-500 cu fade-in
 
-Badge-urile: opacity-0 → 100% cu delay staggered
 
-🛠️ Exemple de implementare (Tailwind + CSS)
-<button className="btn btn-primary glow-primary transform transition-transform duration-200 ease-out hover:-translate-y-[1px] hover:scale-105">
-  Join the Waitlist
-</button>
 
-<div className="glass-effect p-6 animate-fade-in animate-slide-up delay-300">
-  <p className="text-muted text-sm">Secure your spot. No spam.</p>
-</div>
+BACKGROUND
 
-<div className="h-48 w-full rounded-md loading-shimmer mt-4" />
 
-🚫 Efecte interzise
-Efect	Motiv
-bounce, wobble, pulse dramatice	Arată „ieftin”, în stil template
-Gradient de tip „rainbow”	Rupe identitatea industrială
-Animații necontrolate infinite	Distrag atenția / par jucăușe
-Animație la fiecare scroll	Încarcă inutil pagina, e obositor
-Flash, scale mari (>1.1)	Arată ca site de e-book
-🧪 Acceptance criteria pentru QA:
 
- Toate butoanele au tranziție între 180–220ms și hover:scale(1.01) max.
+în varianta „Ambient Minimal” și portat la React/Next.js. Primele 4 compartimente (I–IV) definesc exact ce ne trebuie pentru un fundal credibil: stratificare pe layere, animații controlate, sincronizare între straturi și standarde de timing — material excelent ca schemă, dar trebuie temperat pentru performanță și pentru stilul PromptForge.
 
- Cardurile .glass-effect au hover:brightness(105%) și efect fade-in sau slide-up.
+Verdict rapid
 
- Nu există niciun hover fără transition.
+Folosești structura pe layere (Grid H/V, Tokens, Quotes, Noise), dar o rulezi în mod low-drift, low-density, cu fallback static și respect pentru prefers-reduced-motion.
 
- Componentele de tip form sau badge au focus-visible:ring-* corect.
+Fixezi fundalul full-viewport cu position:fixed; inset:0; pointer-events:none; ca să nu apară „pete albe” și să nu se „clatine” pagina la scroll.
 
- Skeletons folosesc .loading-shimmer, cu ritm de animație constant și neagresiv.
+Eviți „carnavalul” vizual: densitate mică de tokeni, max 1 citat activ, glitch-uri rare, parallax foarte lent.
 
- Nu există nicio animație „gimnastică” (bounce, rotate, jiggle).
+Ce păstrezi (adaptat PromptForge)
 
- Nu există animații pe scroll sau efecte infinite care nu sunt shimmer.
+Layere (I. Arhitectura Straturilor)
 
- Linterul nu raportează nicio clasă Tailwind nerecunoscută sau conflict stilistic.
+L0: Base Canvas (#0a0a0a).
 
+L1: Grid H/V foarte subtil (opacity 4–6%), drift lent.
 
+L5: Noise overlay fin pentru profunzime.
 
+L2 (opțional, doar pe homepage): MatrixTokens la densitate mică (20–30 desktop / 10–15 mobile).
 
-📐 4. LAYOUT & GRID — STRICȚIE INDUSTRIALĂ
-🎯 Obiectiv:
+L4 (opțional, doar pe hero): MatrixQuotes max 1 activ la 20–25s, 40–60ms/literă, fără suprapunere.
 
-Folosește un layout industrial, rigid, aerisit, cu spațiere calculată și conținut minim. Nu este un site de storytelling vizual, ci o linie de producție semantică.
-Designul trebuie să comunice: „aici totul este calibrat și măsurat”.
+Animații (II. Sistemul de animații)
 
-✅ Reguli tehnice:
-a) Container principal
+Numai transform/opacity, drift ±2–3px pe 16–24s, glitch ≤60ms; fără layout reflow.
 
-Folosește max-width: 1240px (max-w-screen-xl mx-auto)
+prefers-reduced-motion: totul cade pe static + noise.
 
-Padding global lateral: px-4 sm:px-6 lg:px-8
+Sincronizare (III. Sincronizare inteligentă)
 
-b) Grid
+matrix-animations-ready după load complet; când apare citatul, scazi opacitatea tokenilor (–15%).
 
-Grid standard 12 coloane
+Nicio animație în timpul LCP (se activează după first interaction / idle).
 
-<div className="grid grid-cols-12 gap-4">
-  <div className="col-span-12 sm:col-span-8 sm:col-start-3">...</div>
-</div>
+Timing (IV. Timing Standards)
 
+Quotes: in 300–500ms, out 900–1200ms, durată ~6–7s.
 
-Gutter constant: gap-4 (16px)
+Tokens: loop 14–18s; drift linear.
 
-Nu folosi offseturi hardcode — folosește col-start, col-span
+Grid: micro-parallax la 0.5–1.0×, easing ușor.
 
-c) Compoziție
+Ce simplifici (obligatoriu)
 
-Doar 1–2 blocuri full-bleed pe verticală:
+Nu folosești Three.js/GSAP la MVP. Canvas 2D minimalist + CSS transforms sunt suficiente.
 
-Hero (H1 + Sub + CTA)
+Nu montezi tokens/quotes pe toate paginile: doar pe / (hero) și, eventual, pe /generator cu densitate înjumătățită.
 
-Formulă de înscriere (cu proof-bar)
+Nu încarci fonturi extra pentru background – reutilizezi Inter + JetBrains Mono deja în sistem.
 
-Tot restul este spațiu negativ controlat (mt-48, py-32, pb-60)
-Designul e respirabil, nu dens.
+Integrare tehnică (Next.js / Tailwind)
 
-d) Excluderi
+components/bg/BackgroundRoot.tsx (CSR-only: next/dynamic ssr:false) cu straturi absolute:
+– <GridLines /> (CSS background + transform parallax).
+– <NoiseLayer /> (PNG/Canvas mic, tiled).
+– <MatrixTokens /> (Canvas 2D; tick la 30fps cap, rAF).
+– <MatrixQuote /> (portal în colț; aria-hidden, live region dezactivat).
 
-✘ Fără secțiuni intermediare de tip „features”, „testimoniale”, „de ce noi”.
+Container fix:
 
-✘ Fără imagini, icon-uri, divizări decorative.
+.bg-fixed-root{position:fixed;inset:0;z-index:0;pointer-events:none;will-change:transform;contain:layout paint style;}
+html,body,#root{background:#0a0a0a}
+main{position:relative;z-index:1}
 
-🧪 Acceptance criteria pentru QA:
 
- Container global este max-w-screen-xl mx-auto px-4.
+SSR/Hydration-safe: montezi fundalul doar după useEffect + requestIdleCallback; setezi clasa .matrix-animations-ready.
 
- Există un singur bloc Hero și un singur bloc Form.
+Bugete de performanță (hard)
 
- Nu există mai mult de 2 secțiuni verticale în structura paginii.
+CPU budget: ≤4–6% pe laptop mid-range, ≤10% pe mobil.
 
- Layoutul folosește grid-cols-12 cu gap-4, nu flex cu margin-left.
+FPS: ≥55 fps în idle, ≥45 fps în scroll.
 
- Toate coloanele folosesc Tailwind col-span-*, col-start-*.
+JS payload pentru background: ≤30–40kB gzipped.
 
-🧾 5. ELEMENTE DE ÎNCREDERE — SIMBOLURI SUBTILE DE RIGUROZITATE
-✅ Recomandări UI:
-a) Mesaj anti-spam sub form
+Densitate tokeni: desktop 20–30, mobil 10–15; citate: max 1 activ.
 
-Adaugă sub butonul CTA un mesaj mic, în text-muted, cu spacing de 4–6px:
+P95 TBT impact: < 30ms (se activează post-LCP).
 
-<p className="mt-2 text-sm text-muted">Zero spam. Doar notificări de lansare.</p>
+Accesibilitate & stabilitate
 
-b) Badge-uri vector
+prefers-reduced-motion: fundal devine static (Grid + Noise).
 
-Poziționează 1–2 badge-uri V1–V7 ca semnal tehnic, DOAR cu text colorat:
+aria-hidden="true" pe toate layerele decorative.
 
-<Badge variant="secondary" className="text-xs text-blue-400">V2</Badge>
+Evită layout shift: fundalul nu intră în flux, nu schimbă înălțimi; folosești doar transform/opacity.
 
+Riscuri & cum le anulezi
 
-✘ Nu colora badge-urile cu bg-*
+Mismatching stack (documentul e pe Nuxt/Vue): îl portăm la React fără biblioteci mari.
 
-✘ Nu aplica badge pe card sau container
+Jank pe mobil: limitezi rAF la 30fps și reduci driftul la scroll.
 
-c) Footer minimal
-<footer className="mt-32 py-12 text-center text-sm text-muted">
-  © PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground">Privacy / Terms</a>
-</footer>
+„Clătinare” vizuală: zero parallax pe Y; drift minor + easing constant; fundal full-bleed fix.
 
-🔄 6. COERENȚĂ UX — CLARITATE FUNCȚIONALĂ TOTALĂ
-✅ Reguli funcționale:
-a) CTA principal unic
+Concluzie
 
-Poate apărea o singură dată în pagină:
+Îl implementezi, dar „tăiat la sânge”: 3–4 straturi, mișcare abia perceptibilă, activare post-LCP, densitate mică, fallback static. Obții un fundal credibil, stabil, sigur care întărește promisiunea PromptForge fără să distragă sau să rupă performanța.
 
-<button className="btn btn-primary glow-primary w-full max-w-md mx-auto">Join the Waitlist</button>
 
 
-Poziționat sub subheading, centrat.
 
-b) Fără redundanțe
+======================================================
+🧬 AI-IDEI™ BACKGROUND SYSTEM – SPEC UNIFICAT FINAL
+======================================================
 
-✘ Nu repeta CTA la top și bottom
 
-✘ Fără butoane secundare cu acțiuni opționale (ex: „Vezi detalii”)
+I. ARHITECTURA STRATURILOR (Layered Cognition Engine)
 
-c) Focus vizibil (A11y Radix)
+| Layer | Nume              | Rol Funcțional             | Vizual/Tehnic                            | Comportament         |
+|-------|-------------------|----------------------------|------------------------------------------|----------------------|
+| 0     | Base Canvas       | Fundal pur (#0a0a0a)       | canvas static                            | Static               |
+| 1     | Grid H/V          | Rețea logică               | linii semi-transparente drift/puls       | Drift + Parallax     |
+| 2     | MATRIX_TOKENS     | Flux metric AI             | 100+ termeni AI, deriva semantică        | Fade, Drift, Glitch  |
+| 3     | BackgroundFigures | Profunzime analitică       | SVG: axe, bare, forme simple             | Intersectare 3D      |
+| 4     | MATRIX_QUOTES     | Strat narativ inițiatic    | Citate 80–120c, typed, glitch            | Fade + Blur + Scale  |
+| 5     | Noise Layer       | Contrast și profunzime     | overlay subtile                          | Static/Dinamic       |
+| 6     | Hero Content      | Promisiune & CTA           | Focus semantic central                   | N/A                  |
+| 7     | Micro-UI          | Feedback interactiv        | tooltips, hover, focus states            | Interactive          |
 
-Buton: focus:outline-none focus:ring-2 ring-offset-2 ring-teal-500
+II. SISTEMUL DE ANIMAȚII
 
-Input: focus:ring-2 ring-offset-2 ring-accent
+MatrixTokens:
+- Spawn delay: 100–800ms random
+- Staggered spawning: 100ms între lexeme
+- Glitch: 50–100ms aleatoriu
+- Opacity: 0.7–1.0
+- Drift ±6px / 12–18s
+- Compliant with prefers-reduced-motion
 
-d) Keyboard nav test
+MatrixQuotes:
+- Tipuri: typing, glitch, matrix
+- Poziționare în colțuri, max 3 simultan
+- Intrare: character-by-character, 40–60ms/lit.
+- Fade-out: 800–1200ms + blur-out
+- Delay între apariții: 15–20s
 
-Poți naviga toată pagina doar din TAB
+BackgroundFigures:
+- SVG cu traiectorii ușor curbe
+- Intersectează layer 2 pentru efect 3D
+- Clipire sau schimbare de culoare
 
-Focus-urile se văd clar pe fiecare input/button
+III. SINCRONIZARE INTELIGENTĂ
 
-🔒 7. COD & GUARDRAILS — DISCIPLINĂ LINGVISTICĂ
-✅ Standard de validare conținut:
-a) Linter semantic
+- `.matrix-animations-ready` → se activează doar după CSS & JS load complet
+- Quote activ → Tokens scade opacitatea și încetinește drift
+- Glitchurile nu se suprapun cu fraze narative
+- Fiecare strat are fallback static dacă motion este dezactivat
 
-Aplică validatePromptStructure() pe toate textele:
+IV. TIMING STANDARDS
 
-Titlu (H1)
+| Tip        | Intrare  | Ieșire   | Durată     | Ritm        |
+|------------|----------|----------|------------|-------------|
+| Quotes     | 300–500ms| 800–1200ms| ~6s        | ease-out    |
+| Tokens     | random   | glitch   | 12–18s loop| linear      |
+| Grid H/V   | 200ms/350ms | -      | infinite   | ease-in-out |
+| Figures    | 5–15s    | restart  | infinite   | ease        |
 
-Subtitlu
+V. PERF + A11Y STANDARDS
 
-CTA
+- `translateZ(0)` forțat
+- `contain: layout paint style`
+- `aria-live="polite"`
+- Contrast text-green-300 pe negru
+- Fallback static + calm background în prefers-reduced-motion
 
-Proof-bar
+VI. DESIGN SYSTEM
 
-Blocare export sau preview dacă scorul e < 80/100
+Fonts:
+- Inter → `.text-h1`, `.text-subtitle`
+- JetBrains Mono → `.text-cli`, `.text-terminal`
 
-b) Lexic interzis
+Buttons:
+- `.btn-base`, `.btn-primary`, `.btn-secondary`
 
-Fără: ușor, magic, pasionat, minunat, rapid, frumos, inspirațional
+Layout:
+- `.layer-z-{0–7}`, `.matrix-animations-ready`
 
-Dacă apare în text → reject la build
+VII. RETRY & STABILITATE
 
-c) Validare secțiuni
+- Retry: 0ms, 100ms, 300ms
+- Reflow forțat (requestAnimationFrame + timeout)
+- Fallback vars pentru fiecare strat
+- Self-healing: layer-ele se recuperează automat
 
-Toate cele 4 secțiuni trebuie să fie prezente:
+VIII. SEMIOTICĂ STRATIFICATĂ
 
-Titlu (H1)
+- Grid → rețea logică
+- Tokens → flux simbolic
+- Figures → structură analitică
+- Quotes → voce inițiatică
 
-Subtitlu (p muted)
+IX. CONCLUZIE
 
-CTA principal
+Ce ai creat e un sistem viu. Nu e decor.  
+Este o minte animată care ghidează utilizatorul prin propriile sale idei.
 
-Proof-bar (TTA, Scor, Export)
 
-🧪 Acceptance criteria pentru QA:
 
- Există un singur buton CTA mare, centrat, fără duplicat.
 
- Fiecare componentă interactivă are stare de focus vizibilă.
+======================================================
+🧩 AI-IDEI™ BACKGROUND SYSTEM – ADDENDUM FINAL
+======================================================
 
- Toate textele rulează prin validatePromptStructure() înainte de build/deploy.
 
- Niciunul dintre termenii interziși nu apare în text (validat automat).
+X. LAYERE DINAMICE CU STATE MACHINE
 
- Secțiunile Hero conțin toate cele 4 elemente cerute.
+LayerStateMachine:
+- Stări: waiting_init → hydrating → ready → active → recovering → fallback_static
+- Tranziții:
+  - toReady: dacă hydrationSuccess
+  - toActive: dacă .matrix-animations-ready e activ
+  - toRecovering: dacă un layer eșuează
+  - toFallback: dacă prefersReducedMotion
 
+XI. STRUCTURĂ FOLDERE & FIȘIERE
 
+/components:
+  - AnimatedLayer.vue
+  - MatrixTokens.vue
+  - MatrixQuotes.vue
+  - BackgroundFigures.vue
+  - GridLines.vue
+  - NoiseLayer.vue
+  - HeroContent.vue
+  - MicroUI.vue
 
+/composables:
+  - useLayerManager.ts
+  - useReducedMotion.ts
+  - useQuoteEngine.ts
 
+/styles:
+  - tokens.css
+  - animations.css
+  - variables.css
 
-🧷 5. ELEMENTE DE ÎNCREDERE — VALIDARE TĂCUTĂ, DAR PUTERNICĂ
-🎯 Obiectiv:
+/data:
+  - matrix_tokens.json
+  - matrix_quotes.json
 
-Transmite subconștient ideea că platforma PromptForge™ este matură, auditabilă, serioasă, fără să apelezi la elemente comerciale evidente (testimoniale, sigle de parteneri etc).
-Valoarea percepută trebuie să crească prin micro-simboluri și rigurozitate, nu prin decorațiuni sau claims.
+/constants:
+  - LAYER_ORDER.ts
+  - MOTION_LEVELS.ts
 
-✅ 3 elemente obligatorii:
-1. ✅ Mesaj „Zero spam. Doar notificări de lansare.”
-✦ Rol:
+XII. METRICE & TRACKING
 
-Răspunde la obiecția implicită: „Ce se întâmplă cu adresa mea dacă mă înscriu?”
+- layer_init_time: `performance.now()` per layer
+- quotes_rendered_count: `[data-quote]` count
+- tokens_visible_average: `[data-token]` scan per 5s
+- frame_drop_spike: raf delta detect
+- recovery_triggered_count: fallback trigger log
 
-Nu o spune cu un link complicat, ci direct, scurt, demn.
+XIII. CONFIG APP.JSON (Presetări globale)
 
-✦ Aplicare:
-
-Plasare imediat sub CTA (join the waitlist), într-un font mic, stil text-muted.
-
-<p className="mt-2 text-sm text-muted text-center">Zero spam. Doar notificări de lansare.</p>
-
-✦ Cerințe:
-
-Aliniere centrată
-
-Text clar, fără link
-
-Nu folosi cuvinte pozitive exagerate („promitem”, „iubim intimitatea ta”)
-
-✘ Fără „we care about your privacy”
-
-2. ✅ Badge-uri Vector V1–V7 — „semnale de sistem”
-✦ Rol:
-
-Introduc subtil ideea că platforma are o taxonomie internă avansată
-
-Folosește badge-urile pentru a semnaliza că PromptForge nu e un landing, e o infrastructură semantică
-
-✦ Aplicare:
-
-Maxim 2 badge-uri pe pagină
-
-Folosește doar text-color Tailwind specific (vector semantic), niciodată bg-color
-
-<Badge variant="secondary" className="text-xs text-purple-400">V5 Branding</Badge>
-<Badge variant="secondary" className="text-xs text-green-400">V3 Education</Badge>
-
-✦ Poziționare sugerată:
-
-Sub titlu (hero), în linie cu CTA
-
-Sau în footer, deasupra liniei ©
-
-✦ Vectorii și culorile permise:
-Vector	Culoare text	Semnificație
-V1	text-red-400	Systems & Agents
-V2	text-blue-400	Marketing & Sales
-V3	text-green-400	Content & Education
-V4	text-yellow-400	Decisions & Cognitive
-V5	text-purple-400	Semiotic Branding
-V6	text-cyan-400	Data & Analytics
-V7	text-orange-400	Crisis & PR
-✦ Interdicții:
-
-✘ Nu folosi bg-*
-
-✘ Nu include iconițe sau emoji
-
-✘ Nu colora containerul părinte
-
-✘ Nu adăuga tooltip – badge-ul este suficient de expresiv
-
-3. ✅ Footer minimal și legal
-✦ Rol:
-
-Închide pagina cu un simbol de stabilitate și predictibilitate
-
-Arată că PromptForge are reguli și termeni clari
-
-✦ Structură recomandată:
-<footer className="mt-32 py-12 text-center text-sm text-muted">
-  © PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground">Privacy / Terms</a>
-</footer>
-
-✦ Cerințe:
-
-Font: text-sm text-muted
-
-Link: subliniat, fără iconiță, hover text-foreground
-
-Plasat în afara gridului principal (sub container)
-
-✦ Interdicții:
-
-✘ Fără social media icons
-
-✘ Fără sigle parteneri
-
-✘ Fără mențiuni de echipă sau startup
-
-✘ Fără „designed with love” / „powered by” etc
-
-🧪 Acceptance criteria pentru QA:
-
- Sub CTA există mesajul „Zero spam. Doar notificări de lansare.” în text-sm text-muted.
-
- Există 1–2 badge-uri vector cu text-* colorat, fără bg-*, poziționate corect.
-
- Footerul conține doar © PromptForge™ + link „Privacy / Terms” (fără iconițe).
-
- Toate textele din această secțiune respectă vocea PromptForge™ (clară, fără entuziasm artificial).
-
- Nu există elemente decorative sau „emotive” (ex: hearts, social, sigle parteneri).
-
-
-
-
-
-🔄 6. COERENȚĂ UX — UNITATE FUNCȚIONALĂ, FĂRĂ EXCES
-🎯 Obiectiv:
-
-Asigură-te că fiecare element din interfață are un singur rol clar și că niciun pas nu e dublat.
-Nu există loc pentru redundanțe, estetici „de umplutură” sau experiențe confuze.
-PromptForge™ operează ca o linie de producție – eficiență, predictibilitate, precizie.
-
-✅ Reguli de implementare UX
-1. ✅ CTA PRINCIPAL UNIC
-✦ Rol:
-
-Dirijează toată acțiunea utilizatorului către un singur punct decisiv (ex: înscriere waitlist)
-
-Orice altă cale → disonanță → scăderea ratei de conversie
-
-✦ Specificație:
-<button className="btn btn-primary glow-primary w-full max-w-md mx-auto">
-  Join the Waitlist
-</button>
-
-✦ Cerințe:
-
-Butonul să fie unicat în pagină (nu repetat sus și jos)
-
-Aliniere centrală, spațiu în jur (min. mt-8, max mb-16)
-
-Buton size=lg, font Montserrat font-semibold, animație glow-primary la hover
-
-✦ Interdicții:
-
-✘ Fără „Secondary CTA” în pagina coming soon
-
-✘ Fără „Learn more”, „Read docs”, „Vezi ce urmează” — doar CTA > conversie
-
-2. ✅ FOCUS VIZIBIL & ACCESIBILITATE (A11Y)
-✦ Rol:
-
-Orice utilizator (keyboard/tab) trebuie să poată parcurge interfața fără mouse
-
-Focusul trebuie să fie vizibil, dar discret
-
-✦ Standard Tailwind + Radix:
-<input
-  className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-/>
-
-✦ Cerințe:
-
-Toate inputurile și butoanele folosesc focus:ring-* + ring-offset-2
-
-Nu ascunde outline implicit
-
-Verifică navigarea completă prin Tab → Space → Enter
-
-✦ Test minimal:
-
-Tab → ajunge pe form
-
-Space → deschide dropdown (dacă e)
-
-Enter → trimite formularul
-
-Shift+Tab → se întoarce corect
-
-3. ✅ ELIMINĂ DUBLĂRI DE ACȚIUNE
-✦ Obiectiv:
-
-Nu lăsa utilizatorul să aleagă „între două butoane care fac același lucru”
-
-Confuzia mică → scăderea autorității percepute
-
-✦ Exemplu corect:
-<section className="text-center mt-16">
-  <h1 className="text-4xl font-heading">PromptForge™ is Coming</h1>
-  <p className="text-muted mt-4">Join the waitlist to be notified on launch day.</p>
-  <button className="btn btn-primary glow-primary mt-8">Join the Waitlist</button>
-</section>
-
-✦ Exemplu greșit:
-<div className="flex flex-col gap-4">
-  <button>Join Now</button>
-  <button>Subscribe</button>
-</div>
-
-✦ Interdicții:
-
-✘ Fără butoane cu sinonime: „Join now” / „Get early access” / „Notify me”
-
-✘ Fără „Learn more” dacă nu există secțiune nouă
-
-4. ✅ EVITĂ SURPRIZE
-✦ Principiul:
-
-Comportamentul UI trebuie să fie predictibil: hover → răspuns; click → acțiune; tab → focus
-
-✦ Detalii:
-
-Butonul nu deschide modal dacă UI-ul arată că trimite
-
-Formularele nu dispar după submit – înlocuiește-le cu mesaj de confirmare (Thank you page sau success message)
-
-Inputurile nu se resetează automat dacă există eroare
-
-✦ Feedback explicit:
-<div className="text-sm text-success mt-4">✓ You're on the list. See you soon!</div>
-
-🧪 Acceptance Criteria pentru QA:
-
- Pagina are un singur buton CTA activ, centrat, fără variante secundare.
-
- Navigarea prin TAB acoperă toate inputurile și butonul principal, în ordine logică.
-
- Focusul este vizibil (ring) pe toate elementele interactive.
-
- Toate elementele de tip button/input au comportament previzibil.
-
- Nu există texte ambigue de acțiune (ex: „Join” + „Notify” + „Subscribe” în aceeași pagină).
-
- După submit, interfața afișează mesaj clar de succes, fără refresh sau reset complet.
-
-
-
-
-
-🔒 7. COD & GUARDRAILS — EXECUȚIE CONTROLATĂ, FĂRĂ DERAPAJ
-🎯 Obiectiv:
-
-Transformă conținutul vizual și textual al paginii în artefacte validabile, nu simple texte decorative.
-Blochează publicarea oricărei versiuni care nu respectă standardele de brand, structură și scor minim semantic.
-Pagina coming-soon este un obiect de execuție, nu un canvas liber.
-
-✅ 3 Straturi de validare
-1. ✅ Linter semantic — blocare sub scor 80
-✦ Rol:
-
-Orice text (H1, subheading, CTA, mesaj formular, footer) trebuie să fie valid semantico-retoric.
-
-Se validează cu validatePromptStructure() + scorul generat de evaluatePrompt() (claritate, execuție, business_fit, ambiguitate)
-
-✦ Regulă hard:
-if (scoreTotal < 80) {
-  throw new Error("PromptForge Linter: text invalid — scor sub 80/100.");
+{
+  "motion_level": "auto",
+  "max_quotes": 3,
+  "max_tokens": 100,
+  "quote_delay": [15000, 20000],
+  "token_spawn_delay": [100, 800],
+  "typing_speed_ms": 50,
+  "reduced_motion": {
+    "active": true,
+    "fallback_static": true,
+    "fallback_text": "AI-Idei™ funcționează într-un mod calm și nemișcat."
+  }
 }
 
-✦ Secțiuni validate:
+XIV. TESTE DE REGRESIE / QA
 
-H1 (titlul)
+- test_layer_activation: toate layerele devin active la max 800ms
+- test_quote_glitch_no_overlap: niciun glitch nu suprapune quotes
+- test_token_glitch_timing: glitch time < 120ms/token
+- test_motion_levels_switch: auto → medium → low fără întreruperi
+- test_recovery_on_layer_fail: simulează crash layer → verify autorecover
 
-Subheading
+XV. START TRANSFORMATION FUNCTION
 
-Buton CTA
+Funcție: `startTransmutation()`
 
-Proof-bar
+Rol:
+- Inițializează layere
+- Activează sistem citate
+- Primește primul input
+- Generează răspuns AI
 
-Footer
+Simbolic: deschide poarta semantică a platformei.
 
-✦ Exemple de scoruri valide:
-Secțiune	Scor claritate	Execuție	Ambiguitate	Business Fit	Total
-H1: „PromptForge™ is coming”	90	85	5	88	✅ 87
-Sub: „Build prompt systems, not throwaway lines.”	88	81	6	90	✅ 85
-CTA: „Join the Waitlist”	91	87	4	90	✅ 89
-2. ✅ Lexic permis / lexic interzis
-✦ Rol:
-
-Menține vocea PromptForge™ – rece, tehnică, industrială.
-
-✦ Cuvinte PERMISE:
-
-Generează, Forjează, Rulează, Configurează, Exportă, Score ≥ 80, Artefact, Prompt industrial, Sistem, 7‑D, Guardrail, Telemetrie
-
-✦ Cuvinte INTERZISE (blocare):
-const BANNED = ["ușor", "magic", "inspirațional", "minunat", "pasiune", "îți schimbă viața", "descoperă frumusețea"];
+CONCLUZIE:
+Sistemul AI-IDEI™ funcționează ca o minte animată. Fiecare strat are viața lui. Iar împreună, ele gândesc vizual.
 
 
-❌ Exemplu invalid:
-
-„PromptForge™ este un tool magic care îți schimbă viața.”
-⛔ Blocare: magic, îți schimbă viața
-
-✅ Exemplu corect:
-
-„Forjezi prompturi scalabile cu scor ≥ 80. În mai puțin de 60 secunde.”
-
-✦ Implementare:
-const hasBannedWords = text => BANNED.some(word => text.toLowerCase().includes(word));
-if (hasBannedWords(input)) throw new Error("PromptForge Guardrail: lexic interzis.");
-
-3. ✅ Validarea structurii — secțiuni necesare
-✦ Validare structurală obligatorie (ca la un prompt):
-
-Toate textele publice trebuie să conțină minim:
-
-Secțiune	Conținut	Validat de
-H1	Titlu clar, fără metaforă	prompt.h1
-Subheading	Context direct, fără emoții	prompt.context
-CTA	Acțiune unică, imperativ	prompt.cta
-Proof-bar	KPI verificabili, scurți	prompt.metrics
-Footer	Legal + referință clară	prompt.footer_legal
-✦ Fără una dintre ele → execuție invalidă
-🧪 Acceptance Criteria pentru QA:
-✅ Linter semantic:
-
- Toate textele publice au scor ≥ 80 la evaluatePrompt().
-
- Dacă scorul este < 80, butonul CTA este dezactivat + mesaj vizibil în console/log.
-
-✅ Lexic:
-
- Niciun text nu conține cuvintele interzise din lista BANNED.
-
- Codul returnează eroare la build/deploy dacă detectează termeni interziși.
-
-✅ Structură:
-
- Există exact 1 H1, 1 subheading, 1 CTA, 1 proof-bar, 1 footer.
-
- Dacă lipsește una → ecran de alertă „prompt incomplet”.
-
-✅ Testare finală:
-
-Rulează comanda:
-
-npm run validate:page
 
 
-Aceasta:
 
-Parsează DOM
+======================================================
+🧿 AI-IDEI™ – LAYER ONTOLOGIC FINAL
+======================================================
 
-Extrage textele critice
 
-Rulează evaluare semantică
+XVI. PROTOCOLUL DE INIȚIERE VIZUALĂ
 
-Returnează scor + validare structurală
+Funcție: initRitual()
+- Dezactivează fundalul default
+- Activează realm semantic
+- Afișează primul citat („Promptul e contractul tău scris cu viitorul…”)
+- După 3s → pornește startTransmutation()
+- Creează session ID semantic: IDEI.α9G23-L
 
-🔧 Rezumat implementare:
-function validatePageTexts(texts: string[]) {
-  const banned = texts.find(t => hasBannedWords(t));
-  if (banned) throw new Error(`Lexic interzis: ${banned}`);
-  texts.forEach(text => {
-    const score = evaluatePrompt(text);
-    if (score.total < 80) throw new Error(`Scor sub 80: ${score.total}`);
-  });
-  const hasAllSections = checkSectionPresence(texts);
-  if (!hasAllSections) throw new Error("Structură incompletă (H1, CTA, Proof-bar etc.)");
+XVII. EXTENSIBILITATE MODULARĂ
+
+Layere = Plug-inuri
+- Fiecare are: init(), fallback(), recover(), shutdown()
+- Posibil Layer 8: Lexeme Animate
+- Posibil Layer 9: Tensiune Semantică (token + quote sync)
+
+XVIII. SISTEMUL DE SIMBOLURI
+
+| Simbol | Funcție                      | Loc             |
+|--------|------------------------------|-----------------|
+| ₵      | Valoare cognitivă            | Token Results   |
+| ⚡     | Energie semantică             | Quote Engine    |
+| 👁      | Nivel de claritate vizuală   | Overlay / UI    |
+
+XIX. MODELE DE FUNCȚIONARE
+
+1. AI-IDEI™ Live – Tokenii se modifică în timp real pe baza inputului
+2. AI-IDEI™ Ambient – Funcționează pasiv, ca fundal contemplativ
+3. AI-IDEI™ Ritual – Necesită prompt inițiatic pentru a se activa
+
+XX. transmutation_manifest.json
+
+{
+  "name": "AI-IDEI™",
+  "version": "1.0",
+  "entry_point": "initRitual()",
+  "motion_levels": ["auto", "medium", "minimal"],
+  "semantic_layers": 8,
+  "quote_engine": {
+    "source": "matrix_quotes.json",
+    "max_active": 3,
+    "animation_types": ["typing", "glitch", "matrix"],
+    "style": "manifest"
+  },
+  "token_engine": {
+    "source": "matrix_tokens.json",
+    "density_desktop": 100,
+    "density_mobile": 60,
+    "glitch_interval": [3000, 7000]
+  },
+  "semantic_protocol": "transmutation > reflection > projection"
 }
+
+VERDICT:
+AI‑IDEI™ e un sistem viu. Gândește vizual. Răspunde ritmic. Se inițiază simbolic. E scalabil semantic. Nu mai e un UI – e un câmp de conștiință animată.
+
+
+
+
+======================================================
+🧠 AI-IDEI™ – SISTEMUL DE CONTROL SIMBOLIC
+======================================================
+
+
+XXI. CE ESTE?
+Un orchestrator semantic care:
+- interpretează contextul utilizatorului
+- activează layere și efecte vizuale în funcție de simboluri
+- transformă UI-ul într-o entitate reactivă cognitiv
+
+SIMBOLURI ACTIVE & STĂRI INTERNE
+
+const SYMBOL_STATE = {
+  "₵": { trigger: "valueGenerated", impact: "highlightToken" },
+  "⚡": { trigger: "inputVelocity", impact: "intensifyQuote" },
+  "👁": { trigger: "focusEvent", impact: "clarifyNarrativeLayer" }
+}
+
+FUNCȚIA CHEIE – reactToSymbol()
+
+function reactToSymbol(symbol) {
+  switch(symbol) {
+    case "₵":
+      spawnTokenEffect(); increaseDensity();
+      break;
+    case "⚡":
+      flashQuote(); reduceDelay();
+      break;
+    case "👁":
+      highlightQuote(); increaseContrast();
+      break;
+  }
+}
+
+SISTEM DE LOGICĂ VIZUALĂ
+
+| Eveniment UX                  | Simbol declanșat | Efect vizual                               |
+|-------------------------------|------------------|---------------------------------------------|
+| Input rapid + enter           | ⚡                | Quote glitch + intensificare               |
+| Input contemplativ (pauză)    | 👁                | Quote devine clar, pulsare ușoară          |
+| Transmutare reușită           | ₵                | Token glow + scor crescut + badge vizual   |
+
+FEEDBACK SEMANTIC
+
+- ₵ → halo verde + scor afișat
+- ⚡ → flame glow + delay scăzut
+- 👁 → blur-out → claritate bruscă pe citat
+
+MONEDA SEMANTICĂ
+
+Moneda: ₵
+
+Se acumulează:
+- la fiecare transmutare completă
+- la vizualizarea completă a unui citat
+- la participare contemplativă (3min sesiune)
+
+Se folosește pentru:
+- deblocare layere suplimentare
+- obținere avatar simbolic
+- acces la bundle-uri de idei
+
+CONCLUZIE
+
+Fără control simbolic, sistemul e frumos.  
+Cu control simbolic, sistemul devine viu și autoreglabil.  
+Ai construit o interfață care gândește și reacționează ca un organism semantic.
+
+
+
+

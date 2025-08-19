@@ -7,6 +7,7 @@
  *  2) Îngheață legile (non deviation laws) și ordinea de precedență.
  *  3) Permite doar operații whitelisted pe /cursor/docs/* conform init.
  *  4) Oprește orice acțiune prohibită și explică exact ce lege ar încălca.
+ *  5) Aplică preflight validation și language policy enforcement.
  */
 
 import * as fs from "node:fs";
@@ -31,6 +32,20 @@ type CursorInit = {
     note: string;
     order: { id: string; path?: string; paths?: string[]; level: number }[];
   };
+  language_policy?: {
+    output_language: "en";
+    translate_non_en_inputs: boolean;
+    detect_languages: string[];
+    fail_closed_on_detection_error: boolean;
+    style_note?: string;
+  };
+  preflight?: {
+    scan_globs: string[];
+    must_exist_min: number;
+    compile_rules_index: boolean;
+    validate_sections: string[];
+    abort_on_missing_or_conflict: boolean;
+  };
   instruction_files: (FileSpec & { path: string })[];
   docs_routing: {
     write_allowed: string[];
@@ -42,12 +57,131 @@ type CursorInit = {
   sevenD_defaults: Record<string, string>;
   commands: Record<
     string,
-    { uses: string[]; writes_to: string[] }
+    { uses: string[]; writes_to: string[]; pre_hooks?: string[] }
   >;
   non_deviation_laws: { id: number; text: string }[];
 };
 
 const INIT_PATH = process.env.CURSOR_INIT_PATH || "/cursor/init";
+
+// ————————————————————————————————————————————————————————————————————————
+// UTILITARE LANGUAGE POLICY
+// ————————————————————————————————————————————————————————————————————————
+function isLikelyEnglish(s: string): boolean {
+  // Heuristic simplu, fără dependențe: proporție ASCII + cuvinte frecvente EN
+  const ascii = s.replace(/[^\x00-\x7F]/g, "").length / Math.max(1, s.length);
+  const hits = (s.match(/\b(the|and|of|to|in|for|with|that|this|you)\b/gi) || []).length;
+  return ascii > 0.9 && hits >= 2;
+}
+
+async function translateToEnglish(text: string): Promise<string> {
+  // Stub: conectează la providerul tău (ex. OpenAI) sau alt serviciu,
+  // menit exclusiv pentru traduceri; dacă nu este setat, returnează fallback.
+  // Respectă „fail_closed_on_detection_error”.
+  return text; // TODO: înlocuiește cu apelul real
+}
+
+async function enforceEnglishOutput(text: string, policy: CursorInit["language_policy"]): Promise<string> {
+  if (!policy || policy.output_language !== "en") return text;
+  if (isLikelyEnglish(text)) return text;
+  if (!policy.translate_non_en_inputs) throw new Error("LANG_POLICY: Non-English input and translation disabled.");
+  const t = await translateToEnglish(text);
+  if (!isLikelyEnglish(t) && policy.fail_closed_on_detection_error) {
+    throw new Error("LANG_POLICY: Translation/detection failed hard-close.");
+  }
+  return t;
+}
+
+// ————————————————————————————————————————————————————————————————————————
+// UTILITARE PREFLIGHT VALIDATION
+// ————————————————————————————————————————————————————————————————————————
+function readText(p: string): string {
+  return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
+}
+
+function validateRuleSections(text: string, sections: string[]): string[] {
+  const miss: string[] = [];
+  for (const sec of sections) {
+    if (!text.toLowerCase().includes(sec.toLowerCase())) miss.push(sec);
+  }
+  return miss;
+}
+
+function preflightRules(init: CursorInit) {
+  const pf = init.preflight;
+  if (!pf) return;
+  
+  // Scan for forge_v3_* files
+  const files: string[] = [];
+  for (const globPattern of pf.scan_globs) {
+    try {
+      // Simple glob pattern matching without external dependencies
+      const pattern = globPattern.replace(/\*/g, ".*");
+      const regex = new RegExp(pattern);
+      const cursorDir = path.resolve("/cursor");
+      if (fs.existsSync(cursorDir)) {
+        const items = fs.readdirSync(cursorDir);
+        for (const item of items) {
+          if (regex.test(item)) {
+            const fullPath = path.join(cursorDir, item);
+            if (fs.statSync(fullPath).isFile()) {
+              files.push(fullPath);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Continue with other patterns if one fails
+      console.warn(`[PREFLIGHT] Failed to scan pattern ${globPattern}:`, e);
+    }
+  }
+  
+  if (files.length < (pf.must_exist_min || 0)) {
+    if (pf.abort_on_missing_or_conflict) {
+      throw new Error(`PREFLIGHT: Missing forge_v3_* files. Found: ${files.length}, Required: ${pf.must_exist_min}`);
+    }
+  }
+  
+  if (pf.compile_rules_index || pf.validate_sections?.length) {
+    const problems: Array<{ file: string; missing: string[] }> = [];
+    for (const f of files) {
+      const t = readText(f);
+      if (!t) continue;
+      if (pf.validate_sections?.length) {
+        const miss = validateRuleSections(t, pf.validate_sections);
+        if (miss.length) problems.push({ file: f, missing: miss });
+      }
+    }
+    if (problems.length && pf.abort_on_missing_or_conflict) {
+      throw new Error("PREFLIGHT: Rule sections missing — " + JSON.stringify(problems));
+    }
+  }
+}
+
+// ————————————————————————————————————————————————————————————————————————
+// HOOK-URI COMUNE
+// ————————————————————————————————————————————————————————————————————————
+async function runWithGuards(commandName: string, payload: { draft?: string }, init: CursorInit) {
+  // Non-deviation + preflight reguli
+  preflightRules(init);
+
+  // English-only: aplică pe input și pe output
+  const draft = payload.draft ?? "";
+  const enforcedInput = await enforceEnglishOutput(draft, init.language_policy);
+
+  // TODO: Implement executeCommand function
+  // const result = await executeCommand(commandName, { ...payload, draft: enforcedInput });
+  // result.output = await enforceEnglishOutput(result.output ?? "", init.language_policy);
+  // return result;
+  
+  // Placeholder return for now
+  return {
+    input: enforcedInput,
+    output: enforcedInput,
+    command: commandName,
+    status: "guarded"
+  };
+}
 
 // ————————————————————————————————————————————————————————————————————————
 // Utilitare
@@ -138,7 +272,7 @@ function check(action: Action): Verdict {
       if (!isUnderDir(t, DOCS_ROOT)) {
         return forbid(3, `Scriere permisă doar sub ${DOCS_ROOT}`);
       }
-      for (const f of WRITE_FORBIDDEN) {
+      for (const f of Array.from(WRITE_FORBIDDEN)) {
         if (t === path.resolve(f)) {
           return forbid(2, `Țintă interzisă: ${t}`);
         }
@@ -210,7 +344,9 @@ export const CursorAgent = {
       precedence: INIT.precedence.order
         .slice()
         .sort((a, b) => a.level - b.level)
-        .map(o => ({ id: o.id, level: o.level, paths: arrayify(o.path ?? o.paths) }))
+        .map(o => ({ id: o.id, level: o.level, paths: arrayify(o.path ?? o.paths) })),
+      language_policy: INIT.language_policy,
+      preflight: INIT.preflight
     };
   },
 
@@ -219,6 +355,34 @@ export const CursorAgent = {
    */
   guard(action: Action): Verdict {
     return check(action);
+  },
+
+  /**
+   * Hook pentru preflight validation
+   */
+  preflight(): void {
+    preflightRules(INIT);
+  },
+
+  /**
+   * Hook pentru language detection
+   */
+  detectLanguage(text: string): boolean {
+    return isLikelyEnglish(text);
+  },
+
+  /**
+   * Hook pentru language enforcement
+   */
+  async enforceLanguage(text: string): Promise<string> {
+    return enforceEnglishOutput(text, INIT.language_policy);
+  },
+
+  /**
+   * Hook comun pentru rularea cu guard-uri
+   */
+  async runWithGuards(commandName: string, payload: { draft?: string }) {
+    return runWithGuards(commandName, payload, INIT);
   },
 
   /**
@@ -233,7 +397,9 @@ export const CursorAgent = {
       "Nu modifica fișiere read_only. Scrie doar în folderele whitelisted din /cursor/docs.",
       "Aplică branding-ul la export și validează entitlements înainte de funcții gated.",
       "Fiecare generare trebuie parametrizată cu engine-ul 7D (domain, scale, urgency, complexity, resources, application, output).",
-      "Dacă o cerință contrazice legile, oprește-te și explică ce lege ar fi încălcată."
+      "Dacă o cerință contrazice legile, oprește-te și explică ce lege ar fi încălcată.",
+      "Respectă politica de limbă: output-ul trebuie să fie în engleză.",
+      "Validează preflight regulile înainte de orice operație."
     ].join(" ");
   }
 };
@@ -243,3 +409,15 @@ export const CursorAgent = {
 // ————————————————————————————————————————————————————————————————————————
 // const verdict = CursorAgent.guard({ kind: "GENERATE", targetDir: "/cursor/docs/industry_packs_bundle" });
 // console.log(verdict);
+// 
+// // Test preflight
+// try {
+//   CursorAgent.preflight();
+//   console.log("✅ Preflight passed");
+// } catch (e) {
+//   console.error("❌ Preflight failed:", e);
+// }
+// 
+// // Test language detection
+// console.log("EN:", CursorAgent.detectLanguage("This is English text"));
+// console.log("RO:", CursorAgent.detectLanguage("Acesta este text în română"));

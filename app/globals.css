@@ -205,31 +205,17 @@
   }
 }
 
-/* Added glassmorphic utility classes */
-@layer utilities {
+@layer components {
   .glass-effect {
-    background: var(--card);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .glass-effect:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
 
   .glass-strong {
-    background: var(--popover);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    @apply bg-white/8 backdrop-blur-2xl border border-white/15;
   }
 
   .glow-primary {
     box-shadow: 0 0 20px rgba(8, 145, 178, 0.3);
-    transition: box-shadow 0.3s ease;
   }
 
   .glow-primary:hover {
@@ -238,28 +224,18 @@
 
   .glow-accent {
     box-shadow: 0 0 20px rgba(190, 18, 60, 0.3);
-    transition: box-shadow 0.3s ease;
   }
 
   .glow-accent:hover {
     box-shadow: 0 0 30px rgba(190, 18, 60, 0.5);
   }
 
-  .glow-success {
-    box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
-    transition: box-shadow 0.3s ease;
-  }
-
-  .glow-success:hover {
-    box-shadow: 0 0 30px rgba(52, 211, 153, 0.5);
-  }
-
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.6s ease-out;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideUp 0.8s ease-out;
   }
 
   .animate-pulse-glow {
@@ -267,39 +243,18 @@
   }
 
   .animate-bounce-subtle {
-    animation: bounceSubtle 0.6s ease-out;
+    animation: bounceSubtle 2s ease-in-out infinite;
   }
 
-  .loading-shimmer {
+  .animate-shimmer {
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0.1) 100%
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
     );
     background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .border-gradient {
-    border: 1px solid transparent;
-    background: linear-gradient(var(--card), var(--card)) padding-box,
-      linear-gradient(135deg, var(--primary), var(--accent)) border-box;
-  }
-
-  /* Added line-clamp utilities for text truncation */
-  .line-clamp-1 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
+    animation: shimmer 2s infinite;
   }
 
   .line-clamp-2 {
@@ -402,5 +357,75 @@
   *:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+}
+
+/* ======================================================
+   🧬 AI-IDEI™ BACKGROUND SYSTEM - CSS CLASSES
+   ====================================================== */
+
+/* Background Root Container */
+.bg-fixed-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  contain: layout paint style;
+}
+
+/* Matrix Animations Ready State */
+.matrix-animations-ready .bg-fixed-root {
+  opacity: 1;
+}
+
+.matrix-animations-ready .bg-fixed-root > * {
+  transition: opacity 0.5s ease-out;
+}
+
+/* Motion Level Classes */
+.motion-level-auto .bg-fixed-root > * {
+  animation-duration: 1s;
+  transition-duration: 0.3s;
+}
+
+.motion-level-medium .bg-fixed-root > * {
+  animation-duration: 1.5s;
+  transition-duration: 0.5s;
+}
+
+.motion-level-minimal .bg-fixed-root > * {
+  animation-duration: 0.1s;
+  transition-duration: 0.1s;
+}
+
+/* Layer-specific animations */
+.matrix-animations-ready .bg-fixed-root canvas,
+.matrix-animations-ready .bg-fixed-root svg {
+  opacity: 1;
+}
+
+.bg-fixed-root canvas,
+.bg-fixed-root svg {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+
+/* Performance optimizations */
+.bg-fixed-root * {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .bg-fixed-root * {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .motion-level-auto,
+  .motion-level-medium {
+    animation: none !important;
   }
 }

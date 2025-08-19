@@ -32,6 +32,20 @@
       { "id": "templates", "path": "/cursor/forge_v3_dor_dod_temp.txt", "level": 10 }
     ]
   },
+  "language_policy": {
+    "output_language": "en",
+    "translate_non_en_inputs": true,
+    "detect_languages": ["ro", "ru", "en", "fr", "de", "es"],
+    "fail_closed_on_detection_error": true,
+    "style_note": "All public/UI copy, docs, pages, and generated artifacts must be in English; non-English source docs are to be translated to English before writing."
+  },
+  "preflight": {
+    "scan_globs": ["/cursor/forge_v3_*"],
+    "must_exist_min": 5,
+    "compile_rules_index": true,
+    "validate_sections": ["DoR", "DoD", "prompt_standard", "entitlements"],
+    "abort_on_missing_or_conflict": true
+  },
   "instruction_files": [
     {
       "path": "/cursor/forge_v3_rulebook_v1.txt",
@@ -151,15 +165,18 @@
   "commands": {
     "generateArtifact": {
       "uses": ["/cursor/forge_v3_standard_prompt.txt", "/cursor/forge_v3_standard.txt", "/cursor/forge_v3_branding.txt"],
-      "writes_to": ["/cursor/docs/coming_soon", "/cursor/docs/industry_packs_bundle"]
+      "writes_to": ["/cursor/docs/coming_soon", "/cursor/docs/industry_packs_bundle"],
+      "pre_hooks": ["rules.preflight", "language.enforce"]
     },
     "evaluatePrompt": {
       "uses": ["/cursor/forge_v3_standard.txt", "/cursor/forge_v3_runtime_1.txt", "/cursor/forge_v3_runtime_2.txt"],
-      "writes_to": ["/cursor/docs/coming_soon"]
+      "writes_to": ["/cursor/docs/coming_soon"],
+      "pre_hooks": ["rules.preflight", "language.enforce"]
     },
     "exportBundle": {
       "uses": ["*"],
-      "writes_to": ["/cursor/docs/industry_packs_bundle"]
+      "writes_to": ["/cursor/docs/industry_packs_bundle"],
+      "pre_hooks": ["rules.preflight", "language.enforce"]
     },
     "licenseCheck": {
       "uses": ["/cursor/forge_v3_standard_entitlements.txt"],
@@ -181,7 +198,9 @@
     { "id": 8, "text": "Migrațiile se emit doar în /cursor/docs/supabase_migrations." },
     { "id": 9, "text": "Brandingul din forge_v3_branding.txt este obligatoriu la export." },
     { "id": 10, "text": "Respectă parametrizarea 7D. Fără aceasta, artefactul este invalid." },
-    { "id": 11, "text": "Toate prețurile, monedele și afișările financiare folosesc USD ca valută standard." },
-    { "id": 12, "text": "Toate textele, interfețele și documentațiile sunt în limba engleză (en-US)." }
+    { "id": 11, "text": "English-only output. Translate any non-English sources before writing or exporting." },
+    { "id": 12, "text": "Before any task, compile and validate all /cursor/forge_v3_* rules. Abort on mismatch or missing sections (DoR/DoD/specs)." },
+    { "id": 13, "text": "Toate prețurile, monedele și afișările financiare folosesc USD ca valută standard." },
+    { "id": 14, "text": "Toate textele, interfețele și documentațiile sunt în limba engleză (en-US)." }
   ]
 }

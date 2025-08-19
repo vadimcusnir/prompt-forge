@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import BackgroundRoot from "@/components/bg/BackgroundRoot"
 
 interface WaitlistSignup {
   email: string
@@ -58,7 +59,15 @@ export default function ComingSoonPage() {
   if (isSubmitted) {
     return (
       <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
-        <Card className="glass-strong max-w-2xl w-full p-12 text-center animate-fade-in">
+        {/* Background System pentru pagina de confirmare */}
+        <BackgroundRoot 
+          motionLevel="medium"
+          enableMatrix={false}
+          enableQuotes={false}
+          enableFigures={false}
+        />
+        
+        <Card className="glass-strong max-w-2xl w-full p-12 text-center animate-fade-in relative z-10">
           <div className="mb-8">
             <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <div className="w-8 h-8 bg-primary rounded-full"></div>
@@ -91,8 +100,16 @@ export default function ComingSoonPage() {
 
   return (
     <div className="min-h-[100dvh] bg-background">
+      {/* AI-IDEI™ Background System - 8 layere animate */}
+      <BackgroundRoot 
+        motionLevel="auto"
+        enableMatrix={true}
+        enableQuotes={true}
+        enableFigures={false}
+      />
+      
       {/* Header */}
-      <header className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <header className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
@@ -116,7 +133,7 @@ export default function ComingSoonPage() {
       </header>
 
       {/* Hero Section - Optimizat pentru mobil */}
-      <main className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <main className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 sm:col-span-8 sm:col-start-3">
             <div className="glass-effect p-10 rounded-xl text-center animate-fade-in">
@@ -171,7 +188,7 @@ export default function ComingSoonPage() {
       </main>
 
       {/* Footer */}
-      <footer className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-32">
+      <footer className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-32 relative z-10">
         <div className="text-center text-muted-foreground text-sm">
           <p>© PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground transition-colors duration-200">Privacy / Terms</a></p>
         </div>

@@ -1,6 +1,17 @@
 "use client"
 
 import { useEffect, useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
+
+// Dynamic imports pentru componentele animate
+const MatrixTokens = dynamic(() => import('./MatrixTokens'), { 
+  ssr: false,
+  loading: () => null
+})
+const MatrixQuotes = dynamic(() => import('./MatrixQuotes'), { 
+  ssr: false,
+  loading: () => null
+})
 
 interface BackgroundRootProps {
   motionLevel?: 'auto' | 'medium' | 'minimal'
@@ -47,7 +58,17 @@ export default function BackgroundRoot({
         </svg>
       </div>
       
-      {/* L2: Simple Noise Effect - More visible */}
+      {/* L2: Matrix Tokens - Cuvintele care apar și dispar */}
+      {enableMatrix && isClient && (
+        <MatrixTokens motionLevel={motionLevel} />
+      )}
+      
+      {/* L3: Matrix Quotes - Citatele narative */}
+      {enableQuotes && isClient && (
+        <MatrixQuotes motionLevel={motionLevel} />
+      )}
+      
+      {/* L4: Simple Noise Effect - More visible */}
       <div className="absolute inset-0 opacity-25">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <filter id="noise">
@@ -61,7 +82,7 @@ export default function BackgroundRoot({
         </svg>
       </div>
       
-      {/* L3: Subtle Glow Effects - Client-side only */}
+      {/* L5: Subtle Glow Effects - Client-side only */}
       {isClient && (
         <>
           {/* Top glow */}

@@ -1,8 +1,8 @@
 {
   "audit_metadata": {
-    "timestamp": "2025-01-19T22:15:00Z",
-    "commit_hash": "cc9a00e",
-    "branch": "chore/bg-audit-fix",
+    "timestamp": "2025-01-19T22:25:00Z",
+    "commit_hash": "40ce2bf",
+    "branch": "main",
     "profile": "ambient_minimal",
     "auditor": "Background Audit & Fix Agent",
     "spec_version": "CyberHome_SYS I-IV"
@@ -240,6 +240,42 @@
       "description": "Implement proper drift amplitude pentru ambient_minimal",
       "file": "components/bg/MatrixTokens.tsx",
       "status": "APPLIED"
+    },
+    {
+      "fix_id": "FIX_8",
+      "description": "Eliminate log spam with controlled logger",
+      "file": "lib/logger.ts",
+      "status": "APPLIED"
+    },
+    {
+      "fix_id": "FIX_9",
+      "description": "Eliminate re-initializations with throttled ResizeObserver",
+      "file": "hooks/useCanvasSize.ts",
+      "status": "APPLIED"
+    },
+    {
+      "fix_id": "FIX_10",
+      "description": "Stabilize motion level per session",
+      "file": "lib/motion.ts",
+      "status": "APPLIED"
+    },
+    {
+      "fix_id": "FIX_11",
+      "description": "Refactor MatrixTokens to eliminate setState in animation loop",
+      "file": "components/bg/MatrixTokens.tsx",
+      "status": "APPLIED"
+    },
+    {
+      "fix_id": "FIX_12",
+      "description": "Add 100dvh CSS to prevent iOS scroll resize flooding",
+      "file": "app/globals.css",
+      "status": "APPLIED"
+    },
+    {
+      "fix_id": "FIX_13",
+      "description": "Add ESLint no-console rule for production builds",
+      "file": ".eslintrc.json",
+      "status": "APPLIED"
     }
   ],
   "observed_metrics": {
@@ -266,7 +302,7 @@
     "no_layout_shift_from_background": true
   },
   "deployment": {
-    "url": "https://prompt-forge-eoxavx8j4-vadimkusnir.vercel.app",
+    "url": "https://prompt-forge-5zy2lwwpb-vadimkusnir.vercel.app",
     "status": "DEPLOYED",
     "build_status": "SUCCESS"
   },

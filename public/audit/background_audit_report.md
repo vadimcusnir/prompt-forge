@@ -12,12 +12,12 @@ The PromptForge background system has been successfully audited against CyberHom
 
 | Field | Value |
 |-------|-------|
-| **Timestamp** | 2025-01-19T22:15:00Z |
-| **Commit Hash** | `cc9a00e` |
-| **Branch** | `chore/bg-audit-fix` |
+| **Timestamp** | 2025-01-19T22:25:00Z |
+| **Commit Hash** | `40ce2bf` |
+| **Branch** | `main` |
 | **Profile** | `ambient_minimal` |
 | **Spec Version** | CyberHome_SYS I-IV |
-| **Deployment URL** | https://prompt-forge-eoxavx8j4-vadimkusnir.vercel.app |
+| **Deployment URL** | https://prompt-forge-5zy2lwwpb-vadimkusnir.vercel.app |
 
 ---
 
@@ -135,7 +135,7 @@ The PromptForge background system has been successfully audited against CyberHom
 
 ---
 
-## 🛠️ **FIXES APPLIED (7/7)**
+## ��️ **FIXES APPLIED (13/13)**
 
 | Fix ID | Description | File | Status |
 |--------|-------------|------|---------|
@@ -146,6 +146,12 @@ The PromptForge background system has been successfully audited against CyberHom
 | **FIX_5** | No layout shift CSS | `globals.css` | ✅ APPLIED |
 | **FIX_6** | Reduced-motion CSS fallback | `globals.css` | ✅ APPLIED |
 | **FIX_7** | Drift amplitude for ambient_minimal | `MatrixTokens.tsx` | ✅ APPLIED |
+| **FIX_8** | Eliminate log spam with controlled logger | `lib/logger.ts` | ✅ APPLIED |
+| **FIX_9** | Eliminate re-initializations with throttled ResizeObserver | `hooks/useCanvasSize.ts` | ✅ APPLIED |
+| **FIX_10** | Stabilize motion level per session | `lib/motion.ts` | ✅ APPLIED |
+| **FIX_11** | Refactor MatrixTokens to eliminate setState in animation loop | `MatrixTokens.tsx` | ✅ APPLIED |
+| **FIX_12** | Add 100dvh CSS to prevent iOS scroll resize flooding | `globals.css` | ✅ APPLIED |
+| **FIX_13** | Add ESLint no-console rule for production builds | `.eslintrc.json` | ✅ APPLIED |
 
 ---
 

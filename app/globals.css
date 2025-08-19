@@ -171,6 +171,11 @@
     @apply text-foreground;
   }
   
+  /* PROMPTFORGE™ Hero classes pentru viewport stabil */
+  .pf-hero { 
+    min-height: 100dvh; 
+  }
+  
   /* Fallback pentru Safari vechi */
   .pf-hero-legacy { 
     min-height: calc(var(--vh, 1vh) * 100); 
@@ -417,15 +422,152 @@
   backface-visibility: hidden;
 }
 
-/* Reduced motion overrides */
+/* ======================================================
+   🎭 BACKGROUND ANIMATIONS - CSS KEYFRAMES
+   ====================================================== */
+
+/* Grid Drift Animation - Linii care se mișcă ușor */
+@keyframes grid-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-4px, -2px) scale(1.002);
+  }
+  50% {
+    transform: translate(2px, -4px) scale(1);
+  }
+  75% {
+    transform: translate(-2px, 2px) scale(1.002);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.animate-grid-drift {
+  animation: grid-drift 30s ease-in-out infinite; /* Redus de la 15s la 30s */
+  will-change: transform;
+}
+
+/* Noise Float Animation - Efect de plutire subtil */
+@keyframes noise-float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    filter: contrast(1) brightness(1);
+  }
+  33% {
+    transform: translate(2px, -2px) rotate(0.2deg);
+    filter: contrast(1.05) brightness(1.02);
+  }
+  66% {
+    transform: translate(-2px, 2px) rotate(-0.2deg);
+    filter: contrast(0.95) brightness(0.98);
+  }
+}
+
+.animate-noise-float {
+  animation: noise-float 25s ease-in-out infinite; /* Redus de la 12s la 25s */
+  will-change: transform, filter;
+}
+
+/* Glow Pulse Animation - Pulsare pentru glow effects */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.45; /* Mărit de la 0.35 la 0.45 */
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.65; /* Mărit de la 0.50 la 0.65 */
+    transform: scaleY(1.08);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 12s ease-in-out infinite; /* Redus de la 6s la 12s */
+  will-change: opacity, transform;
+}
+
+/* Delayed Glow Pulse pentru bottom glow */
+@keyframes glow-pulse-delayed {
+  0%, 100% {
+    opacity: 0.40; /* Mărit de la 0.30 la 0.40 */
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.60; /* Mărit de la 0.45 la 0.60 */
+    transform: scaleY(1.08);
+  }
+}
+
+.animate-glow-pulse-delayed {
+  animation: glow-pulse-delayed 12s ease-in-out infinite; /* Redus de la 6s la 12s */
+  animation-delay: 6s; /* Mărit delay-ul de la 3s la 6s */
+  will-change: opacity, transform;
+}
+
+/* Reduced motion overrides - Full static fallback when prefers-reduced-motion is on */
 @media (prefers-reduced-motion: reduce) {
   .bg-fixed-root * {
     animation: none !important;
     transition: none !important;
+    transform: none !important;
   }
   
   .motion-level-auto,
-  .motion-level-medium {
+  .motion-level-medium,
+  .motion-level-minimal {
     animation: none !important;
+    transition: none !important;
   }
+  
+  .animate-grid-drift,
+  .animate-noise-float,
+  .animate-glow-pulse,
+  .animate-glow-pulse-delayed {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Ensure all animated elements are static */
+  .matrix-token,
+  .matrix-quote,
+  .background-figure,
+  .micro-ui {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ======================================================
+   🎭 BACKGROUND SYSTEM - FIXED ROOT & LAYOUT
+   ====================================================== */
+
+/* Background root must be fixed, full-bleed: position:fixed; inset:0; pointer-events:none; z-index:0 */
+.bg-fixed-root {
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  contain: layout paint style !important;
+  background: #0a0a0a !important;
+}
+
+/* Main content above bg: z-index:1 */
+main, .main-content, .pf-hero {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* No layout shift: background must not influence layout */
+html, body, #__next {
+  background: #0a0a0a !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* A11y: aria-hidden="true" for decorative layers */
+.bg-fixed-root * {
+  aria-hidden: "true";
 }

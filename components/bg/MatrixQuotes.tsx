@@ -23,6 +23,15 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [activeQuotes, setActiveQuotes] = useState<Quote[]>([])
 
+  // Quote cap enforcement conform specificațiilor CyberHome_SYS
+  const MAX_QUOTES = motionLevel === 'minimal' ? 1 : motionLevel === 'medium' ? 2 : 3
+  const TYPING_SPEED_MS = 50 // [40,60]ms conform spec
+  const QUOTE_IN_MS = 400 // [300,500]ms conform spec
+  const QUOTE_OUT_MS = 1000 // [800,1200]ms conform spec
+  const QUOTE_TOTAL_MS = 6000 // ~6s conform spec
+
+  console.log('MatrixQuotes: Component rendered with motionLevel:', motionLevel, 'MAX_QUOTES:', MAX_QUOTES)
+
   // AI narrative quotes pool - mai scurte și mai subtile
   const quotePool = [
     "Promptul e contractul tău cu viitorul.",
@@ -38,8 +47,11 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
   ]
 
   useEffect(() => {
+    console.log('MatrixQuotes: useEffect triggered, motionLevel:', motionLevel)
+    
     // Early return for minimal motion
     if (motionLevel === 'minimal') {
+      console.log('MatrixQuotes: Minimal motion, returning early')
       return
     }
 
@@ -47,8 +59,8 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
     const initialQuotes: Quote[] = quotePool.map((text, index) => ({
       id: `quote-${index}`,
       text,
-      x: Math.random() * (window.innerWidth - 200), // Reduced width
-      y: Math.random() * (window.innerHeight - 80),  // Reduced height
+      x: Math.random() * (window.innerWidth - 200),
+      y: Math.random() * (window.innerHeight - 80),
       opacity: 0,
       isActive: false,
       isTyping: false,
@@ -57,6 +69,7 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
     }))
 
     setQuotes(initialQuotes)
+    console.log('MatrixQuotes: Initialized quotes:', initialQuotes.length)
 
     // Quote activation cycle
     let quoteIndex = 0
@@ -68,11 +81,19 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
         return
       }
 
+      // Enforce quote cap - never exceed MAX_QUOTES
+      if (activeQuotes.length >= MAX_QUOTES) {
+        console.log('MatrixQuotes: Quote cap reached, skipping activation')
+        return
+      }
+
       const now = Date.now()
-      const minDelay = motionLevel === 'medium' ? 25000 : 20000  // Increased delays
-      const maxDelay = motionLevel === 'medium' ? 35000 : 30000
+      const minDelay = motionLevel === 'medium' ? 8000 : 5000  // Redus delay-urile
+      const maxDelay = motionLevel === 'medium' ? 12000 : 8000
 
       if (now - lastQuoteTime < minDelay) return
+
+      console.log('MatrixQuotes: Activating quote:', quoteIndex, 'active count:', activeQuotes.length)
 
       // Deactivate current quotes
       setActiveQuotes([])
@@ -96,7 +117,7 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
           if (charIndex < nextQuote.text.length) {
             setActiveQuotes(prev => prev.map(q => 
               q.id === nextQuote.id 
-                ? { ...q, currentChar: charIndex + 1, opacity: 0.4 } // Reduced opacity
+                ? { ...q, currentChar: charIndex + 1, opacity: 0.7 } // Mărit opacity pentru vizibilitate
                 : q
             ))
             charIndex++
@@ -104,7 +125,7 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
             // Typing complete
             setActiveQuotes(prev => prev.map(q => 
               q.id === nextQuote.id 
-                ? { ...q, isTyping: false, opacity: 0.4 } // Reduced opacity
+                ? { ...q, isTyping: false, opacity: 0.7 } // Mărit opacity pentru vizibilitate
                 : q
             ))
             clearInterval(typeInterval)
@@ -116,9 +137,9 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
                   ? { ...q, opacity: 0, isActive: false }
                   : q
               ))
-            }, 4000) // Reduced display time to 4s
+            }, 3000) // Redus display time la 3s
           }
-        }, motionLevel === 'medium' ? 80 : 60) // Slower typing speed
+        }, motionLevel === 'medium' ? 60 : 40) // Typing mai rapid
       }
 
       quoteIndex = (quoteIndex + 1) % initialQuotes.length
@@ -129,14 +150,16 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
       setTimeout(activateNextQuote, nextDelay)
     }
 
-    // Start quote cycle
-    const initialDelay = 5000 + Math.random() * 3000 // 5-8s initial delay
+    // Start quote cycle - delay scurt pentru a fi vizibil
+    const initialDelay = 1000 + Math.random() * 1000 // 1-2s initial delay
     const initialTimer = setTimeout(activateNextQuote, initialDelay)
 
     return () => {
       clearTimeout(initialTimer)
     }
   }, [motionLevel])
+
+  console.log('MatrixQuotes: Render state:', { motionLevel, activeQuotes: activeQuotes.length })
 
   // Early return for minimal motion
   if (motionLevel === 'minimal') {
@@ -148,22 +171,22 @@ export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
       {activeQuotes.map(quote => (
         <div
           key={quote.id}
-          className="absolute font-mono text-xs text-teal-400" // Reduced from text-sm to text-xs
+          className="absolute font-mono text-sm text-teal-400" // Mărit font size pentru vizibilitate
           style={{
             left: quote.x,
             top: quote.y,
             opacity: quote.opacity,
             transition: 'opacity 0.3s ease-out',
-            textShadow: '0 0 8px rgba(8, 145, 178, 0.3)', // Reduced shadow
-            maxWidth: '180px', // Reduced from 300px
-            lineHeight: '1.2', // Reduced line height
-            fontSize: '10px' // Explicit small font size
+            textShadow: '0 0 12px rgba(8, 145, 178, 0.5)', // Mărit shadow pentru vizibilitate
+            maxWidth: '250px', // Mărit max width
+            lineHeight: '1.3', // Mărit line height
+            fontSize: '12px' // Mărit font size
           }}
         >
           {quote.text.substring(0, quote.currentChar)}
           {quote.isTyping && (
             <span 
-              className="inline-block w-0.5 h-3 bg-teal-400 ml-1 animate-pulse" // Reduced height from h-4 to h-3
+              className="inline-block w-0.5 h-4 bg-teal-400 ml-1 animate-pulse" // Mărit cursor
               style={{ animationDuration: '1s' }}
             />
           )}

@@ -8,195 +8,231 @@ interface BackgroundFiguresProps {
 
 interface Figure {
   id: string
-  type: 'axis' | 'bar' | 'curve'
+  type: 'axis' | 'bar' | 'curve' | 'dot'
   x: number
   y: number
-  width: number
-  height: number
+  size: number
   opacity: number
+  rotation: number
   color: string
+  isActive: boolean
   animationPhase: number
 }
 
 export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProps) {
-  const svgRef = useRef<SVGSVGElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [figures, setFigures] = useState<Figure[]>([])
-  const animationRef = useRef<number | undefined>(undefined)
 
   useEffect(() => {
-    // Early return for minimal motion
     if (motionLevel === 'minimal') {
       return
     }
 
-    // Initialize figures - mai subtile
+    // Initialize figures with diverse sizes and types
     const initialFigures: Figure[] = [
-      // X-axis
+      // Axe analitice - font mare (L3)
       {
-        id: 'axis-x',
-        type: 'axis',
-        x: 50,
-        y: window.innerHeight - 100,
-        width: window.innerWidth - 100,
-        height: 2,
-        opacity: 0.06, // Reduced from 0.1 to 0.06
-        color: '#0891B2',
-        animationPhase: 0
-      },
-      // Y-axis
-      {
-        id: 'axis-y',
+        id: 'axis-1',
         type: 'axis',
         x: 100,
-        y: 50,
-        width: 2,
-        height: window.innerHeight - 100,
-        opacity: 0.06, // Reduced from 0.1 to 0.06
-        color: '#0891B2',
+        y: 200,
+        size: 120,
+        opacity: 0.15,
+        rotation: 0,
+        color: 'rgba(8, 145, 178, 0.6)',
+        isActive: true,
         animationPhase: 0
       },
-      // Data bars - mai subtile
-      ...Array.from({ length: 4 }, (_, i) => ({ // Reduced from 5 to 4 bars
-        id: `bar-${i}`,
-        type: 'bar' as const,
-        x: 150 + i * 140, // Increased spacing from 120 to 140
-        y: window.innerHeight - 150,
-        width: 50, // Reduced from 60 to 50
-        height: 60 + Math.random() * 80, // Reduced height range
-        opacity: 0.04, // Reduced from 0.08 to 0.04
-        color: '#0891B2',
-        animationPhase: Math.random() * Math.PI * 2
-      })),
-      // Curved line - mai subtil
+      {
+        id: 'axis-2',
+        type: 'axis',
+        x: 300,
+        y: 150,
+        size: 80,
+        opacity: 0.12,
+        rotation: 90,
+        color: 'rgba(190, 18, 60, 0.5)',
+        isActive: true,
+        animationPhase: 0.5
+      },
+      
+      // Bare de date - font mediu (L3)
+      {
+        id: 'bar-1',
+        type: 'bar',
+        x: 150,
+        y: 300,
+        size: 60,
+        opacity: 0.18,
+        rotation: 0,
+        color: 'rgba(8, 145, 178, 0.4)',
+        isActive: true,
+        animationPhase: 0.3
+      },
+      {
+        id: 'bar-2',
+        type: 'bar',
+        x: 250,
+        y: 280,
+        size: 40,
+        opacity: 0.15,
+        rotation: 0,
+        color: 'rgba(190, 18, 60, 0.4)',
+        isActive: true,
+        animationPhase: 0.7
+      },
+      
+      // Curbe matematice - font mic (L3)
       {
         id: 'curve-1',
         type: 'curve',
-        x: 100,
-        y: window.innerHeight - 200,
-        width: window.innerWidth - 200,
-        height: 80, // Reduced from 100 to 80
-        opacity: 0.08, // Reduced from 0.12 to 0.08
-        color: '#BE123C',
-        animationPhase: 0
+        x: 200,
+        y: 100,
+        size: 100,
+        opacity: 0.10,
+        rotation: 45,
+        color: 'rgba(8, 145, 178, 0.3)',
+        isActive: true,
+        animationPhase: 0.2
+      },
+      
+      // Puncte de date - font foarte mic (L3)
+      {
+        id: 'dot-1',
+        type: 'dot',
+        x: 180,
+        y: 180,
+        size: 8,
+        opacity: 0.20,
+        rotation: 0,
+        color: 'rgba(190, 18, 60, 0.6)',
+        isActive: true,
+        animationPhase: 0.8
+      },
+      {
+        id: 'dot-2',
+        type: 'dot',
+        x: 320,
+        y: 220,
+        size: 6,
+        opacity: 0.18,
+        rotation: 0,
+        color: 'rgba(8, 145, 178, 0.5)',
+        isActive: true,
+        animationPhase: 0.4
       }
     ]
 
     setFigures(initialFigures)
 
     // Animation loop
-    let time = 0
-    const animate = (currentTime: number) => {
-      // Check motion level again in case it changed
-      if (motionLevel === 'minimal') {
-        return
-      }
+    let animationId: number
+    let startTime = Date.now()
 
-      const deltaTime = currentTime - time
-      time = currentTime
+    const animate = () => {
+      const currentTime = Date.now()
+      const elapsed = currentTime - startTime
 
       setFigures(prev => prev.map(figure => ({
         ...figure,
-        animationPhase: (figure.animationPhase + deltaTime * 0.0005) % (Math.PI * 2) // Reduced animation speed
+        animationPhase: (elapsed * 0.001 + figure.animationPhase) % 1,
+        rotation: figure.rotation + (motionLevel === 'auto' ? 0.2 : 0.1),
+        opacity: figure.opacity + Math.sin(elapsed * 0.001 + figure.animationPhase * Math.PI * 2) * 0.02
       })))
 
-      animationRef.current = requestAnimationFrame(animate)
+      animationId = requestAnimationFrame(animate)
     }
 
-    // Start animation for non-minimal motion levels
-    if (motionLevel === 'auto' || motionLevel === 'medium') {
-      animationRef.current = requestAnimationFrame(animate)
+    if (motionLevel !== 'minimal') {
+      animate()
     }
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
+      if (animationId) {
+        cancelAnimationFrame(animationId)
       }
     }
   }, [motionLevel])
 
-  // Early return for minimal motion
   if (motionLevel === 'minimal') {
     return null
   }
 
   const renderFigure = (figure: Figure) => {
+    const baseSize = figure.size
+    const animatedSize = baseSize + Math.sin(figure.animationPhase * Math.PI * 2) * 2
+
     switch (figure.type) {
       case 'axis':
         return (
           <line
-            key={figure.id}
             x1={figure.x}
             y1={figure.y}
-            x2={figure.x + figure.width}
-            y2={figure.y + figure.height}
+            x2={figure.x + (figure.rotation === 0 ? animatedSize : 0)}
+            y2={figure.y + (figure.rotation === 90 ? animatedSize : 0)}
             stroke={figure.color}
-            strokeWidth={figure.width > figure.height ? figure.height : figure.width}
+            strokeWidth="2"
             opacity={figure.opacity}
             style={{
-              filter: 'blur(0.5px)',
-              transition: 'opacity 0.3s ease-out'
+              transform: `rotate(${figure.rotation}deg)`,
+              transformOrigin: `${figure.x}px ${figure.y}px`
             }}
           />
         )
-
+      
       case 'bar':
-        const animatedHeight = figure.height + Math.sin(figure.animationPhase) * 6 // Reduced from 10 to 6
         return (
           <rect
-            key={figure.id}
             x={figure.x}
-            y={figure.y - animatedHeight}
-            width={figure.width}
-            height={animatedHeight}
+            y={figure.y - animatedSize}
+            width="8"
+            height={animatedSize}
             fill={figure.color}
             opacity={figure.opacity}
-            style={{
-              filter: 'blur(0.5px)',
-              transition: 'opacity 0.3s ease-out'
-            }}
+            rx="2"
           />
         )
-
+      
       case 'curve':
-        const points = []
-        const segments = 20
-        for (let i = 0; i <= segments; i++) {
-          const x = figure.x + (i / segments) * figure.width
-          const wave = Math.sin(figure.animationPhase + i * 0.3) * 10 // Reduced from 15 to 10
-          const y = figure.y + Math.sin(i * 0.5) * 20 + wave // Reduced from 30 to 20
-          points.push(`${x},${y}`)
-        }
-        
         return (
-          <polyline
-            key={figure.id}
-            points={points.join(' ')}
+          <path
+            d={`M ${figure.x} ${figure.y} Q ${figure.x + animatedSize/2} ${figure.y - animatedSize/2} ${figure.x + animatedSize} ${figure.y}`}
             fill="none"
             stroke={figure.color}
-            strokeWidth="1.5" // Reduced from 2 to 1.5
+            strokeWidth="1.5"
             opacity={figure.opacity}
             style={{
-              filter: 'blur(0.5px)',
-              transition: 'opacity 0.3s ease-out'
+              transform: `rotate(${figure.rotation}deg)`,
+              transformOrigin: `${figure.x}px ${figure.y}px`
             }}
           />
         )
-
+      
+      case 'dot':
+        return (
+          <circle
+            cx={figure.x}
+            cy={figure.y}
+            r={animatedSize / 2}
+            fill={figure.color}
+            opacity={figure.opacity}
+          />
+        )
+      
       default:
         return null
     }
   }
 
   return (
-    <svg
-      ref={svgRef}
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{
-        opacity: 0.6, // Reduced from 0.8 to 0.6
-        transition: 'opacity 0.3s ease-out'
-      }}
-    >
-      {figures.map(renderFigure)}
-    </svg>
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none">
+      <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        {figures.map(figure => (
+          <g key={figure.id}>
+            {renderFigure(figure)}
+          </g>
+        ))}
+      </svg>
+    </div>
   )
 }

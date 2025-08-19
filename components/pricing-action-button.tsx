@@ -33,7 +33,7 @@ export function PricingActionButton({
           size="lg"
         >
           <Mail className="w-4 h-4 mr-2" />
-          Contact Sales
+          Get Custom Quote
         </Button>
 
         {showLeadForm && (

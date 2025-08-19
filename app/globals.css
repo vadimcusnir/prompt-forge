@@ -4,26 +4,31 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* PROMPTFORGE™ Background System - Straturi fixe, fără alb */
+  --pf-bg: #0a0a0a;              /* fundal absolut */
+  --pf-teal: #0891B2;            /* accent rece */
+  --pf-crimson: #BE123C;         /* accent critic */
+  
   /* Updated color tokens for PROMPTFORGE dark glassmorphic theme */
-  --background: #0a0a0a;
+  --background: var(--pf-bg);
   --foreground: #ecfeff;
   --card: rgba(255, 255, 255, 0.08);
   --card-foreground: #ecfeff;
   --popover: rgba(255, 255, 255, 0.12);
   --popover-foreground: #ecfeff;
-  --primary: #164e63;
+  --primary: var(--pf-teal);
   --primary-foreground: #ecfeff;
   --secondary: #475569;
   --secondary-foreground: #ecfeff;
   --muted: rgba(255, 255, 255, 0.4);
   --muted-foreground: #94a3b8;
-  --accent: #be123c;
+  --accent: var(--pf-crimson);
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.15);
   --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(22, 78, 99, 0.5);
+  --ring: rgba(8, 145, 178, 0.5);
   --chart-1: #4f46e5;
   --chart-2: #8b5cf6;
   --chart-3: #ec4899;
@@ -32,9 +37,9 @@
   --radius: 0.75rem;
   --sidebar: rgba(255, 255, 255, 0.05);
   --sidebar-foreground: #ecfeff;
-  --sidebar-primary: #164e63;
+  --sidebar-primary: var(--pf-teal);
   --sidebar-primary-foreground: #ecfeff;
-  --sidebar-accent: #be123c;
+  --sidebar-accent: var(--pf-crimson);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: rgba(255, 255, 255, 0.3);
@@ -42,19 +47,19 @@
 
 .dark {
   /* Dark mode uses same tokens as this is primarily a dark theme app */
-  --background: #0a0a0a;
+  --background: var(--pf-bg);
   --foreground: #ecfeff;
   --card: rgba(255, 255, 255, 0.08);
   --card-foreground: #ecfeff;
   --popover: rgba(255, 255, 255, 0.12);
   --popover-foreground: #ecfeff;
-  --primary: #0891b2;
+  --primary: var(--pf-teal);
   --primary-foreground: #ffffff;
   --secondary: #475569;
   --secondary-foreground: #ecfeff;
   --muted: rgba(255, 255, 255, 0.4);
   --muted-foreground: #94a3b8;
-  --accent: #be123c;
+  --accent: var(--pf-crimson);
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
@@ -68,9 +73,9 @@
   --chart-5: #34d399;
   --sidebar: rgba(255, 255, 255, 0.05);
   --sidebar-foreground: #ecfeff;
-  --sidebar-primary: #0891b2;
+  --sidebar-primary: var(--pf-teal);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #be123c;
+  --sidebar-accent: var(--pf-crimson);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: rgba(255, 255, 255, 0.3);
@@ -101,10 +106,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --color-radius-sm: calc(var(--radius) - 4px);
+  --color-radius-md: calc(var(--radius) - 2px);
+  --color-radius-lg: var(--radius);
+  --color-radius-xl: calc(var(--radius) + 4px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -119,11 +124,84 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  /* PROMPTFORGE™ Background System - Elimină orice alb din user agent */
+  html { 
+    background: var(--pf-bg);
+    height: 100%;
+    overscroll-behavior-y: none;
+  }
+  
+  /* Strat 1 – culoare pură, fixă */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--pf-bg);
+    z-index: -2;
+  }
+  
+  /* Strat 2 – glow discret (sus + jos) + grain anti-banding */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(60% 35% at 50% 0%,
+        color-mix(in oklab, var(--pf-teal) 22%, transparent) 0%,
+        transparent 70%)
+      ,
+      radial-gradient(55% 25% at 50% 100%,
+        color-mix(in oklab, var(--pf-crimson) 16%, transparent) 0%,
+        transparent 70%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><filter id='n'><feTurbulence baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' type='fractalNoise'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.025'/></feComponentTransfer></filter><rect filter='url(%23n)' width='100%' height='100%'/></svg>");
+    background-blend-mode: screen, normal, normal;
+    background-size: auto, auto, 256px 256px;
+    filter: blur(0.5px); /* anti-banding subtil */
+  }
+  
+  /* Containerul rămâne transparent; nu mai apare alb oricât scrollezi */
   body {
-    @apply bg-background text-foreground;
-    /* Added glassmorphic background gradient */
-    background: radial-gradient(ellipse at top, rgba(22, 78, 99, 0.1) 0%, var(--background) 50%);
-    min-height: 100vh;
+    min-height: 100dvh;   /* stabil pe mobil */
+    height: 100%;
+    background: transparent;
+    overscroll-behavior-y: none;
+    @apply text-foreground;
+  }
+  
+  /* Fallback pentru Safari vechi */
+  .pf-hero-legacy { 
+    min-height: calc(var(--vh, 1vh) * 100); 
+  }
+  
+  /* Bara de derulare pe dark (fără strălucire gri pe Windows) */
+  /* WebKit */
+  *::-webkit-scrollbar { 
+    width: 10px; 
+    height: 10px; 
+  }
+  *::-webkit-scrollbar-track { 
+    background: #0b0b0b; 
+  }
+  *::-webkit-scrollbar-thumb { 
+    background: #1e293b; 
+    border-radius: 8px; 
+  }
+  /* Firefox */
+  :root { 
+    scrollbar-color: #1e293b #0b0b0b; 
+    scrollbar-width: thin; 
+  }
+  
+  /* Respectă prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    * { 
+      animation-duration: .001ms !important; 
+      animation-iteration-count: 1 !important; 
+      transition-duration: .01ms !important; 
+    }
   }
 }
 
@@ -150,12 +228,12 @@
   }
 
   .glow-primary {
-    box-shadow: 0 0 20px rgba(22, 78, 99, 0.3);
+    box-shadow: 0 0 20px rgba(8, 145, 178, 0.3);
     transition: box-shadow 0.3s ease;
   }
 
   .glow-primary:hover {
-    box-shadow: 0 0 30px rgba(22, 78, 99, 0.5);
+    box-shadow: 0 0 30px rgba(8, 145, 178, 0.5);
   }
 
   .glow-accent {
@@ -271,10 +349,10 @@
 @keyframes pulseGlow {
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(22, 78, 99, 0.3);
+    box-shadow: 0 0 20px rgba(8, 145, 178, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(22, 78, 99, 0.6);
+    box-shadow: 0 0 40px rgba(8, 145, 178, 0.6);
   }
 }
 
@@ -324,29 +402,5 @@
   *:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    background: radial-gradient(ellipse at top, rgba(22, 78, 99, 0.1) 0%, var(--background) 50%);
-    min-height: 100vh;
-  }
-
-  /* Improved scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
   }
 }

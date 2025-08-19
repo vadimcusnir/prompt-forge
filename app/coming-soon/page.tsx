@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CheckCircle, Clock, Zap, Shield, Users, Rocket } from "lucide-react"
 
 interface WaitlistSignup {
   email: string
@@ -21,6 +20,16 @@ export default function ComingSoonPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  // PROMPTFORGE™ VH fallback pentru Safari vechi
+  useEffect(() => {
+    function setVH() {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
+    setVH();
+    window.addEventListener('resize', setVH, { passive: true });
+    return () => window.removeEventListener('resize', setVH);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,55 +57,49 @@ export default function ComingSoonPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0A0A0A] via-[#0F0F0F] to-[#0A0A0A] flex items-center justify-center p-4">
-        <Card className="glass-effect max-w-2xl w-full p-8 text-center">
-          <div className="mb-6">
-            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-foreground mb-4">
-              Thank you for your interest!
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
+        <Card className="glass-strong max-w-2xl w-full p-12 text-center animate-fade-in">
+          <div className="mb-8">
+            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-8 h-8 bg-primary rounded-full"></div>
+            </div>
+            <h1 className="text-4xl font-heading font-extrabold text-foreground mb-6">
+              You're on the list.
             </h1>
             <p className="text-muted-foreground text-lg">
-              You're now on the waitlist for PROMPTFORGE™ v3.0. 
-              We'll contact you when the application is ready for launch.
+              We'll notify you when PROMPTFORGE™ v3.0 is ready for launch.
             </p>
           </div>
           
-          <div className="space-y-4 text-sm text-muted-foreground">
-            <p>✅ Your email has been securely saved</p>
-            <p>✅ You'll receive updates on development progress</p>
-            <p>✅ You'll have priority access at launch</p>
+          <div className="space-y-4 text-sm text-muted-foreground mb-8">
+            <p>✓ Email securely saved</p>
+            <p>✓ Development updates enabled</p>
+            <p>✓ Priority access granted</p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <Button 
-              onClick={() => setIsSubmitted(false)}
-              variant="outline"
-            >
-              Join with another email
-            </Button>
-            <Button 
-              onClick={() => window.location.href = '/pricing'}
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-            >
-              View Pricing Plans
-            </Button>
-          </div>
+          <Button 
+            onClick={() => setIsSubmitted(false)}
+            variant="outline"
+            className="w-full max-w-md"
+          >
+            Join with another email
+          </Button>
         </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A0A0A] via-[#0F0F0F] to-[#0A0A0A]">
+    <div className="min-h-[100dvh] bg-background">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6">
+      <header className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Zap className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-6 h-6 bg-primary-foreground rounded-sm"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">PROMPTFORGE™</h1>
+              <h1 className="text-2xl font-heading font-bold text-foreground">PROMPTFORGE™</h1>
               <p className="text-sm text-muted-foreground">v3.0</p>
             </div>
           </div>
@@ -105,173 +108,74 @@ export default function ComingSoonPage() {
             <Badge variant="secondary" className="text-xs text-blue-400">
               V3 Content & Education
             </Badge>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => window.location.href = '/pricing'}
-              className="text-cyan-400 border-cyan-400/30 hover:bg-cyan-400/10"
-            >
-              Pricing
-            </Button>
+            <Badge variant="secondary" className="text-xs text-purple-400">
+              V5 Branding
+            </Badge>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <Badge variant="outline" className="mb-4 text-cyan-400 border-cyan-400/30">
-            🚀 Coming Soon
-          </Badge>
-          
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-            Build prompt systems,<br />
-            <span className="text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text">
-              not one-off pieces
-            </span>
-          </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            PROMPTFORGE™ is the operational generator with 50 real modules and a 7‑D engine. 
-            Configure once, export repeatable artifacts in &lt; 60 seconds.
-          </p>
-        </div>
+      {/* Hero Section - Optimizat pentru mobil */}
+      <main className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 sm:col-span-8 sm:col-start-3">
+            <div className="glass-effect p-10 rounded-xl text-center animate-fade-in">
+              <h1 className="text-4xl font-heading font-extrabold text-foreground mb-6">
+                PROMPTFORGE™ is coming.
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Build prompt systems, not throwaway lines.
+              </p>
+              
+              {/* Formular optimizat cu grid 12 coloane */}
+              <form onSubmit={handleSubmit} className="mt-8 grid grid-cols-12 gap-3">
+                <Input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Full Name"
+                  className="col-span-12 sm:col-span-8 glass-effect p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  required
+                />
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="your@email.com"
+                  className="col-span-12 sm:col-span-8 glass-effect p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  required
+                />
+                <Button 
+                  type="submit" 
+                  className="col-span-12 sm:col-span-4 btn btn-primary glow-primary h-12 min-h-[48px] transform transition-all duration-200 ease-out hover:-translate-y-[1px] hover:scale-[1.01]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : "Join the Waitlist"}
+                </Button>
+              </form>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
-          <Card className="glass-effect p-6 text-center">
-            <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-6 h-6 text-cyan-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              50 V1-V7 Modules
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              Modules as micro-services with semantic vectors and specialized categories
-            </p>
-          </Card>
-
-          <Card className="glass-effect p-6 text-center">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Rocket className="w-6 h-6 text-blue-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              7-D Engine
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              Domain, Scale, Urgency, Complexity, Resources, Application, Output
-            </p>
-          </Card>
-
-          <Card className="glass-effect p-6 text-center">
-            <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Users className="w-6 h-6 text-green-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Industry Packs
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              E-commerce, Education, FinTech with industry-specific jargon and KPIs
-            </p>
-          </Card>
-        </div>
-
-        {/* Waitlist Form */}
-        <Card className="glass-effect max-w-2xl mx-auto p-8">
-          <div className="text-center mb-6">
-            <Clock className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">
-              Be the first to test
-            </h2>
-            <p className="text-muted-foreground">
-              Join the waitlist for priority access at launch
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="text-foreground">
-                Full Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter your full name"
-                className="glass-effect border-border/50 focus:border-cyan-400/50"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="text-foreground">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Enter your email address"
-                className="glass-effect border-border/50 focus:border-cyan-400/50"
-                required
-              />
-            </div>
-
-            {error && (
-              <p className="text-red-400 text-sm text-center">{error}</p>
-            )}
-
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-              disabled={isLoading}
-            >
-              {isLoading ? "Processing..." : "Join the waitlist"}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              By joining the waitlist, you agree to receive notifications about 
-              PROMPTFORGE™ v3.0 development progress.
-            </p>
-          </div>
-        </Card>
-
-        {/* Stats */}
-        <div className="text-center mt-16">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="text-3xl font-bold text-cyan-400 mb-2">50+</div>
-              <div className="text-muted-foreground">V1-V7 Modules</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-400 mb-2">7D</div>
-              <div className="text-muted-foreground">Parametric Engine</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">3</div>
-              <div className="text-muted-foreground">Industry Packs</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-purple-400 mb-2">&lt;60s</div>
-              <div className="text-muted-foreground">Generation Time</div>
+              {/* Proof-bar */}
+              <div className="glass-strong mt-5 px-4 py-2 text-sm text-muted-foreground rounded-md flex justify-between animate-slide-up">
+                <span>TTA &lt; 60s</span>
+                <span>AI Score ≥ 80</span>
+                <span>Export .md/.json/.pdf</span>
+              </div>
+              
+              {/* Mesaj anti-spam */}
+              <p className="mt-2 text-sm text-muted-foreground">
+                Zero spam. Doar notificări de lansare.
+              </p>
             </div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 mt-16">
+      <footer className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-32">
         <div className="text-center text-muted-foreground text-sm">
-          <p>© 2025 PROMPTFORGE™ v3.0 - The Future of AI Prompt Engineering</p>
-          <p className="mt-2">
-            A forging system: input context, output calibrated artifact. Not "beautiful text". Execution.
-          </p>
+          <p>© PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground transition-colors duration-200">Privacy / Terms</a></p>
         </div>
       </footer>
     </div>
-  )
+    )
 }

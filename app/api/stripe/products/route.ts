@@ -38,22 +38,25 @@ export async function GET() {
     }
 
     // Format products for frontend
-    const formattedProducts = products.map(product => ({
-      id: product.id,
-      productId: product.stripe_product_id,
-      name: product.name,
-      description: product.description,
-      prices: product.stripe_prices
-        .filter(price => price.active)
-        .map(price => ({
-          id: price.id,
-          priceId: price.stripe_price_id,
-          amount: price.unit_amount,
-          currency: price.currency,
-          recurring: price.recurring,
-          formattedPrice: formatPrice(price.unit_amount, price.currency, price.recurring)
+    const formattedProducts = products
+      .filter(product => product.stripe_product_id) // Filter out products without product ID
+      .map(product => ({
+        id: product.id,
+        productId: product.stripe_product_id!,
+        name: product.name,
+        description: product.description,
+        prices: product.stripe_prices
+          .filter(price => price.active && price.stripe_price_id && price.unit_amount !== null) // Filter out invalid prices
+          .map(price => ({
+            id: price.id,
+            priceId: price.stripe_price_id!,
+            amount: price.unit_amount!,
+            currency: price.currency || 'usd',
+            recurring: price.recurring,
+            formattedPrice: formatPrice(price.unit_amount!, price.currency || 'usd', price.recurring)
+          }))
         }))
-    }))
+        .filter(product => product.prices.length > 0) // Only return products with valid prices
 
     return NextResponse.json({
       products: formattedProducts

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Star, Zap, Crown, Building2, ShoppingCart, GraduationCap, CreditCard } from 'lucide-react'
+import { Check, Star, Zap, Crown, Building2, ShoppingCart, GraduationCap, CreditCard, Mail } from 'lucide-react'
 import { PricingActionButton } from './pricing-action-button'
 
 interface Price {
@@ -48,7 +48,11 @@ export default function PricingPage() {
     }
   }
 
-  const getPlanIcon = (productId: string) => {
+  const getPlanIcon = (productId: string | null | undefined) => {
+    if (typeof productId !== 'string') {
+      return <Star className="w-6 h-6 text-gray-500" />
+    }
+    
     switch (productId) {
       case 'promptforge_free':
         return <Star className="w-6 h-6 text-yellow-500" />
@@ -69,7 +73,11 @@ export default function PricingPage() {
     }
   }
 
-  const getPlanFeatures = (productId: string) => {
+  const getPlanFeatures = (productId: string | null | undefined) => {
+    if (typeof productId !== 'string') {
+      return []
+    }
+    
     switch (productId) {
       case 'promptforge_free':
         return [
@@ -140,12 +148,12 @@ export default function PricingPage() {
     }
   }
 
-  const isSubscription = (productId: string) => {
-    return productId.startsWith('promptforge_')
+  const isSubscription = (productId: string | null | undefined) => {
+    return typeof productId === 'string' && productId.startsWith('promptforge_')
   }
 
-  const isIndustryPack = (productId: string) => {
-    return productId.startsWith('industry_')
+  const isIndustryPack = (productId: string | null | undefined) => {
+    return typeof productId === 'string' && productId.startsWith('industry_')
   }
 
   if (loading) {
@@ -171,8 +179,20 @@ export default function PricingPage() {
     )
   }
 
-  const subscriptionPlans = products.filter(p => isSubscription(p))
-  const industryPacks = products.filter(p => isIndustryPack(p))
+  // Reordonez planurile: Free -> Creator -> Pro -> Enterprise
+  const subscriptionPlans = products
+    .filter(p => isSubscription(p.productId))
+    .sort((a, b) => {
+      const order = {
+        'promptforge_free': 1,
+        'promptforge_creator': 2,
+        'promptforge_pro': 3,
+        'promptforge_enterprise': 4
+      }
+      return (order[a.productId as keyof typeof order] || 999) - (order[b.productId as keyof typeof order] || 999)
+    })
+  
+  const industryPacks = products.filter(p => isIndustryPack(p.productId))
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -190,18 +210,30 @@ export default function PricingPage() {
         {/* Subscription Plans */}
         <div className="mb-20">
           <h2 className="text-2xl font-bold font-[var(--font-heading)] mb-8 text-center text-foreground">
-            Subscription Plans
+            Choose Your Plan
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
+            Start with our free plan and scale up as your needs grow. All plans include our core AI prompt generation capabilities.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-7xl mx-auto">
             {subscriptionPlans.map((product) => {
               const price = product.prices[0]
               if (!price) return null
 
               return (
-                <Card key={product.id} className="relative overflow-hidden glass-effect hover:glow-primary transition-all duration-300">
+                <Card key={product.id} className={`relative overflow-hidden glass-effect hover:glow-primary transition-all duration-300 ${
+                  product.productId === 'promptforge_enterprise' 
+                    ? 'ring-2 ring-purple-500/50 scale-105' 
+                    : ''
+                }`}>
                   {product.productId === 'promptforge_pro' && (
                     <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-sm font-medium rounded-bl-lg">
                       Most Popular
+                    </div>
+                  )}
+                  {product.productId === 'promptforge_enterprise' && (
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 text-sm font-medium rounded-bl-lg">
+                      Enterprise
                     </div>
                   )}
                   <CardHeader className="text-center pb-4">
@@ -220,8 +252,11 @@ export default function PricingPage() {
                       <span className="text-4xl font-bold text-foreground">
                         {price.formattedPrice}
                       </span>
-                      {price.amount === 0 && (
+                      {price.amount === 0 && product.productId === 'promptforge_free' && (
                         <span className="text-muted-foreground ml-2">forever</span>
+                      )}
+                      {price.amount === 0 && product.productId === 'promptforge_enterprise' && (
+                        <span className="text-muted-foreground ml-2">Custom Pricing</span>
                       )}
                     </div>
                     <ul className="space-y-3 text-sm text-muted-foreground">
@@ -249,11 +284,14 @@ export default function PricingPage() {
         </div>
 
         {/* Industry Packs */}
-        <div>
+        <div className="mb-20">
           <h2 className="text-2xl font-bold font-[var(--font-heading)] mb-8 text-center text-foreground">
-            Industry-Specific Packs
+            Industry-Specific Solutions
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
+            Specialized prompt collections designed for specific industries and use cases.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 max-w-6xl mx-auto">
             {industryPacks.map((product) => {
               const price = product.prices[0]
               if (!price) return null
@@ -305,14 +343,21 @@ export default function PricingPage() {
         {/* FAQ Section */}
         <div className="mt-20 text-center">
           <h3 className="text-2xl font-bold font-[var(--font-heading)] mb-4 text-foreground">
-            Questions about pricing?
+            Need Help Choosing?
           </h3>
-          <p className="text-muted-foreground mb-6">
-            Contact our sales team for custom enterprise solutions
+          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+            Not sure which plan is right for you? Our team is here to help you find the perfect solution for your needs.
           </p>
-          <Button variant="outline" size="lg">
-            Contact Sales
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button variant="outline" size="lg">
+              <Mail className="w-4 h-4 mr-2" />
+              Contact Sales
+            </Button>
+            <Button variant="outline" size="lg">
+              <GraduationCap className="w-4 h-4 mr-2" />
+              View Documentation
+            </Button>
+          </div>
         </div>
       </div>
     </div>

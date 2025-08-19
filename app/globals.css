@@ -552,11 +552,10 @@
   z-index: 0 !important;
   pointer-events: none !important;
   contain: layout paint style !important;
-  background: #0a0a0a !important;
 }
 
 /* Main content above bg: z-index:1 */
-main, .main-content, .pf-hero {
+main {
   position: relative !important;
   z-index: 1 !important;
 }
@@ -564,20 +563,12 @@ main, .main-content, .pf-hero {
 /* No layout shift: background must not influence layout */
 html, body, #__next {
   background: #0a0a0a !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* A11y: aria-hidden="true" for decorative layers */
-.bg-fixed-root * {
-  aria-hidden: "true";
 }
 
 /* Reduced motion overrides - Full static fallback when prefers-reduced-motion is on */
 @media (prefers-reduced-motion: reduce) {
-  .bg-anim, .matrix-token, .matrix-quote, .background-figure, .micro-ui {
+  .bg-anim, .matrix-token, .matrix-quote {
     animation: none !important;
     transition: none !important;
-    transform: none !important;
   }
 }

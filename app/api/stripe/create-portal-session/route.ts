@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-
-// Verifică dacă variabila de mediu există
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined')
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia'
-})
+import { getStripe } from '@/lib/stripe'
+import type Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    // Safe import Stripe - evaluat doar când ruta rulează
+    const stripe = getStripe()
+    
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

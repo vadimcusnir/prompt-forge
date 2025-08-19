@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { headers } from 'next/headers'
-
-// Verifică dacă variabilele de mediu există
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined')
-}
-
-if (!process.env.STRIPE_WEBHOOK_SECRET) {
-  throw new Error('STRIPE_WEBHOOK_SECRET is not defined')
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia'
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+import { getStripe, getStripeWebhookSecret } from '@/lib/stripe'
+import type Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
   try {
+    // Safe import Stripe - evaluat doar când ruta rulează
+    const stripe = getStripe()
+    const webhookSecret = getStripeWebhookSecret()
+    
     const body = await req.text()
     const headersList = await headers()
     const signature = headersList.get('stripe-signature')

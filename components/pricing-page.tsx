@@ -30,12 +30,17 @@ export default function PricingPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchProducts()
+    // Lazy fetch - doar când componenta e montată pe client
+    if (typeof window !== 'undefined') {
+      fetchProducts()
+    }
   }, [])
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/stripe/products')
+      const response = await fetch('/api/stripe/products', {
+        cache: 'no-store' // Previne cache-ul la build time
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch products')
       }

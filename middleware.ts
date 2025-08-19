@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Verifică dacă coming soon este activat
+  // Verifică dacă coming soon este activat din environment variable
   const comingSoonEnabled = process.env.COMING_SOON === 'true'
   
   // Dacă coming soon nu este activat, lasă request-ul să continue normal

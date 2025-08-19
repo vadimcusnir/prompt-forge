@@ -36,18 +36,55 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Actualizează setarea în database
-    const { data: updatedSetting, error } = await supabase
+    // Mai întâi verifică dacă setarea există
+    const { data: existingSetting, error: checkError } = await supabase
       .from('site_settings')
-      .upsert({
-        key: 'coming_soon',
-        value: { enabled, message: `PROMPTFORGE™ v3.0 - ${enabled ? 'Coming Soon' : 'Live'}` }
-      })
-      .select()
+      .select('id')
+      .eq('key', 'coming_soon')
       .single()
 
-    if (error) {
-      console.error('Error updating site setting:', error)
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing setting:', checkError)
+      return NextResponse.json(
+        { success: false, message: 'Eroare la verificarea setării existente' },
+        { status: 500 }
+      )
+    }
+
+    let updatedSetting
+    let updateError
+
+    if (existingSetting) {
+      // Update setarea existentă
+      const { data, error } = await supabase
+        .from('site_settings')
+        .update({
+          value: { enabled, message: `PROMPTFORGE™ v3.0 - ${enabled ? 'Coming Soon' : 'Live'}` },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingSetting.id)
+        .select()
+        .single()
+
+      updatedSetting = data
+      updateError = error
+    } else {
+      // Creează setarea nouă
+      const { data, error } = await supabase
+        .from('site_settings')
+        .insert([{
+          key: 'coming_soon',
+          value: { enabled, message: `PROMPTFORGE™ v3.0 - ${enabled ? 'Coming Soon' : 'Live'}` }
+        }])
+        .select()
+        .single()
+
+      updatedSetting = data
+      updateError = error
+    }
+
+    if (updateError) {
+      console.error('Error updating site setting:', updateError)
       return NextResponse.json(
         { success: false, message: 'Eroare la actualizarea setării' },
         { status: 500 }

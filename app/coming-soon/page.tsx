@@ -38,7 +38,7 @@ export default function ComingSoonPage() {
       
       setIsSubmitted(true)
     } catch (err) {
-      setError("Eroare la înscrierea în waitlist. Încearcă din nou.")
+      setError("Error joining the waitlist. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -51,18 +51,18 @@ export default function ComingSoonPage() {
           <div className="mb-6">
             <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-foreground mb-4">
-              Mulțumim pentru interes!
+              Thank you for your interest!
             </h1>
             <p className="text-muted-foreground text-lg">
-              Ești pe lista de așteptare pentru PROMPTFORGE™ v3.0. 
-              Te vom contacta când aplicația va fi gata de lansare.
+              You're now on the waitlist for PROMPTFORGE™ v3.0. 
+              We'll contact you when the application is ready for launch.
             </p>
           </div>
           
           <div className="space-y-4 text-sm text-muted-foreground">
-            <p>✅ Email-ul tău a fost salvat în siguranță</p>
-            <p>✅ Vei primi notificări despre progresul dezvoltării</p>
-            <p>✅ Vei avea acces prioritar la lansare</p>
+            <p>✅ Your email has been securely saved</p>
+            <p>✅ You'll receive updates on development progress</p>
+            <p>✅ You'll have priority access at launch</p>
           </div>
           
           <Button 
@@ -70,7 +70,7 @@ export default function ComingSoonPage() {
             className="mt-6"
             variant="outline"
           >
-            Înscrie alt email
+            Join with another email
           </Button>
         </Card>
       </div>
@@ -102,19 +102,19 @@ export default function ComingSoonPage() {
       <main className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <Badge variant="outline" className="mb-4 text-cyan-400 border-cyan-400/30">
-            🚀 Lansare în curând
+            🚀 Coming Soon
           </Badge>
           
           <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-            Construiești sisteme de prompturi,<br />
+            Build prompt systems,<br />
             <span className="text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text">
-              nu piese de unică folosință
+              not one-off pieces
             </span>
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            PROMPTFORGE™ este generatorul operațional cu 50 module reale și un engine 7‑D. 
-            Configurezi o dată, exporți artefacte repetabile în &lt; 60 secunde.
+            PROMPTFORGE™ is the operational generator with 50 real modules and a 7‑D engine. 
+            Configure once, export repeatable artifacts in &lt; 60 seconds.
           </p>
         </div>
 
@@ -125,10 +125,10 @@ export default function ComingSoonPage() {
               <Shield className="w-6 h-6 text-cyan-400" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              50 Module V1-V7
+              50 V1-V7 Modules
             </h3>
             <p className="text-muted-foreground text-sm">
-              Module ca micro-servicii cu vectori semantici și categorii specializate
+              Modules as micro-services with semantic vectors and specialized categories
             </p>
           </Card>
 
@@ -137,7 +137,7 @@ export default function ComingSoonPage() {
               <Rocket className="w-6 h-6 text-blue-400" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              Engine 7-D
+              7-D Engine
             </h3>
             <p className="text-muted-foreground text-sm">
               Domain, Scale, Urgency, Complexity, Resources, Application, Output
@@ -152,7 +152,7 @@ export default function ComingSoonPage() {
               Industry Packs
             </h3>
             <p className="text-muted-foreground text-sm">
-              E-commerce, Education, FinTech cu jargon și KPI-uri specifice
+              E-commerce, Education, FinTech with industry-specific jargon and KPIs
             </p>
           </Card>
         </div>
@@ -162,24 +162,24 @@ export default function ComingSoonPage() {
           <div className="text-center mb-6">
             <Clock className="w-12 h-12 text-amber-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              Fii primul care testează
+              Be the first to test
             </h2>
             <p className="text-muted-foreground">
-              Înscrie-te în lista de așteptare pentru acces prioritar la lansare
+              Join the waitlist for priority access at launch
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="name" className="text-foreground">
-                Nume complet
+                Full Name
               </Label>
               <Input
                 id="name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Introdu numele tău"
+                placeholder="Enter your full name"
                 className="glass-effect border-border/50 focus:border-cyan-400/50"
                 required
               />
@@ -194,7 +194,7 @@ export default function ComingSoonPage() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Introdu email-ul tău"
+                placeholder="Enter your email address"
                 className="glass-effect border-border/50 focus:border-cyan-400/50"
                 required
               />
@@ -209,14 +209,14 @@ export default function ComingSoonPage() {
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
               disabled={isLoading}
             >
-              {isLoading ? "Se procesează..." : "Înscrie-mă în waitlist"}
+              {isLoading ? "Processing..." : "Join the waitlist"}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-muted-foreground">
-              Prin înscrierea în waitlist, ești de acord să primești notificări despre 
-              progresul dezvoltării PROMPTFORGE™ v3.0.
+              By joining the waitlist, you agree to receive notifications about 
+              PROMPTFORGE™ v3.0 development progress.
             </p>
           </div>
         </Card>
@@ -226,11 +226,11 @@ export default function ComingSoonPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="text-3xl font-bold text-cyan-400 mb-2">50+</div>
-              <div className="text-muted-foreground">Module V1-V7</div>
+              <div className="text-muted-foreground">V1-V7 Modules</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-blue-400 mb-2">7D</div>
-              <div className="text-muted-foreground">Engine Parametric</div>
+              <div className="text-muted-foreground">Parametric Engine</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-green-400 mb-2">3</div>
@@ -238,7 +238,7 @@ export default function ComingSoonPage() {
             </div>
             <div>
               <div className="text-3xl font-bold text-purple-400 mb-2">&lt;60s</div>
-              <div className="text-muted-foreground">Timp de generare</div>
+              <div className="text-muted-foreground">Generation Time</div>
             </div>
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function ComingSoonPage() {
         <div className="text-center text-muted-foreground text-sm">
           <p>© 2025 PROMPTFORGE™ v3.0 - The Future of AI Prompt Engineering</p>
           <p className="mt-2">
-            Un sistem de forjă: intră contextul, iese artefactul calibrat. Nu "texte frumoase". Execuție.
+            A forging system: input context, output calibrated artifact. Not "beautiful text". Execution.
           </p>
         </div>
       </footer>

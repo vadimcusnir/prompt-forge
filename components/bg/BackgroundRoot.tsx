@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { getDensity } from '@/lib/bg.routes'
+import { getMotionLevel } from '@/lib/motion'
 import GridLines from './GridLines'
 import NoiseLayer from './NoiseLayer'
 import MatrixTokens from './MatrixTokens'
-// (opțional) import BackgroundFigures, MatrixQuote
 
 export default function BackgroundRoot({ 
   profile = 'ambient_minimal', 
@@ -27,16 +27,15 @@ export default function BackgroundRoot({
   }, [])
   
   const density = useMemo(() => getDensity({ routeKey }), [routeKey])
+  const motionLevel = useMemo(() => getMotionLevel(), []) // FIX: Adaug motionLevel
 
   return (
     <div className="bg-fixed-root" aria-hidden="true">
-      <GridLines/>
-      <NoiseLayer/>
+      <GridLines motionLevel={motionLevel} /> {/* FIX: Trimite motionLevel */}
+      <NoiseLayer motionLevel={motionLevel} /> {/* FIX: Trimite motionLevel */}
       {ready && (
         <>
           <MatrixTokens density={density} />
-          {/* profile==='full' && <BackgroundFigures/> */}
-          {/* profile==='full' && <MatrixQuote/>  */}
         </>
       )}
     </div>

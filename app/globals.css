@@ -549,8 +549,8 @@
   position: fixed !important;
   inset: 0 !important;
   height: 100dvh !important;
-  pointer-events: none !important;
   z-index: 0 !important;
+  pointer-events: none !important;
   contain: layout paint style !important;
   background: #0a0a0a !important;
 }

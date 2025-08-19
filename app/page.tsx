@@ -48,6 +48,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       {/* AI-IDEI™ Background System - 8 layere animate */}
       <BackgroundRoot 
+        profile="ambient_minimal"
+        routeKey="/"
         motionLevel="auto"
         enableMatrix={true}
         enableQuotes={true}

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { getMotionLevel } from '@/lib/motion'
+import { getDensity, getMaxQuotes, isBackgroundEnabled } from '@/lib/bg.routes'
 
 // Dynamic imports pentru componentele animate
 const MatrixTokens = dynamic(() => import('./MatrixTokens'), { 
@@ -23,6 +24,8 @@ const MicroUI = dynamic(() => import('./MicroUI'), {
 })
 
 interface BackgroundRootProps {
+  profile?: 'ambient_minimal' | 'full'
+  routeKey?: string
   motionLevel?: 'auto' | 'medium' | 'minimal'
   enableMatrix?: boolean
   enableQuotes?: boolean
@@ -31,6 +34,8 @@ interface BackgroundRootProps {
 }
 
 export default function BackgroundRoot({
+  profile = 'ambient_minimal',
+  routeKey,
   motionLevel: propMotionLevel,
   enableMatrix = true,
   enableQuotes = true,
@@ -43,6 +48,11 @@ export default function BackgroundRoot({
 
   // Motion level stabil - calculează o singură dată per sesiune
   const motion = useMemo(() => getMotionLevel(), [])
+  
+  // Route-based configuration
+  const density = useMemo(() => getDensity({ routeKey }), [routeKey])
+  const maxQuotes = useMemo(() => getMaxQuotes({ routeKey }), [routeKey])
+  const isEnabled = useMemo(() => isBackgroundEnabled({ routeKey }), [routeKey])
 
   useEffect(() => {
     setIsClient(true)
@@ -65,6 +75,11 @@ export default function BackgroundRoot({
     }
   }, [])
 
+  // Early return if background is disabled for this route
+  if (!isEnabled) {
+    return null
+  }
+
   // Render immediately on both server and client
   return (
     <div 
@@ -78,7 +93,7 @@ export default function BackgroundRoot({
       {/* L0: Base Canvas - Static (#0a0a0a) */}
       <div className="absolute inset-0 bg-[#0a0a0a]" />
       
-      {/* L1: Grid Lines - Cu animație CSS pentru drift */}
+      {/* L1: Grid Lines - Cu animație CSS pentru drift - STATIC, mereu vizibil */}
       <div className="absolute inset-0 opacity-[0.25] animate-grid-drift">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -92,7 +107,7 @@ export default function BackgroundRoot({
       
       {/* L2: Matrix Tokens - Cuvintele care apar și dispar (font mic - L2) */}
       {enableMatrix && isClient && ready && (
-        <MatrixTokens motionLevel={motion} density={24} ready={ready} />
+        <MatrixTokens motionLevel={motion} density={density} ready={ready} />
       )}
       
       {/* L3: Background Figures - Profunzime analitică cu SVG (font mediu - L3) */}
@@ -100,12 +115,12 @@ export default function BackgroundRoot({
         <BackgroundFigures motionLevel={motion} />
       )}
       
-      {/* L4: Matrix Quotes - Citatele narative (font mare - L4) */}
-      {enableQuotes && isClient && ready && (
-        <MatrixQuotes motionLevel={motion} />
+      {/* L4: Matrix Quotes - Citatele narative (font mare - L4) - opțional pe rute */}
+      {enableQuotes && maxQuotes > 0 && isClient && ready && (
+        <MatrixQuotes motionLevel={motion} maxQuotes={maxQuotes} />
       )}
       
-      {/* L5: Noise Effect - Cu animație subtilă */}
+      {/* L5: Noise Effect - Cu animație subtilă - STATIC, mereu vizibil */}
       <div className="absolute inset-0 opacity-[0.30] animate-noise-float">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <filter id="noise">

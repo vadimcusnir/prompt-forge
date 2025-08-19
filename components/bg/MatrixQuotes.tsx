@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 
 interface MatrixQuotesProps {
   motionLevel: 'auto' | 'medium' | 'minimal'
+  maxQuotes?: number
 }
 
 interface Quote {
@@ -18,13 +19,13 @@ interface Quote {
   typeTimer: number
 }
 
-export default function MatrixQuotes({ motionLevel }: MatrixQuotesProps) {
+export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuotesProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [activeQuotes, setActiveQuotes] = useState<Quote[]>([])
 
   // Quote cap enforcement conform specificațiilor CyberHome_SYS
-  const MAX_QUOTES = motionLevel === 'minimal' ? 1 : motionLevel === 'medium' ? 2 : 3
+  const MAX_QUOTES = maxQuotes || (motionLevel === 'minimal' ? 1 : motionLevel === 'medium' ? 2 : 3)
   const TYPING_SPEED_MS = 50 // [40,60]ms conform spec
   const QUOTE_IN_MS = 400 // [300,500]ms conform spec
   const QUOTE_OUT_MS = 1000 // [800,1200]ms conform spec

@@ -24,15 +24,15 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const tokensRef = useRef<Token[]>([])
 
-  // AI metric tokens pool
+  // AI metric tokens pool - mai scurte și mai subtile
   const tokenPool = [
-    'prompt', 'context', 'semantic', 'vector', 'embedding', 'token', 'chunk',
-    'similarity', 'cosine', 'euclidean', 'manhattan', 'jaccard', 'dice',
-    'precision', 'recall', 'f1', 'accuracy', 'bleu', 'rouge', 'bert',
-    'gpt', 'llm', 'transformer', 'attention', 'multihead', 'positional',
-    'activation', 'relu', 'sigmoid', 'tanh', 'softmax', 'dropout',
-    'batch', 'epoch', 'gradient', 'backprop', 'optimizer', 'adam',
-    'momentum', 'learning_rate', 'loss', 'cross_entropy', 'mse', 'mae'
+    'prompt', 'ctx', 'sem', 'vec', 'emb', 'tok', 'chunk',
+    'sim', 'cos', 'euc', 'man', 'jac', 'dice',
+    'prec', 'rec', 'f1', 'acc', 'bleu', 'rouge', 'bert',
+    'gpt', 'llm', 'trans', 'attn', 'multi', 'pos',
+    'act', 'relu', 'sig', 'tanh', 'soft', 'drop',
+    'batch', 'epoch', 'grad', 'back', 'opt', 'adam',
+    'mom', 'lr', 'loss', 'ce', 'mse', 'mae'
   ]
 
   useEffect(() => {
@@ -58,13 +58,13 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Token configuration
+    // Token configuration - mai subtile
     const tokenConfig = {
-      density: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 15 : 25,
-      maxTokens: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 20 : 30,
-      spawnDelay: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 400 : 200,
-      glitchInterval: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 5000 : 3000,
-      driftSpeed: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.8 : 1.2
+      density: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 8 : 12, // Reduced density
+      maxTokens: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 12 : 18, // Reduced max tokens
+      spawnDelay: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 600 : 400, // Increased spawn delay
+      glitchInterval: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 8000 : 6000, // Increased glitch interval
+      driftSpeed: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.6 : 0.8 // Reduced drift speed
     }
 
     let time = 0
@@ -87,9 +87,9 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
         text: tokenPool[Math.floor(Math.random() * tokenPool.length)],
         x: Math.random() * dimensions.width,
         y: Math.random() * dimensions.height,
-        opacity: 0.3 + Math.random() * 0.4,
-        driftX: (Math.random() - 0.5) * 2,
-        driftY: (Math.random() - 0.5) * 2,
+        opacity: 0.15 + Math.random() * 0.25, // Reduced opacity range
+        driftX: (Math.random() - 0.5) * 1.5, // Reduced drift range
+        driftY: (Math.random() - 0.5) * 1.5,
         glitchTimer: Math.random() * tokenConfig.glitchInterval,
         isGlitching: false
       }
@@ -105,10 +105,10 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
         token.y += token.driftY * deltaTime * 0.001 * tokenConfig.driftSpeed
 
         // Wrap around edges
-        if (token.x < -100) token.x = dimensions.width + 100
-        if (token.x > dimensions.width + 100) token.x = -100
-        if (token.y < -50) token.y = dimensions.height + 50
-        if (token.y > dimensions.height + 50) token.y = -50
+        if (token.x < -80) token.x = dimensions.width + 80 // Reduced wrap distance
+        if (token.x > dimensions.width + 80) token.x = -80
+        if (token.y < -40) token.y = dimensions.height + 40
+        if (token.y > dimensions.height + 40) token.y = -40
 
         // Glitch effect
         token.glitchTimer -= deltaTime
@@ -119,7 +119,7 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
           // Reset glitch after short duration
           setTimeout(() => {
             token.isGlitching = false
-          }, 50 + Math.random() * 50)
+          }, 30 + Math.random() * 30) // Reduced glitch duration
         }
       })
     }
@@ -134,13 +134,13 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
         // Glitch effect
         if (token.isGlitching) {
           ctx.fillStyle = `rgba(190, 18, 60, ${token.opacity})` // Crimson for glitch
-          ctx.shadowColor = 'rgba(190, 18, 60, 0.5)'
-          ctx.shadowBlur = 10
+          ctx.shadowColor = 'rgba(190, 18, 60, 0.3)' // Reduced shadow
+          ctx.shadowBlur = 6 // Reduced blur
         } else {
           ctx.fillStyle = `rgba(8, 145, 178, ${token.opacity})` // Teal normal
         }
 
-        ctx.font = '12px "JetBrains Mono", monospace'
+        ctx.font = '9px "JetBrains Mono", monospace' // Reduced font size from 12px to 9px
         ctx.textAlign = 'left'
         ctx.textBaseline = 'top'
         
@@ -194,7 +194,7 @@ export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
       style={{
-        opacity: 0.6,
+        opacity: 0.4, // Reduced from 0.6 to 0.4
         transition: 'opacity 0.3s ease-out'
       }}
     />

@@ -34,12 +34,12 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Grid configuration
+    // Grid configuration - mai subtile
     const gridConfig = {
-      spacing: 80,
-      opacity: motionLevel === 'minimal' ? 0.02 : 0.04,
-      driftSpeed: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.5 : 1.0,
-      driftRange: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 1 : 2
+      spacing: 100, // Increased from 80 to 100 for more subtle appearance
+      opacity: motionLevel === 'minimal' ? 0.01 : 0.02, // Reduced opacity
+      driftSpeed: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.3 : 0.6, // Reduced drift speed
+      driftRange: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.5 : 1.0 // Reduced drift range
     }
 
     let time = 0
@@ -84,7 +84,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
     config: any
   ) => {
     ctx.strokeStyle = `rgba(8, 145, 178, ${config.opacity})`
-    ctx.lineWidth = 0.5
+    ctx.lineWidth = 0.3 // Reduced from 0.5 to 0.3
 
     // Vertical lines
     for (let x = 0; x <= dims.width; x += config.spacing) {
@@ -110,7 +110,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
     drift: number
   ) => {
     ctx.strokeStyle = `rgba(8, 145, 178, ${config.opacity})`
-    ctx.lineWidth = 0.5
+    ctx.lineWidth = 0.3 // Reduced from 0.5 to 0.3
 
     // Vertical lines cu drift
     for (let x = 0; x <= dims.width; x += config.spacing) {
@@ -136,7 +136,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
       style={{
-        opacity: motionLevel === 'minimal' ? 0.02 : 0.04,
+        opacity: motionLevel === 'minimal' ? 0.01 : 0.02, // Reduced opacity
         transition: 'opacity 0.3s ease-out'
       }}
     />

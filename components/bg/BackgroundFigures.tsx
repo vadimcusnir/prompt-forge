@@ -29,7 +29,7 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
       return
     }
 
-    // Initialize figures
+    // Initialize figures - mai subtile
     const initialFigures: Figure[] = [
       // X-axis
       {
@@ -39,7 +39,7 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
         y: window.innerHeight - 100,
         width: window.innerWidth - 100,
         height: 2,
-        opacity: 0.1,
+        opacity: 0.06, // Reduced from 0.1 to 0.06
         color: '#0891B2',
         animationPhase: 0
       },
@@ -51,31 +51,31 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
         y: 50,
         width: 2,
         height: window.innerHeight - 100,
-        opacity: 0.1,
+        opacity: 0.06, // Reduced from 0.1 to 0.06
         color: '#0891B2',
         animationPhase: 0
       },
-      // Data bars
-      ...Array.from({ length: 5 }, (_, i) => ({
+      // Data bars - mai subtile
+      ...Array.from({ length: 4 }, (_, i) => ({ // Reduced from 5 to 4 bars
         id: `bar-${i}`,
         type: 'bar' as const,
-        x: 150 + i * 120,
+        x: 150 + i * 140, // Increased spacing from 120 to 140
         y: window.innerHeight - 150,
-        width: 60,
-        height: 80 + Math.random() * 120,
-        opacity: 0.08,
+        width: 50, // Reduced from 60 to 50
+        height: 60 + Math.random() * 80, // Reduced height range
+        opacity: 0.04, // Reduced from 0.08 to 0.04
         color: '#0891B2',
         animationPhase: Math.random() * Math.PI * 2
       })),
-      // Curved line
+      // Curved line - mai subtil
       {
         id: 'curve-1',
         type: 'curve',
         x: 100,
         y: window.innerHeight - 200,
         width: window.innerWidth - 200,
-        height: 100,
-        opacity: 0.12,
+        height: 80, // Reduced from 100 to 80
+        opacity: 0.08, // Reduced from 0.12 to 0.08
         color: '#BE123C',
         animationPhase: 0
       }
@@ -96,7 +96,7 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
 
       setFigures(prev => prev.map(figure => ({
         ...figure,
-        animationPhase: (figure.animationPhase + deltaTime * 0.001) % (Math.PI * 2)
+        animationPhase: (figure.animationPhase + deltaTime * 0.0005) % (Math.PI * 2) // Reduced animation speed
       })))
 
       animationRef.current = requestAnimationFrame(animate)
@@ -140,7 +140,7 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
         )
 
       case 'bar':
-        const animatedHeight = figure.height + Math.sin(figure.animationPhase) * 10
+        const animatedHeight = figure.height + Math.sin(figure.animationPhase) * 6 // Reduced from 10 to 6
         return (
           <rect
             key={figure.id}
@@ -162,8 +162,8 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
         const segments = 20
         for (let i = 0; i <= segments; i++) {
           const x = figure.x + (i / segments) * figure.width
-          const wave = Math.sin(figure.animationPhase + i * 0.3) * 15
-          const y = figure.y + Math.sin(i * 0.5) * 30 + wave
+          const wave = Math.sin(figure.animationPhase + i * 0.3) * 10 // Reduced from 15 to 10
+          const y = figure.y + Math.sin(i * 0.5) * 20 + wave // Reduced from 30 to 20
           points.push(`${x},${y}`)
         }
         
@@ -173,7 +173,7 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
             points={points.join(' ')}
             fill="none"
             stroke={figure.color}
-            strokeWidth="2"
+            strokeWidth="1.5" // Reduced from 2 to 1.5
             opacity={figure.opacity}
             style={{
               filter: 'blur(0.5px)',
@@ -192,7 +192,7 @@ export default function BackgroundFigures({ motionLevel }: BackgroundFiguresProp
       ref={svgRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
       style={{
-        opacity: 0.8,
+        opacity: 0.6, // Reduced from 0.8 to 0.6
         transition: 'opacity 0.3s ease-out'
       }}
     >

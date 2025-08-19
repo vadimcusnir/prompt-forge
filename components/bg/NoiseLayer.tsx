@@ -28,11 +28,11 @@ export default function NoiseLayer({ motionLevel }: NoiseLayerProps) {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Noise configuration
+    // Noise configuration - mai subtil
     const noiseConfig = {
-      opacity: motionLevel === 'minimal' ? 0.015 : 0.025,
+      opacity: motionLevel === 'minimal' ? 0.008 : 0.015, // Reduced opacity
       grainSize: 1,
-      animationSpeed: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.3 : 0.6
+      animationSpeed: motionLevel === 'minimal' ? 0 : motionLevel === 'medium' ? 0.2 : 0.4 // Reduced animation speed
     }
 
     // Generate noise pattern
@@ -64,9 +64,9 @@ export default function NoiseLayer({ motionLevel }: NoiseLayerProps) {
       // Animated noise cu subtle movement
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       
-      // Subtle movement based on time
-      const offsetX = Math.sin(time * 0.0005 * noiseConfig.animationSpeed) * 2
-      const offsetY = Math.cos(time * 0.0003 * noiseConfig.animationSpeed) * 2
+      // Subtle movement based on time - mai subtil
+      const offsetX = Math.sin(time * 0.0003 * noiseConfig.animationSpeed) * 1 // Reduced from 2 to 1
+      const offsetY = Math.cos(time * 0.0002 * noiseConfig.animationSpeed) * 1 // Reduced from 2 to 1
       
       ctx.putImageData(noisePattern, offsetX, offsetY)
       
@@ -93,7 +93,7 @@ export default function NoiseLayer({ motionLevel }: NoiseLayerProps) {
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
       style={{
-        opacity: motionLevel === 'minimal' ? 0.015 : 0.025,
+        opacity: motionLevel === 'minimal' ? 0.008 : 0.015, // Reduced opacity
         transition: 'opacity 0.3s ease-out',
         mixBlendMode: 'overlay'
       }}

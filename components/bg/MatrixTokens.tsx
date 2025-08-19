@@ -1,299 +1,118 @@
-"use client"
+import React, { useEffect, useMemo, useRef } from 'react';
+import { dbg } from '@/lib/logger';
 
-import { useEffect, useRef, useState } from 'react'
+type MotionLevel = 'auto'|'medium'|'minimal';
+type Props = { motionLevel?: MotionLevel; density?: number; ready?: boolean };
 
-interface MatrixTokensProps {
-  motionLevel: 'auto' | 'medium' | 'minimal'
+function createTokens(count: number, width: number, height: number) {
+  // Creează o listă fixă, independentă de render
+  const tokens = new Array(count).fill(0).map(() => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * 0.08,   // drift foarte mic
+    vy: (Math.random() - 0.5) * 0.08,
+    life: 12000 + Math.random() * 6000
+  }));
+  return tokens;
 }
 
-interface Token {
-  id: string
-  text: string
-  x: number
-  y: number
-  opacity: number
-  driftX: number
-  driftY: number
-  glitchTimer: number
-  isGlitching: boolean
-  lifePhase: number // 0 = spawning, 1 = active, 2 = fading
-  spawnTime: number
-  fadeStartTime: number
-}
+const MatrixTokens = React.memo(({ motionLevel = 'auto', density = 24, ready = false }: Props) => {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 
-export default function MatrixTokens({ motionLevel }: MatrixTokensProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number | undefined>(undefined)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const tokensRef = useRef<Token[]>([])
+  // Inițializează dimensiunile fără să reintri în bucle
+  const { w, h } = (() => {
+    const el = rootRef.current;
+    return { w: el ? el.clientWidth : 0, h: el ? el.clientHeight : 0 };
+  })();
 
-  // Verifică dacă animațiile sunt blocate de sistem
-  const isMotionReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const tokenCount = Math.max(0, density);
+  const tokensRef = useRef<ReturnType<typeof createTokens> | null>(null);
+  const rafRef = useRef<number>(0);
+  const initedRef = useRef(false);
 
-  console.log('MatrixTokens: Component rendered with motionLevel:', motionLevel, 'isMotionReduced:', isMotionReduced)
-
-  // AI metric tokens pool - extins pentru mai multă varietate
-  const tokenPool = [
-    'prompt', 'ctx', 'sem', 'vec', 'emb', 'tok', 'chunk',
-    'sim', 'cos', 'euc', 'man', 'jac', 'dice',
-    'prec', 'rec', 'f1', 'acc', 'bleu', 'rouge', 'bert',
-    'gpt', 'llm', 'trans', 'attn', 'multi', 'pos',
-    'act', 'relu', 'sig', 'tanh', 'soft', 'drop',
-    'batch', 'epoch', 'grad', 'back', 'opt', 'adam',
-    'mom', 'lr', 'loss', 'ce', 'mse', 'mae',
-    'rnn', 'lstm', 'gru', 'cnn', 'pool', 'conv',
-    'norm', 'batch', 'layer', 'drop', 'reg', 'l1',
-    'l2', 'adam', 'sgd', 'momentum', 'nesterov', 'rmsprop',
-    'transformer', 'attention', 'self-attn', 'cross-attn',
-    'positional', 'embedding', 'tokenization', 'subword',
-    'bpe', 'wordpiece', 'sentencepiece', 'vocabulary',
-    'corpus', 'dataset', 'training', 'validation', 'test',
-    'overfitting', 'underfitting', 'generalization', 'bias',
-    'variance', 'ensemble', 'bagging', 'boosting', 'stacking'
-  ]
-
+  // Mount o singură dată canvasul
   useEffect(() => {
-    console.log('MatrixTokens: useEffect triggered, motionLevel:', motionLevel, 'dimensions:', dimensions)
-    
-    // Verifică dacă animațiile sunt blocate de sistem
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      console.log('MatrixTokens: Motion reduced by system, skipping animations')
-      return
-    }
-    
-    // Early return for minimal motion
-    if (motionLevel === 'minimal') {
-      console.log('MatrixTokens: Minimal motion, returning early')
-      return
-    }
-    
-    const canvas = canvasRef.current
-    if (!canvas) {
-      console.log('MatrixTokens: No canvas ref')
-      return
-    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      console.log('MatrixTokens: No canvas context')
-      return
-    }
-
-    console.log('MatrixTokens: Canvas setup complete, dimensions:', dimensions)
-
-    // Set canvas dimensions
-    const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect()
-      const width = rect.width || window.innerWidth
-      const height = rect.height || window.innerHeight
-      
-      console.log('MatrixTokens: Resizing canvas to:', width, 'x', height)
-      
-      canvas.width = width * window.devicePixelRatio
-      canvas.height = height * window.devicePixelRatio
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-      
-      setDimensions({ width, height })
-    }
-
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
-    
-    // Forțează o dimensiune minimă dacă canvas-ul nu are dimensiuni
-    if (dimensions.width === 0 || dimensions.height === 0) {
-      console.log('MatrixTokens: Forcing default dimensions')
-      setDimensions({ width: window.innerWidth, height: window.innerHeight })
-    }
-
-    // Token configuration - conform specificațiilor CyberHome_SYS
-    const tokenConfig = {
-      maxTokens: motionLevel === 'minimal' ? 15 : motionLevel === 'medium' ? 25 : 35,
-      spawnDelay: Math.random() * 700 + 100, // [100,800]ms random conform spec
-      tokensPerBeat: motionLevel === 'minimal' ? 2 : motionLevel === 'medium' ? 3 : 4,
-      spawnDuration: 200, // ms pentru spawn
-      activeDuration: 3000, // ms pentru starea activă
-      fadeDuration: 6000, // ms pentru fade-out
-      glitchInterval: motionLevel === 'minimal' ? 5000 : motionLevel === 'medium' ? 3500 : 2000,
-      driftSpeed: motionLevel === 'minimal' ? 0.3 : motionLevel === 'medium' ? 0.5 : 0.8, // ±2-3px pentru ambient_minimal
-      driftAmplitude: motionLevel === 'minimal' ? 2.5 : motionLevel === 'medium' ? 3.0 : 4.0 // Conform spec ambient_minimal
-    }
-
-    let lastSpawnTime = Date.now()
-    let time = 0
-
-    // Spawn new tokens with proper random delay [100,800]ms
-    const spawnTokens = () => {
-      const now = Date.now()
-      if (now - lastSpawnTime < tokenConfig.spawnDelay) return
-
-      console.log('MatrixTokens: Spawning tokens, current count:', tokensRef.current.length, 'spawnDelay:', tokenConfig.spawnDelay)
-
-      // Spawn tokens per beat
-      for (let i = 0; i < tokenConfig.tokensPerBeat; i++) {
-        if (tokensRef.current.length >= tokenConfig.maxTokens) continue
-
-        const token: Token = {
-          id: Math.random().toString(36).substr(2, 9),
-          text: tokenPool[Math.floor(Math.random() * tokenPool.length)],
-          x: Math.random() * dimensions.width, // Poziționare aleatorie pe toată suprafața
-          y: Math.random() * dimensions.height,
-          opacity: 0,
-          driftX: (Math.random() - 0.5) * tokenConfig.driftAmplitude, // Conform spec ±2-3px
-          driftY: (Math.random() - 0.5) * tokenConfig.driftAmplitude, // Conform spec ±2-3px
-          glitchTimer: Math.random() * tokenConfig.glitchInterval,
-          isGlitching: false,
-          lifePhase: 0, // Spawning
-          spawnTime: now,
-          fadeStartTime: now + tokenConfig.spawnDuration + tokenConfig.activeDuration
-        }
-
-        tokensRef.current.push(token)
-        console.log('MatrixTokens: Spawned token:', token.text, 'at', token.x, token.y)
-      }
-
-      // Reset spawn delay for next cycle
-      lastSpawnTime = now
-      tokenConfig.spawnDelay = Math.random() * 700 + 100 // [100,800]ms random
-    }
-
-    // Update token states and positions
-    const updateTokens = (deltaTime: number) => {
-      const now = Date.now()
-      
-      tokensRef.current.forEach((token, index) => {
-        // Update life phases
-        if (token.lifePhase === 0 && now - token.spawnTime >= tokenConfig.spawnDuration) {
-          token.lifePhase = 1 // Active
-        } else if (token.lifePhase === 1 && now >= token.fadeStartTime) {
-          token.lifePhase = 2 // Fading
-        }
-
-        // Update opacity based on life phase
-        if (token.lifePhase === 0) {
-          // Spawning: fade in
-          token.opacity = Math.min(1.0, (now - token.spawnTime) / tokenConfig.spawnDuration * 1.0)
-        } else if (token.lifePhase === 1) {
-          // Active: full opacity
-          token.opacity = 1.0
-        } else if (token.lifePhase === 2) {
-          // Fading: fade out over 2.5x longer duration
-          const fadeProgress = (now - token.fadeStartTime) / tokenConfig.fadeDuration
-          token.opacity = Math.max(0, 1.0 * (1 - fadeProgress))
-        }
-
-        // Drift movement only when active
-        if (token.lifePhase === 1) {
-          token.x += token.driftX * deltaTime * 0.001 * tokenConfig.driftSpeed
-          token.y += token.driftY * deltaTime * 0.001 * tokenConfig.driftSpeed
-
-          // Wrap around edges
-          if (token.x < -80) token.x = dimensions.width + 80
-          if (token.x > dimensions.width + 80) token.x = -80
-          if (token.y < -40) token.y = dimensions.height + 40
-          if (token.y > dimensions.height + 40) token.y = -40
-        }
-
-        // Glitch effect
-        token.glitchTimer -= deltaTime
-        if (token.glitchTimer <= 0) {
-          token.isGlitching = true
-          token.glitchTimer = Math.random() * tokenConfig.glitchInterval
-          
-          setTimeout(() => {
-            token.isGlitching = false
-          }, 50 + Math.random() * 50)
-        }
-      })
-
-      // Remove dead tokens
-      tokensRef.current = tokensRef.current.filter(token => 
-        token.lifePhase !== 2 || token.opacity > 0
-      )
-    }
-
-    // Render tokens
-    const renderTokens = () => {
-      ctx.clearRect(0, 0, dimensions.width, dimensions.height)
-      
-      if (tokensRef.current.length === 0) {
-        console.log('MatrixTokens: No tokens to render')
-        return
-      }
-      
-      console.log('MatrixTokens: Rendering', tokensRef.current.length, 'tokens')
-      
-      tokensRef.current.forEach((token, index) => {
-        if (token.opacity <= 0) return
-
-        ctx.save()
-        
-        // Glitch effect
-        if (token.isGlitching) {
-          ctx.fillStyle = `rgba(190, 18, 60, ${token.opacity})`
-          ctx.shadowColor = 'rgba(190, 18, 60, 0.8)'
-          ctx.shadowBlur = 12
-        } else {
-          ctx.fillStyle = `rgba(8, 145, 178, ${token.opacity})`
-          ctx.shadowColor = 'rgba(8, 145, 178, 0.6)'
-          ctx.shadowBlur = 8
-        }
-
-        ctx.font = '12px "JetBrains Mono", monospace'
-        ctx.textAlign = 'left'
-        ctx.textBaseline = 'top'
-        
-        ctx.fillText(token.text, token.x, token.y)
-        
-        // Debug: desenează un cerc mic pentru a vedea poziția
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.arc(token.x, token.y, 2, 0, 2 * Math.PI)
-        ctx.stroke()
-        
-        ctx.restore()
-      })
-    }
-
-    const animate = (currentTime: number) => {
-      const deltaTime = currentTime - time
-      time = currentTime
-
-      // Spawn tokens in heartbeat rhythm
-      spawnTokens()
-
-      // Update and render
-      updateTokens(deltaTime)
-      renderTokens()
-
-      // Debug: log la fiecare 60 de frame-uri (aproximativ o dată pe secundă)
-      if (Math.floor(currentTime / 1000) % 1 === 0 && Math.floor(currentTime / 16.67) % 60 === 0) {
-        console.log('MatrixTokens: Animation frame, tokens:', tokensRef.current.length, 'deltaTime:', deltaTime)
-      }
-
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    // Pornește animația imediat
-    animationRef.current = requestAnimationFrame(animate)
-
+    ctxRef.current = ctx;
+    initedRef.current = true;
+    dbg.log('MatrixTokens: init once, motionLevel:', motionLevel);
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-      window.removeEventListener('resize', resizeCanvas)
-    }
-  }, [motionLevel, dimensions])
+      cancelAnimationFrame(rafRef.current);
+      ctxRef.current = null;
+      initedRef.current = false;
+    };
+    // deps goale: nu reintegra la fiecare render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Nu mai verifică motionLevel - renderizează întotdeauna
+  // Resize canvas doar când dimensiunile S-AU SCHIMBAT real
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = ctxRef.current;
+    if (!canvas || !ctx || !initedRef.current) return;
+    const cw = Math.max(1, Math.round(w * dpr));
+    const ch = Math.max(1, Math.round(h * dpr));
+    if (canvas.width === cw && canvas.height === ch) return;
+
+    canvas.width = cw; canvas.height = ch;
+    canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dbg.log('MatrixTokens: canvas resized', { w, h, dpr });
+  }, [w, h, dpr]);
+
+  // Generează tokenii doar când:
+  // 1) ești ready
+  // 2) ai dimensiuni non-zero
+  // 3) s-a schimbat density
+  useEffect(() => {
+    if (!ready || !w || !h) return;
+    if (tokenCount === 0) {
+      tokensRef.current = null; // nimic de randat => niciun rAF
+      dbg.log('MatrixTokens: empty set, skip raf loop');
+      return;
+    }
+    tokensRef.current = createTokens(tokenCount, w, h);
+    dbg.log('MatrixTokens: tokens created:', tokenCount);
+  }, [ready, w, h, tokenCount]);
+
+  // Loop de desen – NU folosi setState, nu loga pe frame
+  useEffect(() => {
+    if (!ready || !tokensRef.current || !ctxRef.current) return;
+    let last = performance.now();
+
+    const tick = (now: number) => {
+      const dt = now - last; last = now;
+      const ctx = ctxRef.current!;
+      const tokens = tokensRef.current!;
+      ctx.clearRect(0, 0, w, h);
+
+      for (const t of tokens) {
+        t.x += t.vx * dt * 0.06; // foarte lent
+        t.y += t.vy * dt * 0.06;
+        if (t.x < 0) t.x = w; if (t.x > w) t.x = 0;
+        if (t.y < 0) t.y = h; if (t.y > h) t.y = 0;
+        ctx.globalAlpha = 0.8;
+        ctx.fillRect(t.x, t.y, 1, 1);
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [ready, w, h]);
+
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{
-        opacity: 1.0,
-        transition: 'opacity 0.3s ease-out'
-      }}
-    />
-  )
-}
+    <div ref={rootRef} className="bg-anim absolute inset-0">
+      <canvas ref={canvasRef} />
+    </div>
+  );
+});
+
+export default MatrixTokens;

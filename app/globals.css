@@ -548,6 +548,7 @@
 .bg-fixed-root {
   position: fixed !important;
   inset: 0 !important;
+  height: 100dvh !important;
   pointer-events: none !important;
   z-index: 0 !important;
   contain: layout paint style !important;
@@ -570,4 +571,13 @@ html, body, #__next {
 /* A11y: aria-hidden="true" for decorative layers */
 .bg-fixed-root * {
   aria-hidden: "true";
+}
+
+/* Reduced motion overrides - Full static fallback when prefers-reduced-motion is on */
+@media (prefers-reduced-motion: reduce) {
+  .bg-anim, .matrix-token, .matrix-quote, .background-figure, .micro-ui {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 }

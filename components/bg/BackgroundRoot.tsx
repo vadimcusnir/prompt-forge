@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { getMotionLevel } from '@/lib/motion'
 
 // Dynamic imports pentru componentele animate
 const MatrixTokens = dynamic(() => import('./MatrixTokens'), { 
@@ -30,24 +31,25 @@ interface BackgroundRootProps {
 }
 
 export default function BackgroundRoot({
-  motionLevel = 'auto',
+  motionLevel: propMotionLevel,
   enableMatrix = true,
   enableQuotes = true,
   enableFigures = true,
   enableMicroUI = true
 }: BackgroundRootProps) {
   const [isClient, setIsClient] = useState(false)
-  const [isAnimationsReady, setIsAnimationsReady] = useState(false)
+  const [ready, setReady] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Motion level stabil - calculează o singură dată per sesiune
+  const motion = useMemo(() => getMotionLevel(), [])
+
   useEffect(() => {
-    console.log('BackgroundRoot: useEffect triggered, motionLevel:', motionLevel)
     setIsClient(true)
     
     // Gate all motion behind .matrix-animations-ready (activate only after CSS+JS complete)
     const enableAnimations = () => {
-      console.log('BackgroundRoot: Enabling animations after CSS+JS ready')
-      setIsAnimationsReady(true)
+      setReady(true)
       document.documentElement.classList.add('matrix-animations-ready')
     }
     
@@ -61,9 +63,7 @@ export default function BackgroundRoot({
     return () => {
       document.documentElement.classList.remove('matrix-animations-ready')
     }
-  }, [motionLevel])
-
-  console.log('BackgroundRoot: Render state:', { isClient, isAnimationsReady, motionLevel })
+  }, [])
 
   // Render immediately on both server and client
   return (
@@ -91,18 +91,18 @@ export default function BackgroundRoot({
       </div>
       
       {/* L2: Matrix Tokens - Cuvintele care apar și dispar (font mic - L2) */}
-      {enableMatrix && isClient && isAnimationsReady && (
-        <MatrixTokens motionLevel={motionLevel} />
+      {enableMatrix && isClient && ready && (
+        <MatrixTokens motionLevel={motion} density={24} ready={ready} />
       )}
       
       {/* L3: Background Figures - Profunzime analitică cu SVG (font mediu - L3) */}
-      {enableFigures && isClient && isAnimationsReady && (
-        <BackgroundFigures motionLevel={motionLevel} />
+      {enableFigures && isClient && ready && (
+        <BackgroundFigures motionLevel={motion} />
       )}
       
       {/* L4: Matrix Quotes - Citatele narative (font mare - L4) */}
-      {enableQuotes && isClient && isAnimationsReady && (
-        <MatrixQuotes motionLevel={motionLevel} />
+      {enableQuotes && isClient && ready && (
+        <MatrixQuotes motionLevel={motion} />
       )}
       
       {/* L5: Noise Effect - Cu animație subtilă */}
@@ -123,8 +123,8 @@ export default function BackgroundRoot({
       {/* Acest layer este gestionat de componenta principală */}
       
       {/* L7: Micro-UI - Feedback interactiv (font foarte mic - L7) */}
-      {enableMicroUI && isClient && isAnimationsReady && (
-        <MicroUI motionLevel={motionLevel} />
+      {enableMicroUI && isClient && ready && (
+        <MicroUI motionLevel={motion} />
       )}
       
       {/* L5: Glow Effects - Cu animație pulsantă */}

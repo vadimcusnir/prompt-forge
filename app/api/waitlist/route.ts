@@ -1,102 +1,134 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// TODO: Import Supabase client when configured
-// import { createClient } from '@supabase/supabase-js'
-
 export async function POST(request: NextRequest) {
   try {
+    // Verifică dacă Supabase este configurat
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase not configured')
+      return NextResponse.json(
+        { success: false, message: 'Supabase nu este configurat' },
+        { status: 500 }
+      )
+    }
+
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+
     const body = await request.json()
     const { email, name } = body
 
-    // Validare input
     if (!email || !name) {
       return NextResponse.json(
-        { error: 'Email și numele sunt obligatorii' },
+        { success: false, message: 'Email și numele sunt obligatorii' },
         { status: 400 }
       )
     }
 
-    // Validare email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Format email invalid' },
+        { success: false, message: 'Format email invalid' },
         { status: 400 }
       )
     }
 
-    // TODO: Implement Supabase integration
-    // const supabase = createClient(
-    //   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    //   process.env.SUPABASE_SERVICE_ROLE_KEY!
-    // )
+    // Verifică dacă email-ul există deja
+    const { data: existingUser, error: checkError } = await supabase
+      .from('waitlist_signups')
+      .select('id')
+      .eq('email', email)
+      .single()
 
-    // // Verifică dacă email-ul există deja
-    // const { data: existing } = await supabase
-    //   .from('waitlist_signups')
-    //   .select('id')
-    //   .eq('email', email)
-    //   .single()
-
-    // if (existing) {
-    //   return NextResponse.json(
-    //     { error: 'Acest email este deja înscris în waitlist' },
-    //     { status: 409 }
-    //   )
-    // }
-
-    // // Inserează în waitlist
-    // const { data, error } = await supabase
-    //   .from('waitlist_signups')
-    //   .insert([
-    //     {
-    //       email,
-    //       name,
-    //       org_id: null, // TODO: Set org_id when auth is implemented
-    //       created_at: new Date().toISOString()
-    //     }
-    //   ])
-    //   .select()
-
-    // if (error) {
-    //   console.error('Supabase error:', error)
-    //   return NextResponse.json(
-    //     { error: 'Eroare la salvarea în database' },
-    //     { status: 500 }
-    //   )
-    // }
-
-    // Simulate successful insertion for now
-    const mockData = {
-      id: 'mock-uuid-' + Date.now(),
-      email,
-      name,
-      created_at: new Date().toISOString()
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing user:', checkError)
+      return NextResponse.json(
+        { success: false, message: 'Eroare la verificarea utilizatorului' },
+        { status: 500 }
+      )
     }
 
-    // Log pentru debugging
-    console.log('Waitlist signup:', mockData)
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, message: 'Acest email este deja înscris în waitlist' },
+        { status: 409 }
+      )
+    }
 
+    // Inserează utilizatorul nou
+    const { data: newUser, error: insertError } = await supabase
+      .from('waitlist_signups')
+      .insert([{ email, name }])
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('Error inserting user:', insertError)
+      return NextResponse.json(
+        { success: false, message: 'Eroare la înscrierea în waitlist' },
+        { status: 500 }
+      )
+    }
+
+    console.log('Waitlist signup successful:', newUser)
     return NextResponse.json({
       success: true,
-      message: 'Înscriere reușită în waitlist',
-      data: mockData
+      message: 'Înscriere reușită în waitlist!',
+      data: newUser
     })
 
   } catch (error) {
-    console.error('Waitlist API error:', error)
+    console.error('Unexpected error:', error)
     return NextResponse.json(
-      { error: 'Eroare internă a serverului' },
+      { success: false, message: 'Eroare internă a serverului' },
       { status: 500 }
     )
   }
 }
 
 export async function GET() {
-  // TODO: Implement admin endpoint to view waitlist stats
-  return NextResponse.json({
-    message: 'Waitlist API endpoint',
-    status: 'active',
-    version: '3.0'
-  })
+  try {
+    // Verifică dacă Supabase este configurat
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase not configured')
+      return NextResponse.json(
+        { success: false, message: 'Supabase nu este configurat' },
+        { status: 500 }
+      )
+    }
+
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+
+    const { data: signups, error } = await supabase
+      .from('waitlist_signups')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching signups:', error)
+      return NextResponse.json(
+        { success: false, message: 'Eroare la obținerea înscrierilor' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: signups,
+      count: signups.length
+    })
+
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Eroare internă a serverului' },
+      { status: 500 }
+    )
+  }
 }

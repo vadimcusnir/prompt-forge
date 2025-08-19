@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// TODO: Import Supabase client when configured
-// import { createClient } from '@supabase/supabase-js'
-
 export async function POST(request: NextRequest) {
   try {
+    // Verifică dacă Supabase este configurat
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase not configured')
+      return NextResponse.json(
+        { success: false, message: 'Supabase nu este configurat' },
+        { status: 500 }
+      )
+    }
+
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+
     // TODO: Implement admin authentication
-    // const authHeader = request.headers.get('authorization')
-    // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // const { user } = await supabase.auth.getUser()
+    // if (!user || !user.user_metadata.is_admin) {
     //   return NextResponse.json(
-    //     { error: 'Unauthorized - Admin access required' },
+    //     { success: false, message: 'Acces neautorizat' },
     //     { status: 401 }
     //   )
     // }
@@ -19,59 +31,40 @@ export async function POST(request: NextRequest) {
 
     if (typeof enabled !== 'boolean') {
       return NextResponse.json(
-        { error: 'Parametrul "enabled" trebuie să fie boolean' },
+        { success: false, message: 'Parametrul "enabled" trebuie să fie boolean' },
         { status: 400 }
       )
     }
 
-    // TODO: Implement Supabase integration
-    // const supabase = createClient(
-    //   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    //   process.env.SUPABASE_SERVICE_ROLE_KEY!
-    // )
+    // Actualizează setarea în database
+    const { data: updatedSetting, error } = await supabase
+      .from('site_settings')
+      .upsert({
+        key: 'coming_soon',
+        value: { enabled, message: `PROMPTFORGE™ v3.0 - ${enabled ? 'Coming Soon' : 'Live'}` }
+      })
+      .select()
+      .single()
 
-    // // Actualizează sau creează setarea în site_settings
-    // const { data, error } = await supabase
-    //   .from('site_settings')
-    //   .upsert([
-    //     {
-    //       org_id: org_id || null,
-    //       key: 'coming_soon_enabled',
-    //       value: enabled,
-    //       updated_at: new Date().toISOString()
-    //     }
-    //   ])
-    //   .select()
-
-    // if (error) {
-    //   console.error('Supabase error:', error)
-    //   return NextResponse.json(
-    //     { error: 'Eroare la actualizarea setărilor' },
-    //     { status: 500 }
-    //   )
-    // }
-
-    // Simulate successful update for now
-    const mockData = {
-      org_id: org_id || null,
-      key: 'coming_soon_enabled',
-      value: enabled,
-      updated_at: new Date().toISOString()
+    if (error) {
+      console.error('Error updating site setting:', error)
+      return NextResponse.json(
+        { success: false, message: 'Eroare la actualizarea setării' },
+        { status: 500 }
+      )
     }
 
-    // Log pentru debugging
-    console.log('Coming soon toggle:', mockData)
-
+    console.log('Coming soon toggle successful:', updatedSetting)
     return NextResponse.json({
       success: true,
-      message: `Coming soon ${enabled ? 'activat' : 'dezactivat'}`,
-      data: mockData
+      message: `Coming soon ${enabled ? 'activat' : 'dezactivat'} cu succes`,
+      data: updatedSetting
     })
 
   } catch (error) {
-    console.error('Toggle coming soon API error:', error)
+    console.error('Unexpected error:', error)
     return NextResponse.json(
-      { error: 'Eroare internă a serverului' },
+      { success: false, message: 'Eroare internă a serverului' },
       { status: 500 }
     )
   }
@@ -79,39 +72,52 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // TODO: Implement Supabase integration to get current status
-    // const supabase = createClient(
-    //   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    //   process.env.SUPABASE_SERVICE_ROLE_KEY!
-    // )
-
-    // const { data, error } = await supabase
-    //   .from('site_settings')
-    //   .select('value')
-    //   .eq('key', 'coming_soon_enabled')
-    //   .single()
-
-    // if (error) {
-    //   console.error('Supabase error:', error)
-    //   return NextResponse.json(
-    //     { error: 'Eroare la citirea setărilor' },
-    //     { status: 500 }
-    //   )
-    // }
-
-    // Simulate current status for now
-    const mockStatus = {
-      coming_soon_enabled: process.env.COMING_SOON === 'true',
-      message: 'Status coming soon',
-      version: '3.0'
+    // Verifică dacă Supabase este configurat
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase not configured')
+      // Fallback la environment variable
+      return NextResponse.json({
+        success: true,
+        data: {
+          enabled: process.env.COMING_SOON === 'true',
+          message: 'PROMPTFORGE™ v3.0 - Coming Soon'
+        }
+      })
     }
 
-    return NextResponse.json(mockStatus)
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+
+    const { data: setting, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'coming_soon')
+      .single()
+
+    if (error) {
+      console.error('Error fetching site setting:', error)
+      // Fallback la environment variable
+      return NextResponse.json({
+        success: true,
+        data: {
+          enabled: process.env.COMING_SOON === 'true',
+          message: 'PROMPTFORGE™ v3.0 - Coming Soon'
+        }
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: setting.value
+    })
 
   } catch (error) {
-    console.error('Get coming soon status error:', error)
+    console.error('Unexpected error:', error)
     return NextResponse.json(
-      { error: 'Eroare internă a serverului' },
+      { success: false, message: 'Eroare internă a serverului' },
       { status: 500 }
     )
   }

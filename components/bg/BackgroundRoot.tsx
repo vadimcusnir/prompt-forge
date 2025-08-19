@@ -1,14 +1,6 @@
 "use client"
 
 import { useEffect, useState, useRef } from 'react'
-import dynamic from 'next/dynamic'
-
-// Dynamic imports pentru componentele de background (CSR-only)
-const GridLines = dynamic(() => import('./GridLines'), { ssr: false })
-const NoiseLayer = dynamic(() => import('./NoiseLayer'), { ssr: false })
-const MatrixTokens = dynamic(() => import('./MatrixTokens'), { ssr: false })
-const MatrixQuotes = dynamic(() => import('./MatrixQuotes'), { ssr: false })
-const BackgroundFigures = dynamic(() => import('./BackgroundFigures'), { ssr: false })
 
 interface BackgroundRootProps {
   motionLevel?: 'auto' | 'medium' | 'minimal'
@@ -23,60 +15,18 @@ export default function BackgroundRoot({
   enableQuotes = true,
   enableFigures = false
 }: BackgroundRootProps) {
-  const [isReady, setIsReady] = useState(false)
-  const [isAnimationsReady, setIsAnimationsReady] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   useEffect(() => {
-    // Pasul 1: Hydration complet
-    setIsReady(true)
-
-    // Pasul 2: Așteaptă idle pentru a activa animațiile
-    const activateAnimations = () => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-          setIsAnimationsReady(true)
-        }, { timeout: 1000 })
-      } else {
-        // Fallback pentru browsere vechi
-        timeoutRef.current = setTimeout(() => {
-          setIsAnimationsReady(true)
-        }, 1000)
-      }
-    }
-
-    // Așteaptă 500ms după hydration pentru a nu afecta LCP
-    const hydrationDelay = setTimeout(activateAnimations, 500)
-
-    return () => {
-      clearTimeout(hydrationDelay)
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
+    setIsClient(true)
   }, [])
 
-  // Verifică preferințele de motion
-  const prefersReducedMotion = typeof window !== 'undefined' && 
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  // Aplică nivelul de motion
-  const effectiveMotionLevel = prefersReducedMotion ? 'minimal' : motionLevel
-
-  if (!isReady) {
-    return null
-  }
-
+  // Render immediately on both server and client
   return (
     <div 
       ref={containerRef}
-      className={`
-        bg-fixed-root fixed inset-0 z-0 pointer-events-none
-        will-change-transform
-        ${isAnimationsReady ? 'matrix-animations-ready' : ''}
-        motion-level-${effectiveMotionLevel}
-      `}
+      className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]"
       style={{
         contain: 'layout paint style'
       }}
@@ -85,26 +35,41 @@ export default function BackgroundRoot({
       {/* L0: Base Canvas - Static (#0a0a0a) */}
       <div className="absolute inset-0 bg-[#0a0a0a]" />
       
-      {/* L1: Grid H/V - Drift + Parallax subtil */}
-      <GridLines motionLevel={effectiveMotionLevel} />
+      {/* L1: Simple Grid Lines - Always visible */}
+      <div className="absolute inset-0 opacity-5">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+              <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(8, 145, 178, 0.1)" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+      </div>
       
-      {/* L2: MATRIX_TOKENS - Flux metric AI (opțional) */}
-      {enableMatrix && effectiveMotionLevel !== 'minimal' && (
-        <MatrixTokens motionLevel={effectiveMotionLevel} />
+      {/* L2: Simple Noise Effect - Always visible */}
+      <div className="absolute inset-0 opacity-10">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <filter id="noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.1"/>
+            </feComponentTransfer>
+          </filter>
+          <rect width="100%" height="100%" filter="url(#noise)"/>
+        </svg>
+      </div>
+      
+      {/* L3: Subtle Glow Effects - Client-side only */}
+      {isClient && (
+        <>
+          {/* Top glow */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-teal-500/5 to-transparent" />
+          {/* Bottom glow */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-crimson-500/5 to-transparent" />
+        </>
       )}
-      
-      {/* L3: BackgroundFigures - Profunzime analitică SVG (opțional) */}
-      {enableFigures && effectiveMotionLevel !== 'minimal' && (
-        <BackgroundFigures motionLevel={effectiveMotionLevel} />
-      )}
-      
-      {/* L4: MATRIX_QUOTES - Strat narativ inițiatic (opțional) */}
-      {enableQuotes && effectiveMotionLevel !== 'minimal' && (
-        <MatrixQuotes motionLevel={effectiveMotionLevel} />
-      )}
-      
-      {/* L5: Noise Layer - Contrast și profunzime */}
-      <NoiseLayer motionLevel={effectiveMotionLevel} />
     </div>
   )
 }

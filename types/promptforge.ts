@@ -19,6 +19,7 @@ export interface SessionConfig {
   complexity: string
   application: string
   outputFormat: string
+  output?: string // Pentru export bundle
 }
 
 export interface GeneratedPrompt {

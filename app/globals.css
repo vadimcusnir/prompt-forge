@@ -19,6 +19,15 @@ html, body, #__next {
   color: #ffffff !important;
 }
 
+/* Elimină flash-ul alb - fundal negru pe toate elementele */
+* {
+  background-color: transparent;
+}
+
+html, body {
+  background-color: #000000 !important;
+}
+
 /* Container full-bleed, fără "clătinare" */
 .bg-fixed-root {
   position: fixed;

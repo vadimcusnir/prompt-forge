@@ -1,22 +1,45 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './lib/**/*.{js,ts,jsx,tsx}',
-    './hooks/**/*.{js,ts,jsx,tsx}',
-    './types/**/*.{js,ts,jsx,tsx}',
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./lib/**/*.{ts,tsx}",
+    "./hooks/**/*.{ts,tsx}",
+    "./types/**/*.{ts,tsx}",
   ],
   theme: {
     extend: {
-      // Previne purge pentru clasele critice
+      // Previne purge pentru clasele critice de background
       safelist: [
+        // Motion control
         'motion-off',
-        'bg-anim',
-        'matrix-animations-ready',
-        'bg-fixed-root',
-        'bg-grid',
+        
+        // Background layers - CRITICE pentru funcționarea app-ului
+        'bg-root',
+        'bg-gradient', 
         'bg-noise',
+        'bg-grid',
+        'bg-anim',
+        'bg-fixed-root',
+        
+        // Animation states
+        'matrix-animations-ready',
+        
+        // Opacity utilities
+        'opacity-4',
+        'opacity-5',
+        'opacity-60',
+        
+        // Position utilities
+        'absolute',
+        'inset-0',
+        'fixed',
+        'z-[-1]',
+        'z-0',
+        'z-1',
+        
+        // Pointer events
+        'pointer-events-none',
       ],
     },
   },

@@ -21,9 +21,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  // Flag SSR pentru dezactivarea mișcării - 100% determinist
-  const motionOff = process.env.NEXT_PUBLIC_MOTION === 'off'
-  
   return (
     <html lang="ro" suppressHydrationWarning>
       <head>
@@ -38,7 +35,7 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className={`min-h-screen bg-black text-white overflow-x-hidden antialiased ${inter.className} ${motionOff ? 'motion-off' : ''}`}>
+      <body className={`min-h-screen bg-black text-white overflow-x-hidden antialiased ${inter.className}`}>
         {/* Background layer pasiv - z-index negativ */}
         <BackgroundRoot />
         

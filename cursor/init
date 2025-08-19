@@ -1,0 +1,179 @@
+{
+  "$schema": "https://promptforge.dev/schemas/cursor-init-v1.json",
+  "meta": {
+    "project": "PROMPTFORGE™ v3.0",
+    "source_of_truth": "/cursor/init",
+    "description": "Inițializator canonic pentru agentul Cursor. Enumeră fișierele forge_v3_* și regulile de interacțiune.",
+    "last_updated": "2025-08-19"
+  },
+  "directories": {
+    "root": "/cursor",
+    "docs_root": "/cursor/docs",
+    "docs_subfolders": [
+      "/cursor/docs/coming_soon",
+      "/cursor/docs/industry_packs_bundle",
+      "/cursor/docs/licensing",
+      "/cursor/docs/supabase_migrations"
+    ]
+  },
+  "precedence": {
+    "note": "Număr mai mic = prioritate mai mare.",
+    "order": [
+      { "id": "init", "path": "/cursor/init", "level": 0 },
+      { "id": "rulebook", "path": "/cursor/forge_v3_rulebook_v1.txt", "level": 1 },
+      { "id": "standard", "path": "/cursor/forge_v3_standard.txt", "level": 2 },
+      { "id": "runtime", "paths": ["/cursor/forge_v3_runtime_1.txt", "/cursor/forge_v3_runtime_2.txt"], "level": 3 },
+      { "id": "domains", "path": "/cursor/forge_v3_standard_domenii.txt", "level": 4 },
+      { "id": "entitlements", "path": "/cursor/forge_v3_standard_entitlements.txt", "level": 5 },
+      { "id": "prompts", "path": "/cursor/forge_v3_standard_prompt.txt", "level": 6 },
+      { "id": "backend", "paths": ["/cursor/forge_v3_backend_supabase.txt", "/cursor/forge_v3_backend_supabase_2.txt"], "level": 7 },
+      { "id": "frontend", "path": "/cursor/forge_v3_front_end.txt", "level": 8 },
+      { "id": "branding", "path": "/cursor/forge_v3_branding.txt", "level": 9 },
+      { "id": "templates", "path": "/cursor/forge_v3_dor_dod_temp.txt", "level": 10 }
+    ]
+  },
+  "instruction_files": [
+    {
+      "path": "/cursor/forge_v3_rulebook_v1.txt",
+      "role": "rulebook",
+      "interaction": "read_only",
+      "description": "Constituția operațională a PROMPTFORGE™. Definește legile, interdicțiile și ierarhia decizională."
+    },
+    {
+      "path": "/cursor/forge_v3_standard.txt",
+      "role": "standard_protocol",
+      "interaction": "read_only",
+      "description": "Standardele de protocol: vectorii semantici, modulul 7D, formalismul de execuție."
+    },
+    {
+      "path": "/cursor/forge_v3_standard_prompt.txt",
+      "role": "prompt_skeletons",
+      "interaction": "compile_apply",
+      "description": "Schelete de prompt, KPI, guardrails, telemetrie."
+    },
+    {
+      "path": "/cursor/forge_v3_standard_domenii.txt",
+      "role": "domain_taxonomy",
+      "interaction": "reference_apply",
+      "description": "Nomenclatorul de industrii și mapările pentru parametrul 7D.domain."
+    },
+    {
+      "path": "/cursor/forge_v3_standard_entitlements.txt",
+      "role": "entitlements",
+      "interaction": "reference_apply",
+      "description": "Entitlements/licențe și gating de funcționalități pe planuri."
+    },
+    {
+      "path": "/cursor/forge_v3_runtime_1.txt",
+      "role": "runtime",
+      "interaction": "read_only",
+      "description": "Reguli runtime (I): limitări, fallback-uri, execuție deterministă."
+    },
+    {
+      "path": "/cursor/forge_v3_runtime_2.txt",
+      "role": "runtime",
+      "interaction": "read_only",
+      "description": "Reguli runtime (II): ordine de rezolvare, reziliență, politici de erori."
+    },
+    {
+      "path": "/cursor/forge_v3_backend_supabase.txt",
+      "role": "backend_supabase",
+      "interaction": "reference_generate",
+      "description": "Arhitectura backend Supabase: tabele, RPC, policies, storage."
+    },
+    {
+      "path": "/cursor/forge_v3_backend_supabase_2.txt",
+      "role": "backend_supabase_ext",
+      "interaction": "reference_generate",
+      "description": "Extensii/migrații suplimentare pentru Supabase."
+    },
+    {
+      "path": "/cursor/forge_v3_front_end.txt",
+      "role": "frontend_spec",
+      "interaction": "reference_generate",
+      "description": "Spec UI/UX: Editor, Test Engine, Export, Cloud History, Versionare."
+    },
+    {
+      "path": "/cursor/forge_v3_branding.txt",
+      "role": "branding",
+      "interaction": "reference_apply",
+      "description": "Branding, identitate vizuală și reguli de export PDF comerciale."
+    },
+    {
+      "path": "/cursor/forge_v3_dor_dod_temp.txt",
+      "role": "templates",
+      "interaction": "reference_apply",
+      "description": "Șabloane Definition of Ready/Done și machete de SOP."
+    }
+  ],
+  "docs_routing": {
+    "write_allowed": [
+      "/cursor/docs/coming_soon",
+      "/cursor/docs/industry_packs_bundle",
+      "/cursor/docs/licensing",
+      "/cursor/docs/supabase_migrations"
+    ],
+    "write_forbidden": [
+      "/cursor",
+      "/cursor/init",
+      "/cursor/forge_v3_rulebook_v1.txt",
+      "/cursor/forge_v3_standard.txt",
+      "/cursor/forge_v3_runtime_1.txt",
+      "/cursor/forge_v3_runtime_2.txt",
+      "/cursor/forge_v3_standard_domenii.txt",
+      "/cursor/forge_v3_standard_entitlements.txt",
+      "/cursor/forge_v3_standard_prompt.txt",
+      "/cursor/forge_v3_front_end.txt",
+      "/cursor/forge_v3_backend_supabase.txt",
+      "/cursor/forge_v3_backend_supabase_2.txt",
+      "/cursor/forge_v3_branding.txt",
+      "/cursor/forge_v3_dor_dod_temp.txt"
+    ],
+    "migrations_target": "/cursor/docs/supabase_migrations",
+    "licensing_target": "/cursor/docs/licensing",
+    "bundles_target": "/cursor/docs/industry_packs_bundle"
+  },
+  "sevenD_defaults": {
+    "domain": "generic",
+    "scale": "team",
+    "urgency": "normal",
+    "complexity": "medium",
+    "resources": "standard",
+    "application": "prompt_engineering",
+    "output": "bundle"
+  },
+  "commands": {
+    "generateArtifact": {
+      "uses": ["/cursor/forge_v3_standard_prompt.txt", "/cursor/forge_v3_standard.txt", "/cursor/forge_v3_branding.txt"],
+      "writes_to": ["/cursor/docs/coming_soon", "/cursor/docs/industry_packs_bundle"]
+    },
+    "evaluatePrompt": {
+      "uses": ["/cursor/forge_v3_standard.txt", "/cursor/forge_v3_runtime_1.txt", "/cursor/forge_v3_runtime_2.txt"],
+      "writes_to": ["/cursor/docs/coming_soon"]
+    },
+    "exportBundle": {
+      "uses": ["*"],
+      "writes_to": ["/cursor/docs/industry_packs_bundle"]
+    },
+    "licenseCheck": {
+      "uses": ["/cursor/forge_v3_standard_entitlements.txt"],
+      "writes_to": ["/cursor/docs/licensing"]
+    },
+    "supabaseMigrate": {
+      "uses": ["/cursor/forge_v3_backend_supabase.txt", "/cursor/forge_v3_backend_supabase_2.txt"],
+      "writes_to": ["/cursor/docs/supabase_migrations"]
+    }
+  },
+  "non_deviation_laws": [
+    { "id": 1, "text": "Respectă ierarhia de precedență. /cursor/init este sursa supremă de adevăr." },
+    { "id": 2, "text": "Nu scrie, nu edita și nu șterge niciun fișier din lista read_only." },
+    { "id": 3, "text": "Operarea este limitată la /cursor și /cursor/docs. Orice altă rută este interzisă." },
+    { "id": 4, "text": "Nu promite execuții viitoare sau asincrone. Livrează în aceeași rulare." },
+    { "id": 5, "text": "Nu inventa fișiere sau API-uri. Folosește doar ce este enumerat în acest init." },
+    { "id": 6, "text": "În caz de conflict între fișiere, câștigă prioritatea mai mică numeric." },
+    { "id": 7, "text": "Orice acțiune care afectează licențele se validează prin entitlements înainte de execuție." },
+    { "id": 8, "text": "Migrațiile se emit doar în /cursor/docs/supabase_migrations." },
+    { "id": 9, "text": "Brandingul din forge_v3_branding.txt este obligatoriu la export." },
+    { "id": 10, "text": "Respectă parametrizarea 7D. Fără aceasta, artefactul este invalid." }
+  ]
+}

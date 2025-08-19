@@ -4,8 +4,8 @@ const DEBUG =
   (isBrowser && (localStorage.getItem('DEBUG_BG') === '1' ||
    new URLSearchParams(location.search).has('debug_bg')));
 
-export const dbg = {
+export const dbg = { 
   log: (...a: any[]) => { 
-    if (localStorage.getItem('DEBUG_BG') === '1') console.log('[BG]', ...a)
-  }
-}
+    if (localStorage.getItem('DEBUG_BG') === '1') console.log('[BG]', ...a); 
+  } 
+};

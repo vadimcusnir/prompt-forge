@@ -108,7 +108,7 @@ export default function MicroUI({ motionLevel }: MicroUIProps) {
       {tooltips.map(tooltip => (
         <div
           key={tooltip.id}
-          className={`absolute ${getFontSize(tooltip.fontSize)} font-mono transition-all duration-500 ease-out`}
+          className={`absolute ${getFontSize(tooltip.fontSize)} font-mono`}
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -116,7 +116,7 @@ export default function MicroUI({ motionLevel }: MicroUIProps) {
             color: tooltip.color,
             textShadow: `0 0 8px ${tooltip.color}`,
             transform: tooltip.isVisible ? 'scale(1.05)' : 'scale(1)',
-            filter: tooltip.isVisible ? 'blur(0px)' : 'blur(1px)'
+            transition: 'opacity 0.5s ease-out, transform 0.5s ease-out'
           }}
         >
           {tooltip.text}
@@ -145,8 +145,8 @@ export default function MicroUI({ motionLevel }: MicroUIProps) {
       </div>
 
       {/* Corner info panel */}
-      <div className="absolute top-4 left-4 opacity-40 hover:opacity-80 transition-opacity duration-300">
-        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 border border-white/10">
+      <div className="absolute top-4 left-4 opacity-40 hover:opacity-80" style={{ transition: 'opacity 0.3s ease-out' }}>
+        <div className="bg-black/20 rounded-lg p-2 border border-white/10" style={{ filter: 'blur(4px)' }}>
           <div className="text-xs text-teal-400 font-mono">
             <div>Layer 7: Micro-UI</div>
             <div className="text-crimson-400">Interactive Feedback</div>

@@ -1,51 +1,16 @@
-'use client'
-
-import { useState } from 'react'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import dynamic from 'next/dynamic'
-
-// Dynamic import pentru BackgroundRoot
-const BackgroundRoot = dynamic(() => import('@/components/bg/BackgroundRoot'), { 
-  ssr: false,
-  loading: () => null
-})
+'use client';
 
 export default function ComingSoonPage() {
-  const [email, setEmail] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (email) {
-      setIsSubmitted(true)
-      // TODO: Implement actual email submission
-      console.log('Email submitted:', email)
-    }
-  }
-
   return (
     <>
-      {/* BackgroundRoot cu configurarea pentru /coming-soon */}
-      <BackgroundRoot 
-        profile="ambient_minimal" 
-        routeKey="/coming-soon"
-        enableMatrix={true}
-        enableQuotes={false} // Quotes off pentru /coming-soon
-        enableFigures={true}
-        enableMicroUI={true}
-      />
-      
-      {/* Main content cu z-index corect */}
-      <main className="relative z-10 min-h-screen bg-background">
+      <main className="relative z-10 min-h-screen">
         {/* Hero Section - Mobile First */}
         <section className="pf-hero container max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-8 py-12 sm:py-16 lg:py-24">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Hero Badge */}
-            <Badge variant="secondary" className="mb-4 sm:mb-6 text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2">
+            {/* Hero Badge - dimensiuni fixe pentru a evita CLS */}
+            <span className="inline-flex items-center justify-center rounded-md border font-medium whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90 mb-4 sm:mb-6 text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 min-h-[32px] sm:min-h-[36px] min-w-[200px] sm:min-w-[250px]">
               🚀 Coming Soon - Join the Revolution
-            </Badge>
+            </span>
 
             {/* Hero Title - Responsive Typography */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-heading font-bold text-foreground mb-4 sm:mb-6 lg:mb-8 leading-tight">
@@ -56,37 +21,15 @@ export default function ComingSoonPage() {
               The ultimate prompt engineering platform. Build, test, and deploy AI prompts at scale.
             </p>
 
-            {/* CTA Section */}
-            {!isSubmitted ? (
-              <Card className="p-6 sm:p-8 max-w-md mx-auto bg-card/50 backdrop-blur-sm border-border/50">
-                <h2 className="text-xl sm:text-2xl font-semibold mb-4">Get Early Access</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" size="lg">
-                    Join Waitlist
-                  </Button>
-                </form>
-              </Card>
-            ) : (
-              <Card className="p-6 sm:p-8 max-w-md mx-auto bg-card/50 backdrop-blur-sm border-border/50">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">✅</span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-semibold mb-2">You're on the list!</h2>
-                  <p className="text-muted-foreground">We'll notify you when PROMPTFORGE™ launches.</p>
-                </div>
-              </Card>
-            )}
+            {/* CTA Section - Client Component */}
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-4 min-h-[20px]">
+                Join the waitlist to be notified when we launch
+              </p>
+              <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors min-h-[48px] min-w-[140px] font-medium">
+                Join Waitlist
+              </button>
+            </div>
           </div>
         </section>
 
@@ -134,15 +77,15 @@ export default function ComingSoonPage() {
                 icon: "📊"
               }
             ].map((feature, index) => (
-              <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/70 transition-all duration-200">
+              <div key={index} className="text-card-foreground flex flex-col gap-6 rounded-xl border shadow-sm p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/70 transition-all duration-200">
                 <div className="text-4xl mb-4">{feature.icon}</div>
                 <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground text-sm">{feature.description}</p>
-              </Card>
+              </div>
             ))}
           </div>
         </section>
       </main>
     </>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface GridLinesProps {
   motionLevel: 'auto' | 'medium' | 'minimal'
@@ -9,7 +9,7 @@ interface GridLinesProps {
 export default function GridLines({ motionLevel }: GridLinesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | undefined>(undefined)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const dimensionsRef = useRef({ width: 0, height: 0 })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -28,7 +28,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
       canvas.height = height * window.devicePixelRatio
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
       
-      setDimensions({ width, height })
+      dimensionsRef.current = { width, height }
     }
 
     resizeCanvas()
@@ -48,17 +48,17 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
     const animate = () => {
       if (motionLevel === 'minimal') {
         // Static grid pentru reduced motion
-        drawStaticGrid(ctx, dimensions, gridConfig)
+        drawStaticGrid(ctx, dimensionsRef.current, gridConfig)
         return
       }
 
       // Animated grid cu drift
-      ctx.clearRect(0, 0, dimensions.width, dimensions.height)
+      ctx.clearRect(0, 0, dimensionsRef.current.width, dimensionsRef.current.height)
       
       // Drift calculation
       driftOffset = Math.sin(time * 0.001 * gridConfig.driftSpeed) * gridConfig.driftRange
       
-      drawAnimatedGrid(ctx, dimensions, gridConfig, driftOffset)
+      drawAnimatedGrid(ctx, dimensionsRef.current, gridConfig, driftOffset)
       
       time += 16 // ~60fps
       animationRef.current = requestAnimationFrame(animate)
@@ -67,7 +67,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
     if (motionLevel !== 'minimal') {
       animate()
     } else {
-      drawStaticGrid(ctx, dimensions, gridConfig)
+      drawStaticGrid(ctx, dimensionsRef.current, gridConfig)
     }
 
     return () => {
@@ -76,7 +76,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
       }
       window.removeEventListener('resize', resizeCanvas)
     }
-  }, [motionLevel, dimensions])
+  }, [motionLevel]) // FIX: Eliminat dimensions din dependency array
 
   const drawStaticGrid = (
     ctx: CanvasRenderingContext2D, 
@@ -98,7 +98,7 @@ export default function GridLines({ motionLevel }: GridLinesProps) {
     for (let y = 0; y <= dims.height; y += config.spacing) {
       ctx.beginPath()
       ctx.moveTo(0, y)
-      ctx.lineTo(dims.width, y)
+      ctx.lineTo(dims.width, dims.height)
       ctx.stroke()
     }
   }

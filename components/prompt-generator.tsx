@@ -9,8 +9,11 @@ import { Separator } from "@/components/ui/separator"
 import { generatePrompt, rerollPrompt, validatePromptStructure } from "@/lib/prompt-generator"
 import { MODULES } from "@/lib/modules"
 import type { SessionConfig, GeneratedPrompt } from "@/types/promptforge"
-import { Copy, Download, RefreshCw, Wand2, CheckCircle, AlertCircle } from "lucide-react"
+import { Copy, RefreshCw, Wand2, CheckCircle, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { ExportBundle } from "@/components/export-bundle"
+import { PromptBundle, ParameterSet7D } from "@/lib/export-bundle"
+import { generateHash, generateRunId } from "@/lib/utils"
 
 interface PromptGeneratorProps {
   selectedModule: number | null
@@ -190,14 +193,44 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
               <Copy className="w-4 h-4 mr-2" />
               Copy
             </Button>
-
-            <Button variant="outline" onClick={handleDownloadPrompt} className="glass-effect bg-transparent">
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
           </>
         )}
       </div>
+
+      {/* Export Bundle Section */}
+      {generatedPrompt && (
+        <div className="mb-6">
+          <ExportBundle 
+            bundle={{
+              prompt: generatedPrompt.prompt,
+              config: {
+                domain: config.domain,
+                scale: config.scale,
+                urgency: config.urgency,
+                complexity: config.complexity,
+                resources: config.resources || 'standard',
+                application: config.application || 'general',
+                output: config.output || 'detailed'
+              } as ParameterSet7D,
+              metadata: {
+                moduleId: `M${selectedModule?.toString().padStart(2, '0')}`,
+                moduleName: selectedModuleData?.name || 'Unknown Module',
+                hash: generatedPrompt.hash,
+                timestamp: generatedPrompt.timestamp.toISOString(),
+                version: 1,
+                runId: generateRunId()
+              },
+              telemetry: {
+                tokensUsed: generatedPrompt.prompt.length / 4, // Estimare simplă
+                duration: 1000,
+                score: validationResult?.score,
+                policyHits: []
+              }
+            }}
+            userPlan="pro" // TODO: Din context/state
+          />
+        </div>
+      )}
 
       {/* Validation Results */}
       {validationResult && (

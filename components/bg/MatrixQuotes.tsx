@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
+import { dbg } from '@/lib/logger'
 
 interface MatrixQuotesProps {
   motionLevel: 'auto' | 'medium' | 'minimal'
@@ -31,7 +32,7 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
   const QUOTE_OUT_MS = 1000 // [800,1200]ms conform spec
   const QUOTE_TOTAL_MS = 6000 // ~6s conform spec
 
-  console.log('MatrixQuotes: Component rendered with motionLevel:', motionLevel, 'MAX_QUOTES:', MAX_QUOTES)
+  dbg.log('MatrixQuotes: Component rendered with motionLevel:', motionLevel, 'MAX_QUOTES:', MAX_QUOTES)
 
   // AI narrative quotes pool - mai scurte și mai subtile
   const quotePool = [
@@ -48,11 +49,11 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
   ]
 
   useEffect(() => {
-    console.log('MatrixQuotes: useEffect triggered, motionLevel:', motionLevel)
+    dbg.log('MatrixQuotes: useEffect triggered, motionLevel:', motionLevel)
     
     // Early return for minimal motion
     if (motionLevel === 'minimal') {
-      console.log('MatrixQuotes: Minimal motion, returning early')
+      dbg.log('MatrixQuotes: Minimal motion, returning early')
       return
     }
 
@@ -70,7 +71,7 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
     }))
 
     setQuotes(initialQuotes)
-    console.log('MatrixQuotes: Initialized quotes:', initialQuotes.length)
+    dbg.log('MatrixQuotes: Initialized quotes:', initialQuotes.length)
 
     // Quote activation cycle
     let quoteIndex = 0
@@ -84,7 +85,7 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
 
       // Enforce quote cap - never exceed MAX_QUOTES
       if (activeQuotes.length >= MAX_QUOTES) {
-        console.log('MatrixQuotes: Quote cap reached, skipping activation')
+        dbg.log('MatrixQuotes: Quote cap reached, skipping activation')
         return
       }
 
@@ -94,7 +95,7 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
 
       if (now - lastQuoteTime < minDelay) return
 
-      console.log('MatrixQuotes: Activating quote:', quoteIndex, 'active count:', activeQuotes.length)
+      dbg.log('MatrixQuotes: Activating quote:', quoteIndex, 'active count:', activeQuotes.length)
 
       // Deactivate current quotes
       setActiveQuotes([])
@@ -160,7 +161,7 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
     }
   }, [motionLevel])
 
-  console.log('MatrixQuotes: Render state:', { motionLevel, activeQuotes: activeQuotes.length })
+  dbg.log('MatrixQuotes: Render state:', { motionLevel, activeQuotes: activeQuotes.length })
 
   // Early return for minimal motion
   if (motionLevel === 'minimal') {

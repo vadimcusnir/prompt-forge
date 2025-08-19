@@ -28,14 +28,16 @@ export default function ComingSoonPage() {
     setError("")
 
     try {
-      // TODO: Implement Supabase integration
-      // const { data, error } = await supabase
-      //   .from('waitlist_signups')
-      //   .insert([formData])
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to join waitlist')
+      }
+
       setIsSubmitted(true)
     } catch (err) {
       setError("Error joining the waitlist. Please try again.")
@@ -65,13 +67,20 @@ export default function ComingSoonPage() {
             <p>✅ You'll have priority access at launch</p>
           </div>
           
-          <Button 
-            onClick={() => setIsSubmitted(false)}
-            className="mt-6"
-            variant="outline"
-          >
-            Join with another email
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button 
+              onClick={() => setIsSubmitted(false)}
+              variant="outline"
+            >
+              Join with another email
+            </Button>
+            <Button 
+              onClick={() => window.location.href = '/pricing'}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+            >
+              View Pricing Plans
+            </Button>
+          </div>
         </Card>
       </div>
     )
@@ -92,9 +101,19 @@ export default function ComingSoonPage() {
             </div>
           </div>
           
-          <Badge variant="secondary" className="text-xs text-blue-400">
-            V3 Content & Education
-          </Badge>
+          <div className="flex items-center space-x-4">
+            <Badge variant="secondary" className="text-xs text-blue-400">
+              V3 Content & Education
+            </Badge>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/pricing'}
+              className="text-cyan-400 border-cyan-400/30 hover:bg-cyan-400/10"
+            >
+              Pricing
+            </Button>
+          </div>
         </div>
       </header>
 

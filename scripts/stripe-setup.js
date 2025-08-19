@@ -17,17 +17,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-12-18.acacia'
 })
 
-// Product definitions
+// Product definitions - CORECTATE conform /cursor
 const products = [
   {
     id: 'promptforge_free',
     name: 'PROMPTFORGE™ Free',
-    description: 'Free plan with basic features - 5 modules/month, basic export, community support',
+    description: 'Free plan with basic features - 3 modules (M01, M10, M18), basic export (.txt), 7 days retention',
     prices: [
       {
         id: 'price_free',
         amount: 0,
-        currency: 'usd',
+        currency: 'eur',
         recurring: { interval: 'month', interval_count: 1 }
       }
     ]
@@ -35,78 +35,91 @@ const products = [
   {
     id: 'promptforge_creator',
     name: 'PROMPTFORGE™ Creator',
-    description: 'Creator plan for content creators - 25 modules/month, advanced export, priority support, industry packs',
+    description: 'Creator plan for content creators - ALL modules, .md export, 30 days retention, local history',
     prices: [
       {
-        id: 'price_creator',
-        amount: 1900, // $19.00
-        currency: 'usd',
+        id: 'price_creator_monthly',
+        amount: 2900, // €29.00
+        currency: 'eur',
         recurring: { interval: 'month', interval_count: 1 }
+      },
+      {
+        id: 'price_creator_yearly',
+        amount: 29000, // €290.00
+        currency: 'eur',
+        recurring: { interval: 'year', interval_count: 1 }
       }
     ]
   },
   {
     id: 'promptforge_pro',
     name: 'PROMPTFORGE™ Pro',
-    description: 'Professional plan for businesses - Unlimited modules, premium export, API access, white-label, dedicated support',
+    description: 'Professional plan for businesses - ALL modules, .md/.json/.pdf export, GPT live test, Evaluator AI, 90 days retention',
     prices: [
       {
-        id: 'price_pro',
-        amount: 4900, // $49.00
-        currency: 'usd',
+        id: 'price_pro_monthly',
+        amount: 7900, // €79.00
+        currency: 'eur',
         recurring: { interval: 'month', interval_count: 1 }
+      },
+      {
+        id: 'price_pro_yearly',
+        amount: 79000, // €790.00
+        currency: 'eur',
+        recurring: { interval: 'year', interval_count: 1 }
       }
     ]
   },
   {
     id: 'promptforge_enterprise',
     name: 'PROMPTFORGE™ Enterprise',
-    description: 'Enterprise plan with custom features - Everything + custom integrations, SLA, dedicated account manager',
+    description: 'Enterprise plan with custom features - Everything + API, WhiteLabel, Bundle ZIP, multi-seat, unlimited retention',
     prices: [
       {
-        id: 'price_enterprise',
-        amount: 19900, // $199.00
-        currency: 'usd',
-        recurring: { interval: 'month', interval_count: 1 }
+        id: 'price_enterprise_custom',
+        amount: 0, // €0 - custom pricing
+        currency: 'eur',
+        recurring: null,
+        note: 'Contact sales for custom pricing'
       }
     ]
   },
   {
     id: 'industry_ecommerce',
     name: 'E-commerce Industry Pack',
-    description: 'Specialized modules for e-commerce - 15 e-commerce specific modules, KPI templates, conversion optimization',
+    description: 'Specialized modules for e-commerce - 6 e-commerce specific modules, KPI templates, conversion optimization, playbook & checklist',
     prices: [
       {
-        id: 'price_ecommerce',
-        amount: 9900, // $99.00
-        currency: 'usd',
-        recurring: null // One-time purchase
+        id: 'price_ecommerce_yearly',
+        amount: 149000, // €1490.00
+        currency: 'eur',
+        recurring: { interval: 'year', interval_count: 1 }
       }
     ]
   },
   {
     id: 'industry_education',
     name: 'Education Industry Pack',
-    description: 'Specialized modules for education - 12 education modules, curriculum templates, assessment tools',
+    description: 'Specialized modules for education - 6 education modules, curriculum templates, assessment tools',
     prices: [
       {
-        id: 'price_education',
-        amount: 7900, // $79.00
-        currency: 'usd',
-        recurring: null // One-time purchase
+        id: 'price_education_yearly',
+        amount: 149000, // €1490.00
+        currency: 'eur',
+        recurring: { interval: 'year', interval_count: 1 }
       }
     ]
   },
   {
     id: 'industry_fintech',
     name: 'FinTech Industry Pack',
-    description: 'Specialized modules for fintech - 18 fintech modules, compliance templates, risk management',
+    description: 'Specialized modules for fintech - 6 fintech modules, compliance templates, risk management',
     prices: [
       {
-        id: 'price_fintech',
-        amount: 12900, // $129.00
-        currency: 'usd',
-        recurring: null // One-time purchase
+        id: 'price_fintech_yearly',
+        amount: 199000, // €1990.00
+        currency: 'eur',
+        recurring: { interval: 'year', interval_count: 1 }
       }
     ]
   }
@@ -182,7 +195,8 @@ async function listProducts() {
       for (const price of prices.data) {
         const amount = price.unit_amount ? (price.unit_amount / 100).toFixed(2) : '0.00'
         const recurring = price.recurring ? `/${price.recurring.interval}` : ' (one-time)'
-        console.log(`   💰 Price: $${amount}${recurring} (${price.id})`)
+        const currency = price.currency?.toUpperCase() || 'EUR'
+        console.log(`   💰 Price: ${currency}${amount}${recurring} (${price.id})`)
       }
       console.log('')
     }

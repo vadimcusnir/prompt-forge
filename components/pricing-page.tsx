@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check, Star, Zap, Crown, Building2, ShoppingCart, GraduationCap, CreditCard } from 'lucide-react'
+import { PricingActionButton } from './pricing-action-button'
 
 interface Price {
   id: string
@@ -23,11 +24,7 @@ interface Product {
   prices: Price[]
 }
 
-interface PricingPageProps {
-  onSelectPlan: (priceId: string, productId: string, amount: number) => void
-}
-
-export default function PricingPage({ onSelectPlan }: PricingPageProps) {
+export default function PricingPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -237,13 +234,13 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
                     </ul>
                   </CardContent>
                   <CardFooter className="pt-4">
-                    <Button 
-                      className="w-full" 
-                      variant={product.productId === 'promptforge_pro' ? 'default' : 'outline'}
-                      onClick={() => onSelectPlan(price.priceId, product.productId, price.amount)}
-                    >
-                      {price.amount === 0 ? 'Get Started Free' : 'Choose Plan'}
-                    </Button>
+                    <PricingActionButton
+                      priceId={price.priceId}
+                      amount={price.amount}
+                      currency={price.currency}
+                      planName={product.name}
+                      isEnterprise={product.productId === 'promptforge_enterprise'}
+                    />
                   </CardFooter>
                 </Card>
               )
@@ -291,13 +288,13 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
                     </ul>
                   </CardContent>
                   <CardFooter className="pt-4">
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => onSelectPlan(price.priceId, product.productId, price.amount)}
-                    >
-                      Purchase Pack
-                    </Button>
+                    <PricingActionButton
+                      priceId={price.priceId}
+                      amount={price.amount}
+                      currency={price.currency}
+                      planName={product.name}
+                      isEnterprise={false}
+                    />
                   </CardFooter>
                 </Card>
               )

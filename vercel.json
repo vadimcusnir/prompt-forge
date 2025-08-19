@@ -3,11 +3,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "pnpm install",
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
@@ -34,13 +29,11 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
-    "STRIPE_SECRET_KEY": "@stripe_secret_key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url"
+    "NEXT_PUBLIC_SUPABASE_URL": "https://siebamncfgfgbzorkiwo.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZWJhbW5jZmdmZ2J6b3JraXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2MDY1NjcsImV4cCI6MjA3MTE4MjU2N30.Fz2Sc3qIVpAauNbtIh0-GS2qUwAlGgd5BL2u0BxJMh4",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZWJhbW5jZmdmZ2J6b3JraXdvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImiYXQiOjE3NTU2MDY1NjcsImV4cCI6MjA3MTE4MjU2N30.7h_NRXxvMdKV9Lcme0EDTEzW3nClvgxd9jcDPubyumE",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51RnpkGGcCmkUZPV6SHA1YkmOhd30qN2kAxm5n6iE4ZHNjzU84ZFWifiZQ22cKntXM38KfRkIriTeOHqiBrdPHWWG00dw7WcY9p",
+    "STRIPE_SECRET_KEY": "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",
+    "STRIPE_WEBHOOK_SECRET": "whsec_LABaaLypGKgyw6qnPt0ugpOT6ozDQvrq"
   }
 }

@@ -70,17 +70,18 @@ export async function GET() {
 
 function formatPrice(amount: number, currency: string, recurring: any): string {
   const formattedAmount = (amount / 100).toFixed(2)
+  const symbol = currency === 'eur' ? '€' : '$'
   
   if (recurring) {
     const interval = recurring.interval
     const intervalCount = recurring.interval_count
     
     if (intervalCount === 1) {
-      return `$${formattedAmount}/${interval}`
+      return `${symbol}${formattedAmount}/${interval}`
     } else {
-      return `$${formattedAmount} every ${intervalCount} ${interval}s`
+      return `${symbol}${formattedAmount} every ${intervalCount} ${interval}s`
     }
   } else {
-    return `$${formattedAmount}`
+    return `${symbol}${formattedAmount}`
   }
 }

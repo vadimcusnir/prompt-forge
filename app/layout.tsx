@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Montserrat } from "next/font/google"
 import { Open_Sans } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const montserrat = Montserrat({
@@ -40,7 +41,10 @@ html {
 }
         `}</style>
       </head>
-      <body className={`${montserrat.variable} ${openSans.variable} antialiased`}>{children}</body>
+      <body className={`${montserrat.variable} ${openSans.variable} antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   )
 }

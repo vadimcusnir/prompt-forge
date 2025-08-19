@@ -3,7 +3,7 @@
   "meta": {
     "project": "PROMPTFORGE™ v3.0",
     "source_of_truth": "/cursor/init",
-    "description": "Inițializator canonic pentru agentul Cursor. Enumeră fișierele forge_v3_* și regulile de interacțiune.",
+    "description": "Canonical initializer for the Cursor agent. Lists forge_v3_* files and interaction rules.",
     "last_updated": "2025-08-19"
   },
   "directories": {
@@ -142,6 +142,12 @@
     "application": "prompt_engineering",
     "output": "bundle"
   },
+  "global_settings": {
+    "currency": "USD",
+    "language": "en",
+    "locale": "en-US",
+    "timezone": "UTC"
+  },
   "commands": {
     "generateArtifact": {
       "uses": ["/cursor/forge_v3_standard_prompt.txt", "/cursor/forge_v3_standard.txt", "/cursor/forge_v3_branding.txt"],
@@ -174,6 +180,8 @@
     { "id": 7, "text": "Orice acțiune care afectează licențele se validează prin entitlements înainte de execuție." },
     { "id": 8, "text": "Migrațiile se emit doar în /cursor/docs/supabase_migrations." },
     { "id": 9, "text": "Brandingul din forge_v3_branding.txt este obligatoriu la export." },
-    { "id": 10, "text": "Respectă parametrizarea 7D. Fără aceasta, artefactul este invalid." }
+    { "id": 10, "text": "Respectă parametrizarea 7D. Fără aceasta, artefactul este invalid." },
+    { "id": 11, "text": "Toate prețurile, monedele și afișările financiare folosesc USD ca valută standard." },
+    { "id": 12, "text": "Toate textele, interfețele și documentațiile sunt în limba engleză (en-US)." }
   ]
 }

@@ -14,6 +14,7 @@ export function middleware(request: NextRequest) {
   const excludedPaths = [
     '/api/waitlist',
     '/api/toggle-coming-soon',
+    '/api/stripe',
     '/coming-soon',
     '/_next',
     '/favicon.ico'

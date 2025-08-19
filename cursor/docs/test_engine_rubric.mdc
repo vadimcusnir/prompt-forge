@@ -1,0 +1,31 @@
+# Test Engine — Rubrică & Praguri (PROMPTFORGE™ v3)
+
+## Criterii (0–100 fiecare; Ambiguitate = invers)
+- Claritate: 0–49 slab, 50–69 mediu, 70–84 bun, 85–100 excelent.
+- Execuție: 0–49 slab, 50–69 mediu, 70–84 implementabil, 85–100 deployment‑ready.
+- Ambiguitate (invers): 0–9 ideal, 10–19 acceptabil, 20–29 moderat, 30+ inacceptabil.
+- Business Fit: 0–49 off, 50–69 generic, 70–84 bun, 85–100 perfect.
+
+## Praguri implicite (global)
+- claritate_min = 80
+- execuție_min = 80
+- ambiguitate_max = 20
+- business_fit_min = 75
+
+## Greutăți (default pentru scor compozit)
+- clarity = 0.30
+- execution = 0.35
+- ambiguity_inv = 0.15   # calc: (100 - ambiguity)
+- business_fit = 0.20
+- formula: composite = 0.30*C + 0.35*E + 0.15*(100-A) + 0.20*B
+
+## Verdict
+- PASS dacă (C≥80 ∧ E≥80 ∧ A≤20 ∧ B≥75).
+- PARTIAL_PASS dacă 3/4 praguri sunt trecute și composite ≥ 80.
+- FAIL altfel.
+
+## Acțiuni automate (fallbacks)
+- tighten: reduce ambiguitate (clarifică termeni, elimină fluff).
+- optimize_enterprise: crește business_fit (aliniază la domain/scale/resources).
+- crisis_mode: maximizează directivitatea (pentru urgency=crisis).
+- expand_steps: crește execuție (pași, SOP, owners, timpi).

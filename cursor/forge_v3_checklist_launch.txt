@@ -1,0 +1,65 @@
+
+
+
+🚀 Checklist lansare PROMPTFORGE v3 (prod-ready)
+
+1. Ruleset (SSOT)
+ finalizează ruleset.yml (7D enums, DoR/DoD, export, entitlements, telemetry)
+ blochează orice override în UI (enum_only, raise_on_invalid)
+
+2. DB (Supabase/Postgres + RLS)
+ migrare orgs + org_members + RLS membership
+ tabele planuri/abonamente: plans, subscriptions, entitlements, user_addons, api_keys
+ tabele motor: modules, domain_configs, parameter_sets
+ tabele rulări: prompt_history, runs, prompt_scores, bundles, projects
+ indici: runs(org_id, started_at desc), bundles(run_id), entitlements(flag)
+
+3. Billing (Stripe → Supabase)
+ configurează Products/Prices (Pilot, Pro, Enterprise)
+ webhook Stripe → update subscriptions + flags în entitlements
+ testează gating: Pro = PDF/JSON + Test real; Enterprise = API + BundleZip
+
+4. API Routes (Next.js App Router)
+ POST /api/gpt-editor – optimizează prompt (fără gating)
+ POST /api/gpt-test – test GPT live, score ≥80, salvează în runs + prompt_scores
+ POST /api/export/bundle – export artefacte + manifest + checksum, persistă în bundles
+ POST /api/run/{moduleId} – doar Enterprise + API key (rate-limit, gating)
+
+5. Export Bundle
+ scrie artefacte: prompt.txt, prompt.md, prompt.json, prompt.pdf
+ manifest.json + checksum.txt (ordine canonică)
+ telemetry.json (score, tokens, TTA, fără PII)
+ ZIP doar pentru Enterprise
+
+6. UI (paywalls + demo)
+ conectează Editor UI → /api/gpt-editor
+ conectează Test Engine UI → /api/gpt-test
+ activează paywall Pro la „Test real GPT” și „Export PDF/JSON”
+ Enterprise: activează CTA pentru „Export bundle.zip” și „API access”
+
+7. Telemetrie & KPI/SLA
+ măsoară TTA text <60s, SOP <300s
+ rulează alerte P95 > SLA (telemetry dashboards)
+ PASS ≥99%, Score ≥80, 100% bundle cu manifest & checksum
+
+8. Legal & Branding
+ ToS + Privacy + DPA Enterprise
+ watermark în PDF trial (Pilot)
+ license_notice per plan în manifest
+
+9. Seed & QA
+ încarcă M01–M50 în modules (din catalog UI)
+ seed plans (Pilot/Pro/Enterprise cu flags JSONB)
+ seed domain_configs (FinTech, Edu, SaaS, etc.)
+ testează flux complet: Generate → Save → Test → Score → Export
+
+📌 Ordinea executării:
+Ruleset.yml (SSOT)
+DB migrations + RLS
+Stripe plans + entitlements
+API routes GPT live
+Export bundle pipeline
+UI wiring + paywalls
+Telemetry/KPI dashboards
+Legal & license_notice
+Seed & QA demo

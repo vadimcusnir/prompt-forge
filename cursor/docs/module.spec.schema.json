@@ -1,0 +1,354 @@
+{
+  "$id": "https://promptforge.v3/schemas/module.spec.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PROMPTFORGE v3 Module Spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "module_code",
+    "vector",
+    "name",
+    "purpose",
+    "inputs",
+    "outputs",
+    "tests",
+    "kpi",
+    "guardrails",
+    "deps",
+    "semver"
+  ],
+  "properties": {
+    "module_code": {
+      "type": "string",
+      "pattern": "^M\\d{2}$"
+    },
+    "vector": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+        },
+        {
+          "type": "string",
+          "enum": [
+            "Strategic",
+            "Retoric",
+            "Conținut",
+            "Cognitiv",
+            "Memetic",
+            "Date",
+            "Criză"
+          ]
+        }
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 280
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 10
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "stable",
+        "deprecated"
+      ],
+      "default": "stable"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "inputs": {
+      "type": "object",
+      "required": [
+        "schema",
+        "sevenD_contract"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sevenD_contract": {
+          "type": "object",
+          "description": "Contractul 7D (mapat din ruleset). Acceptă doar enum-uri și cere domain+output.",
+          "additionalProperties": true
+        },
+        "schema": {
+          "type": "object",
+          "description": "JSON Schema pentru inputs.custom (UI form + validare).",
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "object"
+            },
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": "object"
+            }
+          }
+        },
+        "example": {
+          "type": "object"
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "artifact_type",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "enum": [
+            "txt",
+            "md",
+            "checklist",
+            "spec",
+            "playbook",
+            "json",
+            "yaml",
+            "diagram",
+            "bundle",
+            "pdf"
+          ]
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "type",
+              "required"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "array",
+                  "object",
+                  "markdown",
+                  "json"
+                ]
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "pattern": {
+                "type": "string"
+              },
+              "example": {},
+              "minLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maxLength": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "example": {}
+      }
+    },
+    "kpi": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "score_min"
+      ],
+      "properties": {
+        "score_min": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "tta_text_s": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tta_sop_s": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weights": {
+          "type": "object",
+          "properties": {
+            "clarity": {
+              "type": "number"
+            },
+            "execution": {
+              "type": "number"
+            },
+            "ambiguity": {
+              "type": "number"
+            },
+            "business_fit": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "input",
+          "assert"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "input": {
+            "type": "object"
+          },
+          "assert": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kpi_min": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "schema_ok": {
+                "type": "boolean"
+              },
+              "output_spec_complete": {
+                "type": "boolean"
+              },
+              "no_promises": {
+                "type": "boolean"
+              },
+              "facts_grounded": {
+                "type": "boolean"
+              },
+              "contains": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "not_contains": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "no_unfounded_claims",
+        "respect_style",
+        "privacy_safe"
+      ],
+      "properties": {
+        "no_promises": {
+          "type": "boolean",
+          "default": true
+        },
+        "no_unfounded_claims": {
+          "type": "boolean"
+        },
+        "privacy_safe": {
+          "type": "boolean"
+        },
+        "respect_style": {
+          "type": "boolean"
+        },
+        "confidentiality": {
+          "type": "boolean",
+          "default": true
+        },
+        "style_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "deps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "module_code",
+          "version_range",
+          "signature_7d_match"
+        ],
+        "properties": {
+          "module_code": {
+            "type": "string",
+            "pattern": "^M\\d{2}$"
+          },
+          "version_range": {
+            "type": "string"
+          },
+          "signature_7d_match": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "evaluation_hooks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "telemetry_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

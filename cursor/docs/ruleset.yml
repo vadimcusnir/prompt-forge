@@ -1,0 +1,179 @@
+# PROMPTFORGE v3 — ruleset.yml (SSOT)
+project: PROMPTFORGE_v3
+description: >-
+  Nucleul de configurare (Single Source of Truth) pentru motorul PROMPTFORGE v3.
+  Doar acest fișier poate defini/override valorile default. UI-ul NU poate scrie aici.
+schema_version: 1
+semver: 0.1.0
+is_ssot: true
+
+# --- Politici SSOT & compatibilitate ---
+policies:
+  defaults_editable_only_here: true
+  ui_cannot_override_defaults: true
+  compatibility:
+    signature_fields: [domain, scale, application, output]   # ce iese din Mn intră în Mn+1 doar dacă semnătura 7D/ subset se potrivește
+  security:
+    knowledge_scoping_tag: safe_to_use   # doar fișiere/tabele marcate astfel pot fi folosite de module
+    pii_public_export: anonymize         # anonimizare la export public
+  telemetry:
+    do_not_log_raw_client_content: true
+
+# --- Enumerări 7D & reguli motor ---
+sevenD:
+  required: [domain, output]
+  enums:
+    domain: [MKT, EDU, SAAS, HEALTH, FIN, GOV, MEDIA, HR, LEGAL, ECOM, NONPROFIT, CYBER, REAL_ESTATE, HOSPITALITY, TRAVEL, GAMING, MANUFACTURING, ENERGY, TRANSPORT, AGRI, SPORTS, MUSIC, ART, NEWS, SCIENCE, TELECOM, AUTOMOTIVE]
+    scale: [solo, team, org, market]
+    urgency: [low, normal, high, crisis]
+    complexity: [low, medium, high]
+    resources: [minimal, standard, extended]
+    application: [content_ops, sales_ops, product_ops, research, crisis_ops]
+    output: [text, sop, plan, bundle]
+  aliases:
+    # Acceptăm sinonime în input, le mapăm la valorile canonice (enum-only la runtime).
+    scale: { program: org, department: org }
+    output: { document: text, pack: bundle }
+  validation:
+    enum_only: true         # blochează rulări dacă există valori în afara enumerărilor
+    raise_on_invalid: true  # eroare hard la prima abatere 7D
+  fallback:
+    by_domain_defaults: true  # dacă lipsesc dimensiuni, folosește defaults de domeniu
+  variability:
+    diversity_budget:
+      applies_to: [style, angle]
+      not_applied_to: [facts]
+      range: { min: 0.0, max: 1.0 }
+      default: 0.2
+
+# --- Defaults pe domeniu (pot fi extinse; acestea sunt SSOT) ---
+defaults_template: &defaults_base
+  scale: team
+  urgency: normal
+  complexity: medium
+  resources: standard
+  application: content_ops
+  output: bundle
+
+domains:
+  - code: MKT
+    name: Marketing
+    defaults: *defaults_base
+
+  - code: EDU
+    name: Education
+    defaults:
+      <<: *defaults_base
+      scale: org
+      application: course_ops
+
+  - code: SAAS
+    name: B2B SaaS
+    defaults:
+      <<: *defaults_base
+      application: product_ops
+
+  - code: HEALTH
+    name: Healthcare
+    defaults:
+      <<: *defaults_base
+      urgency: high
+      application: research
+
+  - code: FIN
+    name: Finance
+    defaults:
+      <<: *defaults_base
+      complexity: high
+
+  - code: GOV
+    name: Government
+    defaults:
+      <<: *defaults_base
+      scale: org
+      urgency: normal
+      application: research
+
+  - code: MEDIA
+    name: Media & Publishing
+    defaults: *defaults_base
+
+  # Domeniile rămase moștenesc *defaults_base dacă nu sunt declarate explicit.
+  # Adaugă noi domenii aici numai cu codul din enums.domain.
+
+# --- Prompt standard universal (secțiuni fixe) ---
+prompt_standard:
+  sections: [ROLE_GOAL, CONTEXT_7D, OUTPUT_SPEC, PROCESS, GUARDRAILS, EVALUATION_HOOKS, TELEMETRY_KEYS]
+  non_deletable_in_ui: true
+  output_spec_contract:
+    must_define_fields: [format, fields, example]
+    example_minimal:
+      format: markdown
+      fields: [title, sections, kpi]
+      example: |
+        # Titlu
+        - Secțiune 1
+        - Secțiune 2
+        KPI: {...}
+
+# --- Test & Score ---
+test:
+  rubric: [clarity, execution, ambiguity, business_fit]
+  threshold: 80
+  auto_fix:
+    enabled: true
+    max_iterations: 1
+
+# --- Export & checksum ---
+export:
+  structure: standard_bundle
+  bundle_path_template: "/bundles/{project}/{date}/{domain}/{module}/{slug}/"
+  artifacts: ["prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json","checksum.sha256"]
+  checksum:
+    algo: sha256
+    include: ["prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json"]
+
+# --- Entitlements & planuri ---
+entitlements:
+  plans:
+    Pilot:
+      modules: "M01-M10"
+      features: [txt, md]
+      limits: { runs_per_day: 20 }
+    Pro:
+      modules: "M01-M30"
+      features: [txt, md, pdf, cloud_history]
+      limits: { runs_per_day: 100 }
+    Enterprise:
+      modules: "M01-M50"
+      features: [api, multi_industry, audit]
+      limits: { runs_per_day: 1000 }
+  ui_rules:
+    hide_modules_without_entitlement: true
+    block_endpoints_without_entitlement: true
+
+# --- Telemetrie ---
+telemetry:
+  keys: [tta_seconds, score, tokens_in, tokens_out, domain, module, plan]
+  slo:
+    tta_text_seconds_p95: 60
+    tta_sop_seconds_p95: 300
+
+# --- Versiuni & istoric ---
+versioning:
+  store: supabase
+  tables: [projects, modules, runs, bundles, entitlements, plans, industries]
+  change_policies:
+    defaults_only_editable_here: true
+    log_every_override: true
+  migrations:
+    semver_major_requires_compat_script: true
+
+# --- License notice ---
+license:
+  manifest_required_field: license_notice
+  default_notice:
+    Pilot: "PFv3 Pilot"
+    Pro: "PFv3 Pro"
+    Enterprise: "PFv3 Enterprise"
+

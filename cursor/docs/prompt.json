@@ -1,0 +1,84 @@
+{
+  "project": "PROMPTFORGE_v3",
+  "run_id": "2025-08-18_MKT_M07_0001",
+  "timestamp": "2025-08-18T12:00:00Z",
+  "actor": {
+    "user_id": "u_123",
+    "org_id": "org_456",
+    "email": "ops@example.com",
+    "role": "editor"
+  },
+  "module": {
+    "code": "M07",
+    "semver": "0.1.0",
+    "pin_semver": true
+  },
+  "sevenD": {
+    "domain": "MKT",
+    "scale": "team",
+    "urgency": "normal",
+    "complexity": "medium",
+    "resources": "standard",
+    "application": "content_ops",
+    "output": "bundle",
+    "diversity_budget": 0.2,
+    "requested": {
+      "domain": "MKT",
+      "output": "bundle"
+    },
+    "final": {
+      "domain": "MKT",
+      "scale": "team",
+      "urgency": "normal",
+      "complexity": "medium",
+      "resources": "standard",
+      "application": "content_ops",
+      "output": "bundle"
+    },
+    "signature": "MKT-team-content_ops-bundle"
+  },
+  "inputs": {
+    "goal": "Creștere MQL +30%",
+    "audience": "B2B",
+    "constraints": [],
+    "time_horizon": "90d"
+  },
+  "deps": [],
+  "entitlements": {
+    "plan": "Pro",
+    "features": [
+      "txt",
+      "md",
+      "pdf",
+      "cloud_history"
+    ],
+    "industry_keys": [
+      "MKT"
+    ],
+    "limits": {
+      "runs_per_day": 100
+    }
+  },
+  "export": {
+    "requested_files": [
+      "txt",
+      "md",
+      "pdf"
+    ],
+    "visibility": "internal"
+  },
+  "guardrails": {
+    "no_promises": true,
+    "no_unfounded_claims": true,
+    "confidentiality": true
+  },
+  "telemetry": {
+    "tta_seconds": 42,
+    "score": 86,
+    "tokens_in": 2100,
+    "tokens_out": 1400,
+    "model": "gpt-5o",
+    "ruleset_version": "0.1.0",
+    "policy_hits": []
+  }
+}

@@ -1,0 +1,3876 @@
+📜 Rulebook v1 — Schelet Minim Viabil
+A. Arhitectură
+
+Lanț logic: Project → Module (M##) → Runs → Bundles.
+
+SSOT: doar ruleset.yml definește valorile default (UI-ul nu poate).
+
+Compatibilitate: outputul unui modul intră în altul doar dacă ambele împart aceeași semnătură 7D.
+
+B. Motor 7D
+
+Obligatoriu: domain + output.
+
+Fallback: default per domain.
+
+Validare: enum-only (niciun text liber).
+
+Variabilitate: diversity_budget ∈ [0..1], aplicat doar pe stil și unghi.
+
+C. Module (M01–M50)
+
+Contract minim: module_code, vector, purpose, inputs(7D+custom), outputs, tests, kpi, guardrails, deps, semver.
+
+Guardrails: fără promisiuni, fără date nefondate, respectă confidențialitatea knowledge.
+
+DoR: 7D complet, entitlements OK, testcases definite.
+
+DoD: Score ≥ 80, bundle complet, checksum valid, metadate în cloud.
+
+D. Prompt (standard universal)
+
+prompt.txt are secțiuni fixe:
+
+ROLE & GOAL
+
+CONTEXT & 7D
+
+OUTPUT SPEC
+
+PROCESS
+
+GUARDRAILS
+
+EVALUATION HOOKS
+
+TELEMETRY KEYS
+
+E. Test & Score
+
+Claritate (0–25) – respectă brief + 7D.
+
+Execuție (0–25) – output complet conform spec.
+
+Ambiguitate (0–25) – decizie maximă, întrebări minime.
+
+Business fit (0–25) – utilitate comercială directă.
+
+Gate: <80 = fix automat sau fail.
+
+F. Export & Checksum
+
+Structură bundle:
+/bundles/{project}/{date}/{domain}/{M##}/{slug}/
+→ prompt.txt, prompt.json, prompt.md, prompt.pdf, manifest.json, checksum.sha256.
+
+Manifest minim: project, domain, M##, run_id, 7D, score, KPI, file_hashes.
+
+G. Versionare & Istoric
+
+Tabele Supabase: projects, modules, runs, bundles, entitlements, plans, industries.
+
+Politici: doar ruleset.yml poate schimba defaults; override logat.
+
+Migrare: semver major ⇒ script compatibilitate.
+
+H. Licențe & Entitlements
+
+SKU:
+
+Pilot (M01–M10, export txt/md)
+
+Pro (M01–M30, pdf + cloud history)
+
+Enterprise (M01–M50, API + multi-industry)
+
+Industrie: chei per domain → feature_flags.
+
+Rule: fără entitlement ⇒ ascunzi UI + blochezi endpoint.
+
+I. Securitate & Conformitate
+
+Scoping: doar fișiere cu tag safe_to_use.
+
+PII: anonimizat la export public.
+
+Telemetrie: nu loghezi brut conținutul clientului.
+
+J. UI/UX
+
+Selector Module: doar eligibile (7D+entitlements).
+
+Editor: șabloane fixe, nu poți șterge secțiuni.
+
+Test Engine: scor vizibil + dif explicativ.
+
+Istoric: filtre după domain, M##, scor, TTA.
+
+K. Monetizare
+
+Stripe: 1 produs/plan + feature_flags.
+
+Target: ≥ 20k€ în 30 zile prin licențe industrie + 2 consultanțe.
+
+Rule: fiecare bundle are license_notice în manifest.
+
+L. Operare (ritual)
+
+Daily: 3 rulări/zi pe domenii cheie, scoruri colectate, optimizezi <10% deviație KPI.
+
+Weekly release: increment minor + changelog + recalibrare defaults 7D.
+
+Acest schelet e suficient de strict încât să oprească improvizația și să facă sistemul auditat. Exact ce trebuie ca să treci din MVP → PROD.
+
+
+
+
+
+A. Arhitectură (detaliat, gata de implementare)
+A1. Lanț logic și surse de adevăr
+
+Lanțul canonic
+Project → Module(M##) → Runs → Bundles
+— Orice artefact livrabil provine dintr-un Run valid, inițiat pentru un Module dintr-un Project și ambalat într-un Bundle.
+
+SSOT (Single Source of Truth)
+
+ruleset.yml este singura sursă pentru:
+
+valorile default 7D per domain;
+
+praguri de evaluare (score gates);
+
+politicile de export & checksum;
+
+mapări plan → entitlements → capabilități.
+
+UI-ul poate doar propune valori → serverul le normalizează cu ruleset.yml la runtime.
+
+Orice override față de defaults se loghează în run.telemetry.overrides.
+
+Compatibilitate inter-modul
+
+Un output din Mₙ poate intra în Mₙ₊₁ doar dacă semnăturile 7D coincid:
+
+signature_7d = sha256( domain|scale|urgency|complexity|resources|application|output_format )
+
+signature_7d_out(Mₙ) == signature_7d_in(Mₙ₊₁)
+
+Dacă semnăturile diferă, lanțul este blocat (422 UNPROCESSABLE_ENTITY) cu dif detaliat.
+
+A2. Contractele de date (server, DB, RLS)
+A2.1 Entități minime
+
+Project
+
+id (uuid, pk)
+
+slug (text, unique)
+
+name (text)
+
+owner_org_id (uuid)
+
+created_at (timestamptz)
+
+Module (catalog executabil)
+
+id (text, pk; ex: “M07”)
+
+code (text; “M07” redundant-safe)
+
+name (text)
+
+vectors (smallint[]) — [1..7]
+
+purpose (text)
+
+input_schema (jsonb) — câmpuri custom peste 7D
+
+output_schema (jsonb) — câmpuri artefact
+
+kpi (jsonb) — definiții + formule
+
+guardrails (jsonb)
+
+semver (text) — curentul
+
+enabled (bool)
+
+Run
+
+id (uuid, pk)
+
+project_id (uuid, fk)
+
+module_id (text, fk)
+
+parameter_set_7d (jsonb) — snapshot 7D derivat din ruleset.yml + UI
+
+module_params (jsonb) — inputuri custom validate cu input_schema
+
+started_at / finished_at (timestamptz)
+
+status (text: queued|running|success|fail)
+
+score (int) — total [0..100]
+
+scores (jsonb) — claritate/execuție/ambiguitate/business_fit
+
+telemetry (jsonb) — model, tokens, cost, policy_hits, overrides
+
+signature_7d_in (text) — sha256
+
+signature_7d_out (text) — sha256 (identic cu in pentru module standalone; poate diferi doar dacă modulul schimbă output_format în mod legal)
+
+error (jsonb) — cod, mesaj, dif compatibilitate, câmp lipsă etc.
+
+Bundle
+
+id (uuid, pk)
+
+run_id (uuid, fk)
+
+path_prefix (text) — /bundles/{project}/{date}/{domain}/{M##}/{slug}/
+
+files (jsonb) — map: { "prompt.txt": "...", "prompt.md": "...", ... }
+
+file_hashes (jsonb) — sha256 per fișier
+
+checksum_sha256 (text) — SHA256 pe concatenarea hash-urilor fișierelor în ordinea canonică
+
+exported_at (timestamptz)
+
+license_notice (text)
+
+A2.2 RLS (principii)
+
+Orice select/insert/update e limitat la org-ul curent (workspace).
+
+Runs: vizibile doar membrilor org-ului proiectului.
+
+Bundles: la fel ca Runs; public export = artefacte cu PII anonimizat.
+
+Modules: read-only public, dar „enabled” poate fi restricționat per plan.
+
+A3. ruleset.yml (structură minimă)
+version: 1
+defaults:
+  scoring:
+    pass_gate: 80
+    weights:
+      clarity: 0.25
+      execution: 0.25
+      ambiguity: 0.25
+      business_fit: 0.25
+  export:
+    files: [prompt.txt, prompt.json, prompt.md, prompt.pdf, manifest.json, checksum.sha256]
+    path_pattern: "/bundles/{project}/{date}/{domain}/{module}/{slug}/"
+    checksum:
+      algorithm: "sha256"
+      order: [prompt.txt, prompt.json, prompt.md, prompt.pdf, manifest.json]
+  telemetry:
+    redact_client_content: true
+  engine7d:
+    required: [domain, output_format]
+    variability:
+      diversity_budget:
+        min: 0.0
+        max: 1.0
+        apply_to: [style, angle]
+    enums:
+      domain: [saas, fintech, ecommerce, consulting, education, healthcare, legal, marketing, media, real_estate, hr, ngo, government, web3, aiml, cybersecurity, manufacturing, logistics, travel, gaming, fashion, beauty, spiritual, architecture, agriculture]
+      scale: [personal_brand, solo, startup, boutique_agency, smb, corporate, enterprise]
+      urgency: [low, planned, sprint, pilot, crisis]
+      complexity: [foundational, standard, advanced, expert]
+      resources: [minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget]
+      application: [training, audit, implementation, strategy_design, crisis_response, experimentation, documentation]
+      output_format: [txt, md, checklist, spec, playbook, json, yaml, diagram, bundle]
+    domain_defaults:
+      fintech:
+        scale: enterprise
+        urgency: sprint
+        complexity: advanced
+        resources: full_stack_org
+        application: implementation
+        output_format: spec
+      # … restul domeniilor
+entitlements:
+  plans:
+    pilot: { modules: "M01-M10", export: ["txt","md"], history: false, api: false }
+    pro: { modules: "M01-M30", export: ["txt","md","pdf"], history: true, api: false }
+    enterprise: { modules: "M01-M50", export: ["txt","md","pdf","json"], history: true, api: true, multi_industry: true }
+
+
+Note de comportament:
+
+Serverul încarcă ruleset.yml la boot; la modificare, invalidezi cache-ul (hot-reload safe).
+
+UI doar vizualizează; nu poate scrie defaults.
+
+A4. Validări critice (înainte de Run)
+
+Normalizezi 7D
+
+Completezi lipsurile cu domain_defaults din ruleset.yml.
+
+Validezi fiecare parametru ∈ enum (reject free text).
+
+Diversity budget
+
+Impui 0 ≤ diversity_budget ≤ 1.
+
+Aplici doar pe câmpurile declarate (style, angle); niciodată pe facts (guardrail hard).
+
+Entitlements
+
+Verifici plan + industry access + export caps (ex: Pilot nu are pdf/json).
+
+Fără entitlement ⇒ ascunzi UI + blochezi endpoint (403 FORBIDDEN).
+
+Semnături 7D
+
+Calculezi signature_7d_in.
+
+Pentru chain, compari cu signature_7d_out al Run-ului precedent; dacă diferă ⇒ 422 + dif.
+
+Module schema
+
+Validezi module_params cu input_schema din catalogul modulului.
+
+Verifici că output_schema este mapabil la exportul planificat.
+
+A5. Fluxuri (sequence-uri)
+A5.1 Run simplu (un modul)
+
+UI trimite module_id, parameter_set_7d, module_params.
+
+API:
+
+încarcă ruleset.yml;
+
+normalizează 7D, validează enums;
+
+verifică entitlements & module enabled;
+
+calculează signature_7d_in și setează signature_7d_out (identic pentru standalone);
+
+pornește execuția GPT + telemetry.
+
+Evaluare:
+
+calculezi scorurile (clarity/execution/ambiguity/business_fit);
+
+dacă total < pass_gate (80) → faci o iterație „tighten” (auto-fix) → reevaluezi; altfel fail.
+
+Export:
+
+construiești bundle conform ruleset.yml (capabilități plan);
+
+generezi checksum.sha256 și manifest.json.
+
+Persist:
+
+salvezi Run + Bundle (hashuri, scor, semnături, overrides).
+
+întorci 201 Created + bundle manifest.
+
+A5.2 Chain (Mₙ → Mₙ₊₁)
+
+UI selectează „Use previous output as input”.
+
+API:
+
+citește signature_7d_out de la Run precedent;
+
+calculează signature_7d_in pentru modul curent;
+
+dacă diferă ⇒ 422 + dif:
+
+{ "error":"7D_SIGNATURE_MISMATCH",
+  "expected": "a1b2..",
+  "received":"c3d4..",
+  "diff": { "application": ["implementation","strategy_design"], "output_format":["spec","playbook"] } }
+
+
+dacă e identică ⇒ continuă fluxul A5.1.
+
+A6. Invarianți și politici de eroare
+
+Invarianți:
+
+Nicio rulare fără 7D validat + normalizez cu domain_defaults.
+
+Niciun export fără manifest + checksum.
+
+Niciun chain fără semnături 7D identice.
+
+Nicio scriere de default în afara ruleset.yml.
+
+Erori standardizate:
+
+400 INVALID_7D_ENUM
+
+400 DIVERSITY_OUT_OF_RANGE
+
+401 UNAUTHENTICATED
+
+403 ENTITLEMENT_REQUIRED
+
+404 MODULE_NOT_FOUND
+
+409 RULESET_CONFLICT (versiune ruleset nealiniată)
+
+422 INPUT_SCHEMA_MISMATCH
+
+422 7D_SIGNATURE_MISMATCH
+
+429 RATE_LIMITED
+
+500 INTERNAL_RUN_ERROR
+
+A7. Export & checksum (detaliu)
+
+Ordinea fișierelor în checksum este canonică (din ruleset.yml).
+
+checksum.sha256 = SHA256(concat(hash(file₁), hash(file₂), …)).
+
+manifest.json minim:
+
+{
+  "project": "…",
+  "domain": "fintech",
+  "module": "M07",
+  "run_id": "uuid",
+  "signature_7d": "a1b2..",
+  "score": 86,
+  "kpi": { "clarity": 22, "execution": 21, "ambiguity": 21, "business_fit": 22 },
+  "files": { "prompt.txt": "…", "prompt.md": "…", "prompt.pdf": "…" },
+  "file_hashes": { "prompt.txt": "sha256:…", "prompt.md": "sha256:…" },
+  "license_notice": "© PromptForge v3 – licensed to ORG …"
+}
+
+A8. Versionare & migrare
+
+ruleset.yml are version; serverul refuză rulări dacă versiunea declarată de UI nu corespunde (409 RULESET_CONFLICT).
+
+Semver major (ex: 1.x → 2.0) cere script de compatibilitate pe:
+
+enums schimbate;
+
+output_format nou;
+
+praguri score actualizate.
+
+Toate schimbările de defaults se înscriu în runs.telemetry.ruleset_version + overrides.
+
+A9. UI/UX (legate de arhitectură)
+
+UI afișează doar modulele permise de entitlements și compatibile cu 7D curent.
+
+Editorul are secțiuni fixe (ROLE&GOAL, CONTEXT&7D, OUTPUT SPEC, PROCESS, GUARDRAILS, EVAL HOOKS, TELEMETRY KEYS) – nu poți șterge.
+
+Test Engine afișează scor + diff față de OUTPUT SPEC (ce lipsește, unde e peste).
+
+Istoricul filtrează după domain, M##, scor, TTA; fiecare item are link la bundle/manifest.
+
+A10. Implementare rapidă (fișiere minime)
+
+ruleset.yml (structura de mai sus)
+
+Tabele: projects, modules, runs, bundles
+
+Endpointuri:
+
+POST /api/run/{moduleId} (normalizează 7D din ruleset.yml, validează, rulează, evaluează, exportă, persistă)
+
+GET /api/runs/{id} (manifest + status)
+
+GET /api/bundles/{id} (serve bundle; respectă entitlements)
+
+Biblioteci:
+
+lib/ruleset.ts (load+cache)
+
+lib/compat.ts (signature_7d, dif)
+
+lib/eval.ts (scoruri + gate + tighten-once)
+
+lib/export.ts (bundle, hashes, checksum, manifest)
+
+lib/entitlements.ts (plan → capabilități)
+
+lib/validate7d.ts (enums, defaults, diversity rules)
+
+
+
+
+
+
+Motorul 7D complet, executabil, fără ambiguități. Ia-l ca “spec + schelet de cod”.
+
+B. Motor 7D — specificație executabilă
+B1. Scop & invarianți
+
+Normalizezi intrările pe 7 dimensiuni: domain, scale, urgency, complexity, resources, application, output_format.
+
+Obligatoriu: domain și output_format.
+
+Fallback: dacă lipsește o dimensiune, completezi cu defaultul domeniului.
+
+Validare: accepți doar enum-uri declarate (zero text liber).
+
+Variabilitate: diversity_budget ∈ [0..1], aplicat doar pe câmpurile stilistice style și angle. Nu afectezi facts.
+
+B2. Enum-uri (nomenclator 7D)
+
+Definește-le într-un singur loc (ex: ruleset.yml sau lib/enums.ts) și tratează-le ca SSOT.
+
+domain
+
+saas, fintech, ecommerce, consulting, education, healthcare, legal, marketing, media, real_estate, hr, ngo, government, web3, aiml, cybersecurity, manufacturing, logistics, travel, gaming, fashion, beauty, spiritual, architecture, agriculture
+
+scale
+
+personal_brand, solo, startup, smb, boutique_agency, corporate, enterprise
+
+urgency
+
+low, planned, sprint, pilot, crisis
+
+complexity
+
+foundational, standard, advanced, expert
+
+resources
+
+minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget
+
+application
+
+training, audit, implementation, strategy_design, crisis_response, experimentation, documentation
+
+output_format
+
+txt, md, checklist, spec, playbook, json, yaml, diagram, bundle
+
+Notă: poți extinde enum-urile, dar doar prin migrări versionate (semver major) și script de compatibilitate.
+
+B3. Defaults per domain (fallback map)
+
+Ține o hartă domain_defaults (SSOT). Exemplu minim:
+
+engine7d:
+  domain_defaults:
+    fintech:         { scale: enterprise, urgency: sprint,   complexity: advanced, resources: full_stack_org, application: implementation,   output_format: spec }
+    ecommerce:       { scale: smb,        urgency: planned,  complexity: standard, resources: lean_team,      application: implementation,   output_format: playbook }
+    education:       { scale: smb,        urgency: planned,  complexity: standard, resources: lean_team,      application: training,        output_format: checklist }
+    healthcare:      { scale: enterprise, urgency: pilot,    complexity: expert,   resources: enterprise_budget, application: documentation, output_format: spec }
+    consulting:      { scale: boutique_agency, urgency: sprint, complexity: advanced, resources: agency_stack, application: strategy_design, output_format: md }
+    marketing:       { scale: smb,        urgency: sprint,   complexity: standard, resources: lean_team,      application: implementation,   output_format: md }
+    aiml:            { scale: corporate,  urgency: pilot,    complexity: expert,   resources: full_stack_org, application: experimentation,  output_format: spec }
+    # … completează toate domeniile din nomenclator
+
+
+Reguli:
+
+Dacă user-ul setează explicit o dimensiune, nu aplici fallback pe acea dimensiune.
+
+Dacă nu găsești domeniul în domain_defaults, respingi run-ul (400 INVALID_DOMAIN).
+
+B4. Validare (enum-only, zero text liber)
+JSON Schema (exemplu minim)
+{
+  "type": "object",
+  "required": ["domain", "output_format"],
+  "properties": {
+    "domain": { "type": "string", "enum": ["saas","fintech","ecommerce","consulting","education","healthcare","legal","marketing","media","real_estate","hr","ngo","government","web3","aiml","cybersecurity","manufacturing","logistics","travel","gaming","fashion","beauty","spiritual","architecture","agriculture"] },
+    "scale": { "type": "string", "enum": ["personal_brand","solo","startup","smb","boutique_agency","corporate","enterprise"] },
+    "urgency": { "type": "string", "enum": ["low","planned","sprint","pilot","crisis"] },
+    "complexity": { "type": "string", "enum": ["foundational","standard","advanced","expert"] },
+    "resources": { "type": "string", "enum": ["minimal","solo","lean_team","agency_stack","full_stack_org","enterprise_budget"] },
+    "application": { "type": "string", "enum": ["training","audit","implementation","strategy_design","crisis_response","experimentation","documentation"] },
+    "output_format": { "type": "string", "enum": ["txt","md","checklist","spec","playbook","json","yaml","diagram","bundle"] },
+    "diversity_budget": { "type": "number", "minimum": 0, "maximum": 1 }
+  },
+  "additionalProperties": false
+}
+
+Erori standardizate
+
+400 INVALID_DOMAIN
+
+400 INVALID_ENUM_<FIELD>
+
+400 DIVERSITY_OUT_OF_RANGE
+
+422 RULESET_DEFAULT_MISSING (dacă lipsesc defaults pentru domeniu)
+
+409 RULESET_VERSION_CONFLICT (UI rulează cu altă versiune)
+
+B5. Normalizare (pipeline determinist)
+
+Parse: preiei inputul user-ului (raw_7d).
+
+Validate: verifici domain și output_format; verifici tip și enum pentru restul (dacă există).
+
+Fallback: injectezi valorile lipsă din domain_defaults[domain].
+
+Freeze: creezi obiectul final_7d (ordonat canonic).
+
+Signature: calculezi signature_7d = sha256(domain|scale|urgency|complexity|resources|application|output_format).
+
+Persist: păstrezi overrides (ce a venit de la user peste defaults) în telemetry.overrides.
+
+Pseudocod:
+
+function normalize7D(input, ruleset) {
+  assertEnum(input.domain, ruleset.enums.domain, "INVALID_DOMAIN");
+  const defaults = ruleset.engine7d.domain_defaults[input.domain]
+    ?? throwErr("RULESET_DEFAULT_MISSING");
+  const merged = fillMissing(input, defaults);
+  validateAllEnums(merged, ruleset.enums);
+  validateDiversityBudget(input.diversity_budget);
+  return {
+    final_7d: pick(merged, ["domain","scale","urgency","complexity","resources","application","output_format"]),
+    signature_7d: sha256(joinOrdered(merged)),
+    overrides: diff(merged, defaults) // doar ce a schimbat user-ul
+  };
+}
+
+B6. Variabilitate controlată (style & angle only)
+Principiu
+
+diversity_budget controlează doar variația de formă (stil, unghi retoric), nu alterează conținut factual.
+
+Aplici ca coeficient într-un sampler determinist pentru style și angle (seed = project_id + module_id + run_id).
+
+Implementare (schemă)
+type StylePreset = "formal"|"neutral"|"punchy"|"technical"|"narrative";
+type AnglePreset = "pain"|"gain"|"proof"|"novelty"|"risk_reversal";
+
+function sampleStyleAngle(seed, diversity_budget){
+  // diversity_budget = 0 → rămâi pe presetul domeniului
+  // diversity_budget = 1 → explorezi maxim în cadrul whitelist
+  const rng = mulberry32(seed);
+  const variance = clamp(diversity_budget,0,1);
+
+  const styleBase = domainStyleDefault();   // ex: fintech → "technical"
+  const angleBase = domainAngleDefault();   // ex: fintech → "proof"
+
+  const stylePool = whitelistStylesForDomain();
+  const anglePool = whitelistAnglesForDomain();
+
+  const style = (rng() < variance) ? pickAlt(stylePool, styleBase, rng) : styleBase;
+  const angle = (rng() < variance) ? pickAlt(anglePool, angleBase, rng) : angleBase;
+
+  return {style, angle};
+}
+
+Guardrails
+
+Blochezi orice tentativă de a folosi diversity_budget pentru:
+
+facts, metrics, claims, citations, names.
+
+Test de integritate: compari secțiunile “facts” din două rulări identice cu bugete diferite → trebuie să coincidă 1:1.
+
+B7. Exemplu end‑to‑end (input→normalize→signature)
+
+Input user:
+
+{
+  "domain":"education",
+  "output_format":"checklist",
+  "urgency":"planned",
+  "diversity_budget": 0.35
+}
+
+
+Defaults (education): scale=smb, complexity=standard, resources=lean_team, application=training
+Final 7D:
+{domain:education, scale:smb, urgency:planned, complexity:standard, resources:lean_team, application:training, output_format:checklist}
+Signature: sha256("education|smb|planned|standard|lean_team|training|checklist")
+
+B8. Telemetrie
+
+telemetry.ruleset_version
+
+telemetry.overrides (dif vs. defaults)
+
+telemetry.diversity_budget_applied (0..1)
+
+telemetry.enum_validation_passed (bool)
+
+Redactezi conținutul clientului (nu loghezi prompt complet în clar).
+
+B9. API Contract (pre-run)
+Request
+
+POST /api/normalize-7d
+
+{
+  "ruleset_version": "1.0.0",
+  "engine7d": {
+    "domain": "fintech",
+    "output_format": "spec",
+    "urgency": "sprint",
+    "diversity_budget": 0.2
+  }
+}
+
+Response (200)
+{
+  "final_7d": {
+    "domain":"fintech","scale":"enterprise","urgency":"sprint",
+    "complexity":"advanced","resources":"full_stack_org","application":"implementation",
+    "output_format":"spec"
+  },
+  "signature_7d":"a1b2c3…",
+  "overrides":{"urgency":"sprint"},
+  "ruleset_version":"1.0.0"
+}
+
+Erori (exemple)
+
+400 INVALID_ENUM_urgency
+
+400 DIVERSITY_OUT_OF_RANGE
+
+422 RULESET_DEFAULT_MISSING
+
+B10. Testare (acceptance)
+
+Required fields: lipsește domain sau output_format ⇒ 400.
+
+Enum strict: scale="enterprisee" ⇒ 400.
+
+Fallback: oferi doar domain + output_format ⇒ completezi restul corect.
+
+Determinism: același input ⇒ aceeași signature_7d.
+
+Diversity bounds: −0.1 sau 1.1 ⇒ 400.
+
+Facts invariance: rulări cu diversity_budget=0 vs 0.8 ⇒ secțiunea factuală identică.
+
+B11. UI/UX
+
+Marchează câmpurile 7D ca dropdown enum (nu input text).
+
+Arată în timp real final_7d + signature_7d.
+
+Dacă user schimbă domain, recalibrezi vizibil defaults (preview) înainte de confirmare.
+
+Slider pentru diversity_budget (0..1) + tooltip: “variază stilul și unghiul, nu faptele”.
+
+B12. Schelet TypeScript (prod‑ready)
+// lib/validate7d.ts
+export function validateEnums(final7d: Record<string,string>, enums: Record<string,string[]>){
+  for (const k of Object.keys(final7d)){
+    if (!enums[k]) continue;
+    if (!enums[k].includes(final7d[k])) throw err(400, `INVALID_ENUM_${k}`);
+  }
+}
+
+export function normalize7D(input: any, ruleset: Ruleset){
+  if (!input?.domain) throw err(400,"INVALID_DOMAIN");
+  if (!input?.output_format) throw err(400,"MISSING_output_format");
+  const enums = ruleset.engine7d.enums;
+  const defaults = ruleset.engine7d.domain_defaults[input.domain];
+  if (!defaults) throw err(422,"RULESET_DEFAULT_MISSING");
+
+  const merged = {...defaults, ...input}; // user override > defaults
+  validateEnums(merged, enums);
+
+  if (merged.diversity_budget !== undefined){
+    if (typeof merged.diversity_budget!=="number" || merged.diversity_budget<0 || merged.diversity_budget>1){
+      throw err(400,"DIVERSITY_OUT_OF_RANGE");
+    }
+  }
+
+  const final_7d = pick(merged,["domain","scale","urgency","complexity","resources","application","output_format"]);
+  const signature_7d = sha256(Object.values(final_7d).join("|"));
+  return {final_7d, signature_7d, overrides: diff(final_7d, defaults)};
+}
+
+B13. Securitate & conformitate
+
+Blochezi text liber în 7D prin additionalProperties:false + validare server-side.
+
+Loghezi doar overrides și semnătura; nu salvezi inputuri brute ale clientului în clar.
+
+Păstrezi versiunea ruleset_version în fiecare run; refuzi rulari cu mismatch de versiune.
+
+
+
+
+
+
+o specificație completă (executabilă) pentru C. Module (M01–M50) – contract, guardrails, DoR/DoD, teste, KPI, deps, semver – plus schelete de cod.
+
+C. Module (M01–M50) — Specificație completă
+C1) Taxonomie, identificatori, vectori
+
+module_code: string fix, format M## (ex: M07), unic.
+
+vector (1..7):
+1 Strategic · 2 Retoric · 3 Conținut · 4 Cognitiv · 5 Memetic · 6 Date · 7 Criză.
+
+purpose: descriere scurtă, max 140 caractere, la persoană activă (“Generează…”, “Evaluează…”).
+
+Notă: “ce iese din Mₙ intră în Mₙ₊₁” numai dacă semnăturile 7D coincid (vezi A. Arhitectură).
+
+C2) Contract minim (manifest de modul)
+JSON Schema (canon)
+{
+  "$id": "pf/module.schema.json",
+  "type": "object",
+  "required": ["module_code","vector","purpose","inputs","outputs","tests","kpi","guardrails","deps","semver"],
+  "properties": {
+    "module_code": { "type":"string", "pattern":"^M\\d{2}$" },
+    "vector": { "type":"integer", "minimum":1, "maximum":7 },
+    "purpose": { "type":"string", "minLength":3, "maxLength":140 },
+    "inputs": {
+      "type":"object",
+      "required":["engine7d","custom"],
+      "properties":{
+        "engine7d": { "$ref":"pf/engine7d.schema.json" },
+        "custom":   { "type":"object", "additionalProperties":true, "properties":{} }
+      },
+      "additionalProperties":false
+    },
+    "outputs": {
+      "type":"object",
+      "required":["artifact_type","fields"],
+      "properties":{
+        "artifact_type": { "type":"string", "enum":["txt","md","checklist","spec","playbook","json","yaml","diagram","bundle"] },
+        "fields": { "type":"array", "items":{
+          "type":"object",
+          "required":["name","type","required"],
+          "properties":{
+            "name":{"type":"string"},
+            "type":{"type":"string","enum":["string","number","boolean","array","object","markdown"]},
+            "required":{"type":"boolean"},
+            "pattern":{"type":"string"},
+            "example":{"type":["string","number","boolean","object","array","null"]}
+          }
+        }}
+      },
+      "additionalProperties":false
+    },
+    "tests": {
+      "type":"array",
+      "minItems":1,
+      "items":{
+        "type":"object",
+        "required":["name","input","assert"],
+        "properties":{
+          "name":{"type":"string"},
+          "input":{"type":"object"},
+          "assert":{
+            "type":"object",
+            "properties":{
+              "kpi_min":{"type":"integer","minimum":0,"maximum":100},
+              "contains":{"type":"array","items":{"type":"string"}},
+              "not_contains":{"type":"array","items":{"type":"string"}},
+              "schema_ok":{"type":"boolean"},
+              "no_promises":{"type":"boolean"},
+              "facts_grounded":{"type":"boolean"}
+            },
+            "additionalProperties":false
+          }
+        }
+      }
+    },
+    "kpi": {
+      "type":"array",
+      "minItems":1,
+      "items":{
+        "type":"object",
+        "required":["name","weight","formula"],
+        "properties":{
+          "name":{"type":"string"},
+          "weight":{"type":"number","minimum":0,"maximum":1},
+          "formula":{"type":"string"}  // exprimată DSL simplu sau referință la evaluator
+        }
+      }
+    },
+    "guardrails": {
+      "type":"object",
+      "required":["no_promises","no_ungrounded_claims","confidentiality"],
+      "properties":{
+        "no_promises":{"type":"boolean"},
+        "no_ungrounded_claims":{"type":"boolean"},
+        "confidentiality":{"type":"boolean"},
+        "style_rules":{"type":"array","items":{"type":"string"}}
+      },
+      "additionalProperties":false
+    },
+    "deps": {
+      "type":"array",
+      "items":{
+        "type":"object",
+        "required":["module_code","version_range","signature_7d_match"],
+        "properties":{
+          "module_code":{"type":"string","pattern":"^M\\d{2}$"},
+          "version_range":{"type":"string"},      // ex: "^1.2.0"
+          "signature_7d_match":{"type":"boolean"} // true => strict egal
+        }
+      }
+    },
+    "semver": { "type":"string", "pattern":"^\\d+\\.\\d+\\.\\d+$" }
+  },
+  "additionalProperties":false
+}
+
+Interfață TypeScript (schelet)
+export interface PFModule {
+  module_code: `M${number}`;
+  vector: 1|2|3|4|5|6|7;
+  purpose: string;
+  inputs: { engine7d: Engine7D; custom: Record<string, any>; };
+  outputs: { artifact_type: Artifact; fields: OutputField[]; };
+  tests: ModuleTest[];
+  kpi: { name: string; weight: number; formula: string; }[];
+  guardrails: {
+    no_promises: boolean;
+    no_ungrounded_claims: boolean;
+    confidentiality: boolean;
+    style_rules?: string[];
+  };
+  deps: { module_code: `M${number}`; version_range: string; signature_7d_match: boolean; }[];
+  semver: string;
+}
+
+C3) Guardrails (automatizabile)
+
+Obligatorii (hard):
+
+Fără promisiuni (nu garanta rezultate/termene): reject dacă regex găsește \b(garant|100%|sigur|îți promit|asig(ur|u) că)\b sau “în [n] zile vei…”.
+
+Fără date nefondate: dacă apar cifre/afirmații factuale → trebuie să existe ancore (citations[] sau “Assumption:” în manifest). Altfel fail “UNGROUNDED”.
+
+Confidențialitate: nu reproduce conținutul “client_raw” în clar în bundle; orice “paste” din knowledge fără tag safe_to_use → fail.
+
+Opționale (soft, scor):
+
+Stil conform briefului, tonul domeniului, concizie, structură.
+
+Validator (schelet):
+
+export function guardrailCheck(text: string, ctx: { allowCitations: boolean }) {
+  const promises = /\b(garant|100%|sigur|îți promit|asig(?:ur|u)\s+că)\b/i.test(text);
+  if (promises) return err("PROMISES_FORBIDDEN");
+  const facts = /\b\d{1,3}(\.\d{3})*(\,\d+)?%?|\b(Q[1-4]\s*\d{4})\b/.test(text);
+  const hasCitations = /\[(src|cite|ref)\d+\]/i.test(text) || /Assumption:/i.test(text);
+  if (facts && !hasCitations) return err("UNGROUNDED_CLAIM");
+  if (/\bclient_raw\b/i.test(text)) return err("CONFIDENTIALITY_BREACH");
+  return { ok: true };
+}
+
+C4) DoR & DoD (gating automat)
+
+Definition of Ready (DoR) – blocant:
+
+7D complet și valid (enum-only) – inclusiv signature_7d.
+
+Entitlements OK (planul are acces la modul + exportul necesar).
+
+tests definite (≥1) și rulează local “dry-run schema_ok”.
+
+Definition of Done (DoD) – blocant:
+
+Score ≥ 80/100 (clarity, execution, ambiguity, business_fit, ponderi egale).
+
+Bundle complet (fișierele declarate de modul/artifact).
+
+Checksum valid + manifest.json complet.
+
+Metadate salvate în cloud (runs, bundles) + telemetry minim (model, tokens, cost, ruleset_version, overrides).
+
+C5) KPI (per modul)
+
+Fiecare modul își definește KPI locale; test engine le aduce la scorul global (0..100) prin normalizare și ponderi.
+
+Exemple de formula (DSL minim):
+
+coverage(fields_required) → % câmpuri obligatorii populate.
+
+length_between(field,"500-800") → 1/0.
+
+readability_cliog → scor 0..100 din evaluator.
+
+guardrails_ok → 1/0.
+
+Scor global: sum(weight_i * kpi_i_norm), cu gate la 80.
+
+C6) Deps (compatibilitate + semver)
+
+deps[].signature_7d_match = true impune egalitate între signature_7d_out al predecesorului și signature_7d_in curent.
+
+deps[].version_range (semver) trebuie să fie satisfăcut de semver al modulului depins (ex: ^1.3.0).
+
+Fail standard: 422 7D_SIGNATURE_MISMATCH sau 409 MODULE_VERSION_INCOMPATIBLE (include expected, received).
+
+C7) Exemple de module (mini-catalog)
+
+Poți extinde rapid la 50 urmând același contract.
+
+M01 (Strategic) – “Brief & Objectives Synthesizer”
+
+vector: 1 · purpose: sintetizează obiective + constrângeri;
+
+outputs.artifact_type: md · fields: objective[], constraints[], success_criteria[].
+
+guardrails: no_promises, no_ungrounded_claims, confidentiality.
+
+M07 (Conținut) – “Value Proposition Engine”
+
+vector: 3 · outputs: md cu headline, subheadline, proof_points[].
+
+deps: poate consuma M01 (brief) cu signature_7d_match=true.
+
+M14 (Cognitiv) – “Objection Handling Map”
+
+vector: 4 · outputs: json cu objection → rebuttal → proof.
+
+M22 (Memetic) – “Message Polarizer”
+
+vector: 5 · outputs: md cu positioning, contrast_pairs[].
+
+M33 (Date) – “KPI Instrumentation Spec”
+
+vector: 6 · outputs: spec cu events[], props[], dashboards[].
+
+M45 (Criză) – “Crisis Comms Playbook”
+
+vector: 7 · outputs: playbook cu scenarios[], war_room_roles[].
+
+C8) Exemplu complet de manifest (M07)
+{
+  "module_code":"M07",
+  "vector":3,
+  "purpose":"Generează Value Proposition (headline, subheadline, proof_points) aliniat la 7D.",
+  "inputs":{
+    "engine7d":{"domain":"saas","scale":"startup","urgency":"sprint","complexity":"standard","resources":"lean_team","application":"implementation","output_format":"md"},
+    "custom":{"audience":"B2B PMs","product":"DataOps Cloud","differentiator":"10x faster ETL"}
+  },
+  "outputs":{
+    "artifact_type":"md",
+    "fields":[
+      {"name":"headline","type":"markdown","required":true},
+      {"name":"subheadline","type":"markdown","required":true},
+      {"name":"proof_points","type":"array","required":true}
+    ]
+  },
+  "tests":[
+    {
+      "name":"Baseline SaaS",
+      "input":{"custom":{"audience":"B2B PMs","product":"DataOps Cloud","differentiator":"10x faster ETL"}},
+      "assert":{"kpi_min":80,"schema_ok":true,"no_promises":true,"facts_grounded":true,"contains":["DataOps","ETL"]}
+    }
+  ],
+  "kpi":[
+    {"name":"coverage_required_fields","weight":0.35,"formula":"coverage(fields_required)"},
+    {"name":"specificity","weight":0.25,"formula":"readability_cliog >= 55 ? 100 : 70"},
+    {"name":"proof_density","weight":0.25,"formula":"min(len(proof_points)*10,100)"},
+    {"name":"guardrails_ok","weight":0.15,"formula":"guardrails_ok ? 100 : 0"}
+  ],
+  "guardrails":{"no_promises":true,"no_ungrounded_claims":true,"confidentiality":true,"style_rules":["clar, fără superlative absolute"]},
+  "deps":[{"module_code":"M01","version_range":"^1.0.0","signature_7d_match":true}],
+  "semver":"1.2.0"
+}
+
+C9) Execuție & evaluare (schelete de cod)
+
+Validare contract + rulat testele de modul
+
+export async function registerModule(m: PFModule) {
+  validateAgainstSchema(m, "pf/module.schema.json");
+  if (!satisfiesWeights(m.kpi)) throw err(400,"KPI_WEIGHTS_INVALID");
+  await db.insert("modules", m);
+}
+
+export async function runModule(moduleId: string, runInput: RunInput) {
+  const mod = await db.getModule(moduleId);
+  const { final_7d, signature_7d } = normalize7D(runInput.engine7d, ruleset);
+  checkEntitlements(final_7d, user.plan, mod.outputs.artifact_type);
+  await checkDepsSatisfied(mod.deps, runInput.depRefs); // include 7D signature check
+
+  const draft = await llmExecute(mod, final_7d, runInput.custom); // produce text/struct
+  guardrailCheckOrThrow(draft.text ?? JSON.stringify(draft));
+  const kpiScore = await evaluateKPI(mod.kpi, draft, final_7d);
+  const score = toGlobalScore(kpiScore); // 0..100
+
+  const bundle = await exportBundle({mod, draft, score, final_7d});
+  persistRunAndBundle({mod, score, final_7d, signature_7d, bundle});
+  if (score < ruleset.defaults.scoring.pass_gate) return tightenOnceOrFail(...);
+  return { score, bundle };
+}
+
+
+Tighten-once (auto‑fix unic)
+
+re-rulezi cu: diversity_budget ↓ 0.15, length controls, add_boilerplate pentru câmpuri lipsă.
+
+dacă după iterație <80 ⇒ fail.
+
+C10) Export (mini-spec)
+
+Fișierele din outputs.artifact_type + cele standard (prompt.*, manifest.json, checksum.sha256).
+
+manifest.json include: project, module, run_id, 7D, score, kpi_breakdown, file_hashes, license_notice.
+
+Checksum pe ordinea canonică (vezi Rulebook F).
+
+C11) Persistență (cloud)
+
+modules (manifest JSON, semver, enabled),
+
+runs (7D, score, telemetry, signatures),
+
+bundles (hashes, path, manifest, checksum).
+
+Politică: niciun Run fără 7D valid, niciun Bundle fără manifest + checksum.
+
+C12) DoR/DoD – funcții utilitare
+export function checkDoR(mod: PFModule, ctx: {final_7d?: Engine7D, entitlements: Ent}) {
+  if (!ctx.final_7d) throw err(400,"DOR_MISSING_7D");
+  if (!hasAccess(ctx.entitlements, mod)) throw err(403,"DOR_ENTITLEMENTS_FAIL");
+  if (!mod.tests?.length) throw err(400,"DOR_TESTS_UNDEFINED");
+  return true;
+}
+
+export function checkDoD(result: {score:number, bundle: BundleMeta}) {
+  if (result.score < 80) throw err(422,"DOD_SCORE_LT_80");
+  if (!result.bundle?.checksum_ok) throw err(422,"DOD_CHECKSUM_INVALID");
+  if (!result.bundle?.manifest_ok) throw err(422,"DOD_MANIFEST_INCOMPLETE");
+  if (!result.bundle?.persisted) throw err(500,"DOD_NOT_PERSISTED");
+  return true;
+}
+
+C13) UI/UX (legat de module)
+
+“Selector Module” afișează numai M## permise de entitlements și compatibile 7D.
+
+Editor: încarcă șablonul modulului; câmpurile outputs.fields apar ca form; nu permiți ștergerea secțiunilor obligatorii.
+
+Test Engine: pentru fiecare run, afișezi scor + dif vs. outputs.fields (ce lipsește / ce e extra) și incidente de guardrails.
+
+C14) Semver & migrare
+
+semver al modulului crește:
+
+MAJOR: schimbă schema de outputs.fields sau enums 7D suportate;
+
+MINOR: adaugă câmpuri opționale / noi KPI;
+
+PATCH: fixuri fără impact de contract.
+
+La MAJOR, livrezi script de compatibilitate (mapare câmpuri vechi → noi, sau marcate deprecated).
+
+
+
+
+
+Promptul este tratat ca artefact executabil, cu secțiuni fixe în prompt.txt, astfel încât să fie verificabil, scorabil și exportabil.
+
+D. Prompt (standard universal)
+1. Secțiuni obligatorii
+1.1 ROLE & GOAL
+
+Rol: definești clar poziția asistentului (ex: „Consultant FinTech Audit”)
+
+Obiectiv: scop precis (ex: „generează un spec pentru reversarea riscului perceput”).
+
+Se păstrează concis (2–3 fraze).
+
+1.2 CONTEXT & 7D
+
+Mapare directă din ruleset.yml → {domain, scale, urgency, complexity, resources, application, output_format}.
+
+Adaugi jargon, KPI și note de compliance din params/domain/*.json.
+
+Evită text liber: toate valorile 7D sunt enum-only.
+
+1.3 OUTPUT SPEC
+
+Format: se declară explicit (ex: spec, playbook, json).
+
+Structură câmpuri: secțiuni așteptate (titluri, câmpuri JSON, checklist).
+
+Exemplu: se include un fragment minim de output valid.
+
+Legătură cu KPI: se notează clar indicatorii care trebuie să apară (ex: conversion_rate, dropoff_delta).
+
+1.4 PROCESS
+
+Pași operaționali (max 7) — fără expunere de „chain-of-thought”, doar logica.
+
+Ex.: collect → analyze → generate → validate → adapt → format.
+
+Procesul devine predictibil pentru Test Engine și re-executabil la nevoie.
+
+1.5 GUARDRAILS
+
+Interdicții: fără promisiuni temporale, fără afirmații nefondate, fără PII brute.
+
+Compliance: preia regulile implicite din domain (FinTech → AML/KYC/PCI; Edu → bias disclosure).
+
+Stil: conform style_bias per domeniu (audit-like, gamified, persuasiv etc.).
+
+Fallback: ce faci dacă lipsesc date (ex: „solicită input suplimentar”, „folosește exemplu generic conform domeniului”).
+
+1.6 EVALUATION HOOKS
+
+Criterii scorabile de Evaluator AI (0–100):
+
+Claritate
+
+Execuție conform SPEC
+
+Ambiguitate minimă
+
+Aliniere (7D + brief)
+
+Business Fit
+
+Fiecare hook mapat pe rubrică oficială Evaluator.
+
+1.7 TELEMETRY KEYS
+
+Ce se loghează la fiecare run:
+
+run_id, model, tokens, cost_usd
+
+param_set_7d (snapshot complet)
+
+score (clarity, execution, etc.)
+
+policy_hits (care guardrails au fost aplicate)
+
+Telemetria intră în telemetry.json din bundle.
+
+2. Mini-spec JSON (schelet prompt)
+{
+  "role_goal": "Consultant FinTech Audit — generează un spec de reversare risc.",
+  "context_7d": {
+    "domain": "fintech",
+    "scale": "enterprise",
+    "urgency": "sprint",
+    "complexity": "advanced",
+    "resources": "full_stack_org",
+    "application": "implementation",
+    "output_format": "spec"
+  },
+  "output_spec": {
+    "format": "spec",
+    "sections": ["Context", "Risk Map", "Trust Devices", "Compliance"]
+  },
+  "process": ["collect", "analyze", "generate", "validate", "format"],
+  "guardrails": {
+    "policy": ["gdpr", "pci_dss", "no_unverified_claims"],
+    "style": "formal, layered",
+    "fallback": "solicită active minime sau folosește standard preset"
+  },
+  "evaluation_hooks": ["clarity>=80", "execution>=80", "business_fit>=80"],
+  "telemetry_keys": ["run_id", "model", "tokens", "cost_usd", "scores", "policy_hits"]
+}
+
+3. Reguli de validare prompt
+
+Toate secțiunile sunt obligatorii; UI nu permite ștergerea lor.
+
+Score <80 ⇒ reparație automată (1 iterare) sau fail.
+
+Export bundle: prompt.txt + prompt.md + prompt.json + prompt.pdf + telemetry.json + checksum.sha256.
+
+
+
+
+
+
+
+specificația completă pentru E. Test & Score — rubrici cuantificabile, formule, evaluator AI, auto‑fix, contract API și telemetrie. O faci plug‑and‑play.
+
+E. Test & Score — specificație executabilă
+E1. Obiectiv
+
+Evaluezi fiecare run pe 4 axe, 0–25 fiecare (total 0–100). Gate-ul este 80. Sub 80: rulezi o singură iterație de auto‑fix „tighten-once”; dacă rămâne <80 ⇒ fail.
+
+E2. Rubrici cuantificabile (0–25)
+1) Claritate (0–25) — „respectă brief + 7D”
+
+Metrici:
+
+7D match (0–10): toate valorile din 7D apar și se reflectă în text/structură.
+Scor = (#dimensiuni reflectate / 7) × 10.
+
+Brief coverage (0–10): acoperi cerințele explicite din input/custom.
+Scor = (#cerințe acoperite / #cerințe totale) × 10.
+
+Limbaj neambiguu (0–5): fraze active, termeni preciși; penalizezi hedging.
+
+Hedging lexicon (penalizări): poate, posibil, probabil, ar putea, încercăm, ~, ?, „etc.”
+−1p per 3 occurențe (min 0).
+
+Formula Claritate:
+clarity = clamp(7D_match + brief_coverage + clarity_style, 0, 25)
+
+2) Execuție (0–25) — „output conform spec”
+
+Metrici:
+
+Schema coverage (0–15): câmpuri obligatorii populate conform outputs.fields.
+Scor = (required_filled / required_total) × 15.
+
+Format compliance (0–5): formatul cerut (md/json/spec/checklist) respectat 1:1.
+Scor: 0/2/5 (invalid/parțial/valid).
+
+Guardrails OK (0–5): fără promisiuni, fără date nefondate, fără încălcări confidențiale.
+Scor: 0 dacă oricare guardrail e încălcat; altfel 5.
+
+Formula Execuție:
+execution = coverage_15 + format_5 + guardrails_5
+
+3) Ambiguitate (0–25) — „decizie maximă, întrebări minime”
+
+Metrici (inverse):
+
+Interogații nejustificate (0–10): count ? care nu sunt în secțiunea „Questions to client”.
+Scor = 10 − min(10, ceil(#q/2)).
+
+Hedging (0–10): penalizezi prezența hedging lexicon (vezi Claritate).
+Scor = 10 − min(10, floor(hedging_hits/2)).
+
+Decizie operațională (0–5): existența unor pași concreți (imperativ), SLA/owner clar.
+Scor: 0/3/5 (absent/parțial/clar).
+
+Formula Ambiguitate:
+ambiguity = interogatii_10 + hedging_10 + decizie_5
+
+Notă: „Ambiguitate” scade când există întrebări nejustificate; un scor mare = ambiguitate mică (numele e istoric, păstrezi formula ca mai sus).
+
+4) Business Fit (0–25) — „utilitate comercială directă”
+
+Metrici:
+
+Outcome alignment (0–10): livrabilul duce la un rezultat comercial (lead, CR, CAC↓, LTV↑).
+Scor: 0–10 după maparea explicită a efectului în text.
+
+Actionability (0–10): are next steps cu owner, deadline, resurse.
+Scor: checklist 0–10 (2p per element din: owner, due, resources, priority, success_metric).
+
+Proof/use‑case (0–5): minim 1 element de „proof” sau exemplu aplicat domeniului.
+Scor: 0/3/5.
+
+Formula Business Fit:
+business_fit = outcome_10 + actionability_10 + proof_5
+
+E3. Scor total, ponderi și gate
+
+Ponderi egale (conform Rulebook): 25p fiecare.
+
+total = clarity + execution + ambiguity + business_fit (0–100).
+
+Gate:
+
+dacă total ≥ 80 ⇒ PASS.
+
+altfel ⇒ tighten-once; dacă total_2 ≥ 80 ⇒ PASS; altfel ⇒ FAIL.
+
+E4. Evaluator AI — contract
+Intrare (artefact+spec)
+{
+  "run_id":"UUID",
+  "final_7d": {...},
+  "output_spec":{"format":"spec","fields":[...]},
+  "artifact": "… text sau JSON …",
+  "brief": {"requirements":["…","…"], "must_have":["…"]},
+  "guardrails": {"no_promises":true,"no_ungrounded_claims":true,"confidentiality":true}
+}
+
+Ieșire (scor + breakdown)
+{
+  "scores": {
+    "clarity": 22,
+    "execution": 21,
+    "ambiguity": 20,
+    "business_fit": 23,
+    "total": 86
+  },
+  "rubric": {
+    "clarity": {"7D_match":9,"brief_coverage":9,"clarity_style":4},
+    "execution": {"coverage_15":12,"format_5":5,"guardrails_5":4},
+    "ambiguity": {"interogatii_10":8,"hedging_10":7,"decizie_5":5},
+    "business_fit": {"outcome_10":9,"actionability_10":8,"proof_5":6}
+  },
+  "incidents": [],
+  "evidence": {
+    "missing_fields": ["success_metric"],
+    "hedging_hits": ["posibil","probabil"],
+    "question_spots": [234, 612]
+  }
+}
+
+E5. Auto‑fix „tighten-once” (o singură iterație)
+
+Strategie:
+
+Completezi schema: generezi placeholder-uri marcate [TBD] pentru câmpurile required lipsă.
+
+Reduci hedging: rescrii frazele cu „poate/probabil/ar putea” în imperative operaționale.
+
+Elimini interogații: muți întrebările în secțiunea „Open Questions” (ultimul bloc, max 3).
+
+Adaugi actionability: inserezi owner, due, resources, priority, success_metric.
+
+Păstrezi facts: nu modifici cifre/afirmații factuale; dacă lipsesc surse, marchezi Assumption:.
+
+Pseudocod:
+
+function tightenOnce(artifact, spec, evidence){
+  artifact = fillRequiredFields(artifact, spec.fields, "[TBD]");
+  artifact = removeHedging(artifact);        // lexicon replace
+  artifact = relocateQuestions(artifact);    // move to "Open Questions"
+  artifact = ensureActionBlock(artifact);    // owner, due, resources, priority, success_metric
+  return artifact;
+}
+
+
+După tighten-once, re‑rulezi evaluatorul. A doua oară, fără alt auto‑fix.
+
+E6. Validatori tehnici
+Guardrails detector (rezumat)
+
+Promisiuni: regex \b(garant|100%|sigur|îți promit|asig(?:ur|u)\s+că)\b ⇒ incident PROMISES_FORBIDDEN.
+
+Ungrounded: orice număr/%/dată fără cite[]/Assumption: ⇒ incident UNGROUNDED_CLAIM.
+
+Confidențialitate: detectezi markeri de knowledge neetichetat safe_to_use:false ⇒ CONFIDENTIALITY_BREACH.
+
+Schema coverage
+
+Pentru outputs.fields, verifici:
+
+required=true ⇒ non‑empty;
+
+type valid;
+
+pattern (dacă există).
+
+E7. API — evaluare
+POST /api/evaluate
+
+Request
+
+{
+  "run_id":"UUID",
+  "artifact": "...",
+  "output_spec": {...},
+  "final_7d": {...},
+  "brief": {...},
+  "guardrails": {...},
+  "tighten": false
+}
+
+
+Response 200
+
+{
+  "scores": { "clarity":22, "execution":21, "ambiguity":20, "business_fit":23, "total":86 },
+  "incidents": [],
+  "next_action": "pass|tighten|fail"
+}
+
+
+Politică next_action:
+
+total ≥ 80 ⇒ pass
+
+total < 80 și tighten=false ⇒ tighten
+
+total < 80 și tighten=true ⇒ fail
+
+E8. Telemetrie (bundle & DB)
+
+telemetry.scores: clarity, execution, ambiguity, business_fit, total.
+
+telemetry.kpi_breakdown: sub‑metrici (ex: coverage_15, hedging_hits, etc.).
+
+telemetry.policy_hits: [PROMISES_FORBIDDEN, ...]
+
+telemetry.tighten_once_applied: boolean.
+
+Nu salvezi textul integral al clientului în clar; păstrezi doar hash + dif-uri.
+
+E9. UI/UX pentru scor
+
+Afișezi scorecard 4×25 + bară totală; verde la ≥80.
+
+Panou „Ce lipsește vs SPEC” (listă de câmpuri) + „Unde ai hedging/întrebări”.
+
+CTA „Tighten once” (vizibil doar dacă total <80 și nu a fost folosit).
+
+E10. Edge cases
+
+Output JSON invalid: execution.format_5 = 0; auto‑fix încearcă re‑serializare formatată.
+
+Spec fără required: rulezi doar format + guardrails (max Execuție 10/25).
+
+Module care produc bundle: execuția verifică și prezența fișierelor standard (prompt.*, manifest, checksum) la scor.
+
+E11. Teste de acceptanță (minim)
+
+Happy path: artefact conform ⇒ total 85–95 ⇒ pass.
+
+Hedging & întrebări: 8 „poate” și 6 „?” ⇒ Ambiguitate ≤ 12; după tighten ⇒ ≥ 18.
+
+Schema incompletă: lipsesc 3 fields din 6 ⇒ Execuție ≤ 15; după tighten ⇒ ≥ 20.
+
+Promisiuni: „garantat 100%” ⇒ incident guardrail ⇒ Execuție ≤ 20; tighten elimină promisiunea ⇒ ≥ 22.
+
+Fail final: după tighten, total rămâne <80 ⇒ FAIL + motivare (top 3 deficite).
+
+E12. Implementare (schelet TS)
+export function scoreClarity(ctx: Ctx): number {
+  const s7 = reflect7D(ctx.artifact, ctx.final_7d); // 0..10
+  const br = coverBrief(ctx.artifact, ctx.brief);   // 0..10
+  const hl = clamp(5 - Math.floor(ctx.evidence.hedging_hits/3), 0, 5);
+  return s7 + br + hl;
+}
+
+export function scoreExecution(ctx: Ctx): number {
+  const cov = Math.round((ctx.evidence.required_filled/ctx.evidence.required_total)*15);
+  const fmt = ctx.evidence.format_ok ? 5 : (ctx.evidence.format_partial ? 2 : 0);
+  const grd = ctx.evidence.guardrail_incidents.length ? 0 : 5;
+  return cov + fmt + grd;
+}
+
+export function scoreAmbiguity(ctx: Ctx): number {
+  const q = clamp(10 - Math.ceil(ctx.evidence.free_questions/2), 0, 10);
+  const h = clamp(10 - Math.floor(ctx.evidence.hedging_hits/2), 0, 10);
+  const d = ctx.evidence.actionability_decision ? 5 : (ctx.evidence.actionability_partial ? 3 : 0);
+  return q + h + d;
+}
+
+export function scoreBusinessFit(ctx: Ctx): number {
+  const outcome = ctx.evidence.outcome_aligned ? ctx.evidence.outcome_strength : 0; // 0..10
+  const action  = ctx.evidence.actionability_score; // 0..10
+  const proof   = ctx.evidence.proof_present ? (ctx.evidence.proof_strong?5:3) : 0;
+  return outcome + action + proof;
+}
+
+export function totalScore(s: Scores): number {
+  return s.clarity + s.execution + s.ambiguity + s.business_fit;
+}
+
+
+
+
+
+
+specificația completă pentru F. Export & Checksum — deterministică, verificabilă, gata de implementare.
+
+F. Export & Checksum — specificație executabilă
+F1. Obiectiv
+
+Ambalezi fiecare run valid într-un bundle imutabil, verificabil criptografic, cu manifest minim și checksum canonic.
+
+F2. Structura bundle (path, naming, drepturi)
+/bundles/{project}/{date}/{domain}/{M##}/{slug}/
+  prompt.txt
+  prompt.json
+  prompt.md
+  prompt.pdf
+  manifest.json
+  checksum.sha256
+
+
+{project}: slug proiect (kebab-case, ASCII, max 40).
+
+{date}: YYYY-MM-DD (UTC).
+
+{domain}: exact din 7D (enum).
+
+{M##}: cod modul (ex: M07).
+
+{slug}: slug livrabil (kebab-case, max 60), generat din purpose|title|audience. Coliziuni ⇒ sufix -{run_id_short}.
+
+Reguli de fișier:
+
+Encoding: UTF‑8 LF (line endings normalizate).
+
+Nicio extensie ascunsă; nume exacte ca mai sus.
+
+Permisiuni storage: read‑only după export; scriere doar prin pipeline de export.
+
+F3. Conținutul fișierelor (contract minim)
+1) prompt.txt
+
+Conține secțiunile standard (ROLE & GOAL, CONTEXT & 7D, OUTPUT SPEC, PROCESS, GUARDRAILS, EVALUATION HOOKS, TELEMETRY KEYS).
+
+Fără PII sau „client_raw” în clar; dacă e necesar → redactezi [REDACTED].
+
+2) prompt.json
+
+Snapshot structurat al promptului + 7D final + parametri custom.
+
+Chei ordonate alfabetic (determinism); indent 2.
+
+3) prompt.md
+
+Versiune lizibilă (titluri H1–H3, liste), mapată 1:1 pe spec.
+
+4) prompt.pdf
+
+Randezi din prompt.md (Puppeteer/Chrome headless).
+
+Setări implicite: A4, margini 16mm, header cu {project} · {domain} · {M##}, footer cu număr pagină și run_id.
+
+Fonturi embed (licențe permisive); fără metadate volatile (normalizezi Producer/CreationDate).
+
+5) manifest.json (schema minimă)
+{
+  "version": "1.0.0",
+  "project": "ai-idei",
+  "domain": "fintech",
+  "module": "M07",
+  "run_id": "2d6a1f7e-5a2a-4c7a-9c01-7c7d4b7f1e2a",
+  "final_7d": {
+    "domain":"fintech","scale":"enterprise","urgency":"sprint",
+    "complexity":"advanced","resources":"full_stack_org",
+    "application":"implementation","output_format":"spec"
+  },
+  "score": 86,
+  "kpi": {
+    "clarity": 22,
+    "execution": 21,
+    "ambiguity": 20,
+    "business_fit": 23,
+    "total": 86
+  },
+  "files": [
+    "prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json","checksum.sha256"
+  ],
+  "file_hashes": {
+    "prompt.txt":  "sha256:…",
+    "prompt.json": "sha256:…",
+    "prompt.md":   "sha256:…",
+    "prompt.pdf":  "sha256:…",
+    "manifest.json":"sha256:…"
+  },
+  "bundle_checksum": "sha256:…", 
+  "exported_at": "2025-08-19T01:23:45Z",
+  "license_notice": "© PROMPTFORGE v3 — licensed to ORG X. Redistribution prohibited.",
+  "entitlements": { "plan":"pro", "export_caps":["txt","md","pdf","json"] }
+}
+
+
+file_hashes nu include checksum.sha256 (evită recursivitate).
+
+bundle_checksum = SHA256(concat(hashurile fișierelor în ordinea canonică, cu \n).
+
+version = versiunea spec‑ului de manifest (nu ruleset).
+
+6) checksum.sha256 (format canonic)
+<sha256>  prompt.txt
+<sha256>  prompt.json
+<sha256>  prompt.md
+<sha256>  prompt.pdf
+<sha256>  manifest.json
+BUNDLE  <sha256>
+
+
+Două spații între hash și nume fișier (format shasum -a 256 compatibil).
+
+Ultima linie BUNDLE <sha256> este hash‑ul de pachet (vezi F5).
+
+F4. Entitlements & gating la export
+
+Pilot: export permis doar prompt.txt, prompt.md. prompt.pdf, prompt.json blocate (403).
+
+Pro: txt, md, pdf, json permise.
+
+Enterprise: toate + API de export + multi‑industry.
+
+UI ascunde opțiunile nepermise; API blochează oricum.
+
+F5. Hashing & checksum (determinism complet)
+Algoritmi
+
+Hash per fișier: SHA‑256 pe bytes exacti.
+
+Concatenare canonică pentru bundle_checksum:
+
+Ordine: ["prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json"]
+
+Separator: \n (LF), fără linie nouă după ultimul hash.
+
+String de intrare = doar hash‑urile hex (fără nume fișier).
+Exemplu: hash(prompt.txt) + "\n" + hash(prompt.json) + …
+
+Pseudocod
+const ORDER = ["prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json"];
+
+function sha256Hex(buf: Buffer): string { /* ... */ }
+
+function fileHashMap(dir: string): Record<string,string> {
+  const out: Record<string,string> = {};
+  for (const f of ORDER) out[f] = "sha256:" + sha256Hex(read(dir+f));
+  return out;
+}
+
+function bundleChecksum(fileHashes: Record<string,string>): string {
+  const joined = ORDER.map(f => fileHashes[f].replace(/^sha256:/,"")).join("\n");
+  return "sha256:" + sha256Hex(Buffer.from(joined, "utf8"));
+}
+
+function writeChecksumFile(dir: string, fileHashes: Record<string,string>, bundleHash: string){
+  const lines = ORDER.map(f => `${fileHashes[f].replace(/^sha256:/,"")}  ${f}`);
+  lines.push(`BUNDLE  ${bundleHash.replace(/^sha256:/,"")}`);
+  writeFile(dir+"checksum.sha256", lines.join("\n"));
+}
+
+
+Determinism PDF
+
+Dezactivezi metadate dinamice: setezi manual /CreationDate, /ModDate la exported_at ISO; normalizezi producător și autor.
+
+Randezi fără timestamp în conținut (folosește run_id pentru trasabilitate, nu pentru hash stabil).
+
+F6. Pipeline de export (server)
+
+Pre‑condiții
+
+Run PASS (Score ≥ 80) sau PASS după tighten‑once.
+
+Entitlements OK pentru fișierele cerute.
+
+7D valid + signature_7d prezent.
+
+Generare fișiere
+
+prompt.txt/prompt.md/prompt.json: din artefactul modulului + template‑uri.
+
+prompt.pdf: din prompt.md (Puppeteer) cu CSS standard print.
+
+manifest.json: compui conform F3, cu chei sortate alfabetic (stabil).
+
+Hashing
+
+Calculezi file_hashes (fără checksum).
+
+Calculezi bundle_checksum.
+
+Scrii checksum.sha256.
+
+Persistență
+
+Scrii în pathul final; setezi read‑only.
+
+În DB: bundles(path_prefix, files[], file_hashes, bundle_checksum, exported_at, license_notice).
+
+Verificare post‑scriere
+
+Re‑calculezi hashurile din disc; compari cu file_hashes.
+
+Marci bundle checksum_ok=true, manifest_ok=true, persisted=true.
+
+Răspuns API
+
+201 Created + manifest.json (body) + URL‑uri de descărcare per fișier (S3 presigned dacă folosești object storage).
+
+F7. API
+POST /api/export/{run_id}
+
+Body: { "files": ["txt","md","pdf","json"], "force": false }
+
+Răspuns: 201 + manifest complet.
+
+Erori standardizate
+
+400 RUN_NOT_PASSING
+
+403 ENTITLEMENT_REQUIRED
+
+409 BUNDLE_ALREADY_EXISTS (dacă force=false)
+
+422 PDF_RENDER_ERROR
+
+500 EXPORT_WRITE_FAILED
+
+GET /api/bundles/{bundle_id}
+
+Returnezi manifest + listezi fișiere + linkuri time‑boxed.
+
+POST /api/verify-bundle
+
+Body: manifest + checksum.sha256 → re‑calculezi și întorci checksum_ok.
+
+F8. Verificare client (script)
+# în directorul bundle-ului
+shasum -a 256 prompt.txt prompt.json prompt.md prompt.pdf manifest.json > local.sha256
+diff -u <(sed '$d' checksum.sha256) local.sha256 && \
+tail -n1 checksum.sha256 | awk '{print $2}' | \
+  ( # recompute bundle hash
+    awk '{print $1}' local.sha256 | tr -d '\n' | shasum -a 256 | awk '{print $1}'
+  )
+
+
+Compari primele 5 linii (per‑fișier).
+
+Recalculezi BUNDLE din local și compari cu linia BUNDLE.
+
+F9. Securitate & conformitate
+
+PII: redactezi automat în prompt.* dacă lipsesc consimțăminte; export public ⇒ PII anonimizat.
+
+Knowledge scoping: incluzi doar conținut tag‑uit safe_to_use=true.
+
+Secret management: niciun secret/token în fișiere.
+
+Watermark: în PDF footer: „Confidential · {org} · {run_id}”.
+
+F10. Retenție, versiuni, idempotent
+
+Retenție recomandată: 365 zile (configurabil).
+
+POST /api/export este idempotent pe {run_id, files_set}; dacă bundle există ⇒ 409 (sau rescrii cu force=true).
+
+manifest.version permite migrarea schema (MAJOR change ⇒ script de compatibilitate).
+
+F11. UI/UX
+
+Afișezi lista de fișiere eligibile per plan, cu bife.
+
+După export: card bundle cu:
+
+scor, 7D, bundle_checksum (copy), „Descarcă PDF”, „Verifică checksum”.
+
+Banner galben dacă lipsesc permisiuni (upsell plan/pachet industrie).
+
+F12. Teste de acceptanță
+
+Export Pro (txt+md+pdf+json) ⇒ bundle valid, checksum consistent.
+
+Pilot încearcă pdf ⇒ 403.
+
+PDF re‑randat ⇒ hash pdf se schimbă, bundle_checksum diferit, per‑file la fel pentru rest.
+
+Corupție fișier ⇒ verify-bundle returnează checksum_ok=false.
+
+Re‑export cu force=true ⇒ suprascrii atomic, nou exported_at.
+
+F13. Schelet TypeScript (prod‑ready)
+export async function exportBundle(runId: string, reqFiles: ("txt"|"md"|"pdf"|"json")[]) {
+  const run = await db.runs.get(runId);
+  assertRunPassing(run);
+  assertEntitlements(run.org_id, reqFiles);
+
+  const dir = resolveBundlePath(run);
+  await fs.mkdir(dir, { recursive: true });
+
+  // 1) generate files
+  const files = await generateFiles(run, reqFiles); // returns { "prompt.txt":Buffer, ... }
+  // 2) manifest (partial)
+  const manifest = baseManifest(run, Object.keys(files).sort());
+  // 3) write files (except checksum)
+  for (const [name,buf] of Object.entries(files)) await fs.writeFile(path.join(dir,name), buf);
+  await fs.writeFile(path.join(dir,"manifest.json"), Buffer.from(JSON.stringify(sortKeys(manifest), null, 2)));
+
+  // 4) hashing
+  const fileHashes = fileHashMap(dir);
+  const bundleHash = bundleChecksum(fileHashes);
+
+  // 5) checksum file
+  writeChecksumFile(dir, fileHashes, bundleHash);
+
+  // 6) finalize manifest
+  manifest.file_hashes = fileHashes;
+  manifest.bundle_checksum = bundleHash;
+  manifest.exported_at = new Date().toISOString();
+  await fs.writeFile(path.join(dir,"manifest.json"), Buffer.from(JSON.stringify(sortKeys(manifest), null, 2)));
+
+  // 7) persist DB
+  await db.bundles.insert({ run_id: runId, path_prefix: dir, file_hashes, bundle_checksum: bundleHash, exported_at: manifest.exported_at, license_notice: manifest.license_notice });
+
+  return manifest;
+}
+
+
+
+
+
+
+
+G. Versionare & Istoric complet, executabil pentru Supabase/Postgres (RLS, DDL, funcții, migrare semver, audit). Ține‑l ca blueprint direct pentru repo.
+
+G. Versionare & Istoric — specificație executabilă
+G1) Principii
+
+SSOT: ruleset.yml guvernează defaults (7D, scoring, export, enums). DB nu stochează defaults ca sursă activă; doar snapshots per run/bundle.
+
+Overrides: orice abatere de la defaults se loghează la nivel de runs.telemetry->overrides + ruleset_overrides_log.
+
+Semver: schimbările de contract (schema modulelor) urmează semver; MAJOR ⇒ script de compatibilitate și gating.
+
+G2) Tabele (DDL minim + chei + indici)
+1) projects
+create table projects(
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  slug text unique not null check (slug ~ '^[a-z0-9-]{3,40}$'),
+  name text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index projects_org_idx on projects(org_id);
+
+2) modules (catalog în vigoare; ultima versiune activă per cod)
+create table modules(
+  id bigserial primary key,
+  module_code text not null check (module_code ~ '^M\\d{2}$'),
+  semver text not null check (semver ~ '^[0-9]+\\.[0-9]+\\.[0-9]+$'),
+  vector smallint not null check (vector between 1 and 7),
+  purpose text not null,
+  manifest jsonb not null,              -- contract complet (schema din C2)
+  enabled boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique (module_code, semver)
+);
+create index modules_code_enabled_idx on modules(module_code, enabled);
+
+3) module_versions (istoric complet de versiuni)
+create table module_versions(
+  id bigserial primary key,
+  module_code text not null,
+  semver text not null,
+  manifest jsonb not null,
+  created_at timestamptz not null default now(),
+  unique(module_code, semver)
+);
+create index module_versions_code_idx on module_versions(module_code);
+
+4) runs
+create table runs(
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  project_id uuid not null references projects(id) on delete cascade,
+  module_code text not null,
+  module_semver text not null,
+  status text not null check (status in ('queued','running','success','fail')),
+  final_7d jsonb not null,
+  signature_7d text not null,
+  module_params jsonb not null default '{}'::jsonb,
+  scores jsonb,                          -- {clarity, execution, ambiguity, business_fit, total}
+  score_total int,
+  telemetry jsonb not null default '{}'::jsonb, -- {model,tokens,cost,overrides,ruleset_version,policy_hits,...}
+  error jsonb,
+  started_at timestamptz,
+  finished_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index runs_org_idx on runs(org_id, created_at desc);
+create index runs_project_idx on runs(project_id, created_at desc);
+create index runs_module_idx on runs(module_code, module_semver);
+create index runs_signature_idx on runs(signature_7d);
+
+5) bundles
+create table bundles(
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  run_id uuid not null references runs(id) on delete cascade,
+  path_prefix text not null,
+  files jsonb not null,                  -- ["prompt.txt","prompt.md",...]
+  file_hashes jsonb not null,            -- {"prompt.txt":"sha256:..."}
+  bundle_checksum text not null,         -- "sha256:..."
+  exported_at timestamptz not null default now(),
+  license_notice text not null,
+  manifest jsonb not null,               -- manifest final scris in bundle
+  persisted boolean not null default false
+);
+create unique index bundles_run_unique on bundles(run_id);
+create index bundles_org_idx on bundles(org_id, exported_at desc);
+
+6) plans
+create table plans(
+  code text primary key,                 -- 'pilot'|'pro'|'enterprise'
+  name text not null,
+  feature_flags jsonb not null,          -- {"canExportMD":true,...}
+  price_cents int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+7) entitlements
+create table entitlements(
+  id bigserial primary key,
+  org_id uuid not null,
+  plan_code text not null references plans(code),
+  source text not null check (source in ('plan','addon','pack','license')),
+  payload jsonb not null default '{}'::jsonb,   -- detalii industrie, caps, seats etc.
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index entitlements_org_idx on entitlements(org_id, active);
+
+8) industries
+create table industries(
+  code text primary key,                 -- 'fintech','ecommerce',...
+  name text not null,
+  config jsonb not null                  -- preset domain_config (jargon,KPI,compliance,style_bias)
+);
+
+9) ruleset_versions & ruleset_overrides_log
+create table ruleset_versions(
+  id bigserial primary key,
+  version text not null,                 -- "1.0.3"
+  applied_at timestamptz not null default now(),
+  checksum text not null                 -- sha256 al fișierului ruleset.yml
+);
+create unique index ruleset_versions_ver_u on ruleset_versions(version);
+
+create table ruleset_overrides_log(
+  id bigserial primary key,
+  run_id uuid not null references runs(id) on delete cascade,
+  ruleset_version text not null,
+  overrides jsonb not null,              -- diff vs domain defaults (7D, scoring, export)
+  created_at timestamptz not null default now()
+);
+create index ruleset_overrides_run_idx on ruleset_overrides_log(run_id);
+
+10) module_migrations (scripturi compatibilitate între versiuni)
+create table module_migrations(
+  id bigserial primary key,
+  module_code text not null,
+  from_semver text not null,
+  to_semver text not null,
+  kind text not null check (kind in ('major','minor','patch')),
+  script text not null,                  -- SQL/PLpgSQL sau cod înregistrat (referință)
+  status text not null default 'draft' check (status in ('draft','applied','failed')),
+  created_at timestamptz not null default now(),
+  applied_at timestamptz
+);
+create index module_migrations_code_idx on module_migrations(module_code);
+
+G3) RLS (politici, funcții utilitare)
+Funcții
+create or replace function f_auth_org_id() returns uuid
+language sql stable as $$
+  select (current_setting('request.jwt.claims', true)::jsonb->>'org_id')::uuid
+$$;
+
+create or replace function f_is_admin() returns boolean
+language sql stable as $$
+  select coalesce((current_setting('request.jwt.claims', true)::jsonb->>'role')='admin', false)
+$$;
+
+Politici (exemple reprezentative)
+alter table projects enable row level security;
+create policy p_projects_select on projects
+for select using (org_id = f_auth_org_id() or f_is_admin());
+create policy p_projects_iud on projects
+for all using (org_id = f_auth_org_id() or f_is_admin())
+with check (org_id = f_auth_org_id() or f_is_admin());
+
+alter table runs enable row level security;
+create policy p_runs_select on runs
+for select using (org_id = f_auth_org_id() or f_is_admin());
+create policy p_runs_insert on runs
+for insert with check (org_id = f_auth_org_id() or f_is_admin());
+create policy p_runs_update on runs
+for update using (org_id = f_auth_org_id() or f_is_admin());
+
+alter table bundles enable row level security;
+create policy p_bundles_select on bundles
+for select using (org_id = f_auth_org_id() or f_is_admin());
+
+
+Regulă: doar servicii interne (cu RLS bypass) pot scrie în modules, module_versions, module_migrations, ruleset_versions.
+
+G4) Vederi publice (read‑only, curate)
+create view v_runs as
+  select id, project_id, module_code, module_semver, score_total, created_at
+  from runs
+  where org_id = f_auth_org_id();
+
+create view v_bundles_public as
+  select b.id, b.run_id, b.path_prefix, b.bundle_checksum, b.exported_at,
+         (b.manifest->>'project') as project,
+         (b.manifest->>'domain') as domain,
+         (b.manifest->>'module') as module
+  from bundles b
+  where b.org_id = f_auth_org_id();
+
+create view v_plans_public as
+  select code, name, feature_flags from plans;
+
+G5) Indexare & căutare
+-- tsvector pentru runs (căutare rapidă după module/7D)
+alter table runs add column tsv tsvector;
+create index runs_tsv_idx on runs using gin(tsv);
+
+create or replace function runs_tsv_refresh() returns trigger as $$
+begin
+  new.tsv := to_tsvector('simple',
+    coalesce(new.module_code,'') || ' ' ||
+    coalesce(new.module_semver,'') || ' ' ||
+    coalesce(new.final_7d::text,'')
+  );
+  return new;
+end $$ language plpgsql;
+
+create trigger trg_runs_tsv before insert or update on runs
+for each row execute function runs_tsv_refresh();
+
+G6) „Doar ruleset.yml poate schimba defaults”
+
+Implementare:
+
+Codul server încarcă ruleset.yml la boot + cache. La fiecare run, atașezi telemetry.ruleset_version.
+
+Nu există tabele de „defaults” în DB.
+
+Când apar overrides (ex.: user setează urgency ≠ default domeniu), scrii:
+
+runs.telemetry->'overrides' (snapshot),
+
+rând în ruleset_overrides_log.
+
+Validare la API:
+
+Dacă UI raportează ruleset_version ≠ versiunea curentă din server ⇒ 409 RULESET_CONFLICT.
+
+G7) Semver & migrare
+Politică semver per modul
+
+MAJOR: schimbă contractul de output/inputs (câmpuri obligatorii, tipuri). Necesită:
+
+Înregistrare în module_versions (noua versiune).
+
+Înregistrare script în module_migrations (kind='major'), status draft.
+
+Gating: interzici rulări noi pe module_code fără a specifica semver (sau mapezi implicit la noul MAJOR doar după aplicare).
+
+Aplici scriptul (backfill/adaptare) pe artefacte istorice, marchezi applied.
+
+MINOR: adaugi câmpuri opționale, noi KPI. Nu necesită script, dar salvezi versiunea.
+
+PATCH: bugfix; fără migrare.
+
+Script de compatibilitate (format)
+
+module_migrations.script este text (SQL/PLpgSQL) sau referință la un job off‑DB. Minimul:
+
+mapare manifest vechi → nou (ex.: subheadline devine subtitle),
+
+backfill valori default pentru câmpuri introduse,
+
+marcaj manifest->'compat'.
+
+Exemplu schematic (PLpgSQL):
+
+do $$
+declare
+  r record;
+begin
+  for r in
+    select b.id, b.manifest
+    from bundles b
+    join runs r2 on r2.id = b.run_id
+    where r2.module_code = 'M07' and r2.module_semver like '1.%'
+  loop
+    -- transformă manifest JSON (exemplu)
+    r.manifest := jsonb_set(r.manifest, '{compat_from}', to_jsonb('1.x'));
+    update bundles set manifest = r.manifest where id = r.id;
+  end loop;
+end $$;
+
+
+Gating API (pseudocod):
+
+function resolveModuleVersion(code, requestedSemver){
+  const latest = getLatestEnabled(code);             // din modules
+  if (!requestedSemver) {
+    if (latest.isMajorComparedTo(prevDefault)) {
+      throw err(409, "MAJOR_VERSION_REQUIRES_EXPLICIT_PIN");
+    }
+    return latest.semver;
+  }
+  assertExists(module_versions, code, requestedSemver);
+  return requestedSemver;
+}
+
+G8) Triggers, consistență, audit
+Timestamps & idempotent
+create or replace function set_updated_at() returns trigger as $$
+begin new.updated_at = now(); return new; end $$ language plpgsql;
+
+create trigger trg_projects_updated before update on projects
+for each row execute function set_updated_at();
+
+Persistență bundle (consistență)
+
+La exportBundle setezi bundles.persisted=true doar după verificarea checksum re‑citită din disc/storage.
+
+Trigger anti‑delete:
+
+create or replace function forbid_delete_bundles() returns trigger as $$
+begin raise exception 'DELETE forbidden on bundles'; end $$ language plpgsql;
+create trigger trg_bundles_no_delete before delete on bundles for each row execute function forbid_delete_bundles();
+
+Audit scrieri sensibile
+create table audit_log(
+  id bigserial primary key,
+  org_id uuid,
+  actor uuid,                   -- auth.uid()
+  action text not null,         -- 'RUN_CREATE','EXPORT','MIGRATION_APPLY', ...
+  target_table text,
+  target_id text,
+  meta jsonb,
+  created_at timestamptz not null default now()
+);
+create index audit_org_idx on audit_log(org_id, created_at desc);
+
+G9) Vederi compat (rapoarte utile)
+
+Ultimul scor pe proiect
+
+create view v_project_last_scores as
+select r.project_id, r.module_code, max(r.created_at) as last_run_at,
+       (r.scores->>'total')::int as total
+from runs r
+where r.org_id = f_auth_org_id()
+group by 1,2,4;
+
+
+Bundle public minimal
+
+create view v_bundle_public as
+select b.id, b.bundle_checksum, b.exported_at,
+       b.manifest->>'project' as project,
+       b.manifest->>'domain' as domain,
+       b.manifest->>'module' as module
+from bundles b
+where b.org_id = f_auth_org_id();
+
+G10) Procese operaționale
+Flux „înregistrare modul nou”
+
+Adaugă în module_versions + (opțional) în modules dacă devine „current”.
+
+Rulează self‑tests (din manifest.tests).
+
+Publică modules(enabled=true).
+
+Update în changelog intern.
+
+Flux „upgrade MAJOR”
+
+Înregistrează noua versiune în module_versions.
+
+Creează module_migrations (kind='major', status='draft').
+
+Gating: cere pin la semver la run‑uri noi.
+
+Aplică scriptul; marchează status='applied', applied_at=now().
+
+Setează modules „current” pe noua versiune; ridică gating.
+
+Flux „ruleset.yml update”
+
+Calculează checksum ruleset și scrie în ruleset_versions.
+
+Server re‑încarcă ruleset; increment „ruleset_version” în telemetry la run‑uri noi.
+
+G11) Interfețe API (esential)
+
+GET /api/modules/{code}
+
+Returnează versiunea curentă + manifest.
+
+GET /api/modules/{code}/versions
+
+Listă de semver disponibile.
+
+POST /api/run/{moduleCode}?semver={pin}
+
+Normalizează 7D din ruleset.yml, salvează runs.
+
+Fail dacă MAJOR nou și lipsește semver explicit.
+
+POST /api/migrations/{moduleCode}/apply
+
+Body: {from_semver,to_semver}; rulează script; log în audit_log.
+
+G12) Teste de acceptanță
+
+RLS: user din alt org nu vede niciun run sau bundle.
+
+Overrides log: rulezi cu urgency ≠ default ⇒ runs.telemetry.overrides populat + rând în ruleset_overrides_log.
+
+Pin semver: la upgrade MAJOR, POST /run fără semver ⇒ 409. Cu ?semver=2.0.0 ⇒ OK.
+
+Migrare: script setat draft ⇒ POST /migrations/…/apply ⇒ applied, bundle‑uri istorice actualizate.
+
+Imutabilitate bundle: încercare delete ⇒ eroare.
+
+Consistență checksum: modifici manual un fișier ⇒ verify eșuează.
+
+G13) Note de implementare
+
+Ține bundles în Supabase Storage/S3; persistă doar metadate în tabel.
+
+Normalizează timezone la UTC în toate timestamp‑urile.
+
+Pune indexes pe (org_id, created_at desc) pentru toate entitățile cu listări.
+
+Menține JSON stable keys (sortare) când scrii manifest.
+
+
+
+
+
+
+
+H. Licențe & Entitlements complet — model de date, feature flags, SKU‑uri, chei de industrie, gating UI/API, Stripe & fluxuri, securitate, teste și schelete de cod. E plug‑and‑play cu ce am definit la A–G.
+
+H. Licențe & Entitlements — specificație executabilă
+H1) Principii
+
+Least privileges by plan: fiecare org vede și poate folosi doar capabilitățile acordate.
+
+Defense in depth: UI ascunde, API impune (403). Nu te bazezi niciodată pe UI.
+
+SSOT: planurile și pachetele sunt declarate (config JSON/YAML) + sincronizate cu Stripe; instanța curentă e în DB.
+
+Determinism: gating se face înainte de execuție/export, nu post‑factum.
+
+H2) Model de date (minim)
+
+(Extinde ce am creat la G; aici e doar partea logică pentru licențe.)
+
+plans (ex.: pilot, pro, enterprise)
+
+code (pk), name, feature_flags (jsonb), price_cents, created_at.
+
+entitlements
+
+org_id, plan_code, active, payload (jsonb), source (plan|addon|pack|license).
+
+industries
+
+code (ex.: fintech, ecommerce), config (jsonb) — jargon, KPI, compliance, domain_key_required: true|false.
+
+org_industry_keys
+
+org_id, industry_code, license_key_hash, expires_at, status (active|revoked|expired).
+
+H3) Feature flags (canon)
+feature_flags:
+  # Module access
+  modules_range: "M01-M10"   # sau "M01-M30" / "M01-M50"
+  # Export
+  canExportTXT: true
+  canExportMD: true
+  canExportPDF: false        # Pro=true, Enterprise=true
+  canExportJSON: false       # Enterprise=true
+  # Platform capabilities
+  hasCloudHistory: false     # Pro/Enterprise=true
+  hasAPI: false              # Enterprise=true
+  hasMultiIndustry: false    # Enterprise=true
+  # Packs
+  allowedDomains: ["*"]      # sau listă restrânsă; "*" = toate compatibile cu plan
+  # Quotas (opțional, recomandat)
+  quotas:
+    max_runs_per_day: 50     # Pilot
+    max_concurrent_runs: 2
+    max_bundles_per_day: 20
+    storage_gb: 2
+  # Seats (opțional)
+  seats: 1                   # Enterprise: ≥5 implicit
+
+H4) SKU‑uri (definiții)
+Pilot
+
+Modules: M01–M10
+
+Export: txt, md
+
+Cloud history: ❌
+
+API: ❌
+
+Multi‑industry: ❌
+
+Quotas: max_runs_per_day=50, max_concurrent_runs=2
+
+Țintă: testare individuală / pilotare.
+
+Pro
+
+Modules: M01–M30
+
+Export: txt, md, pdf
+
+Cloud history: ✅
+
+API: ❌
+
+Multi‑industry: ❌
+
+Quotas: max_runs_per_day=300, max_concurrent_runs=5, storage_gb=20
+
+Țintă: echipe SMB / agenții.
+
+Enterprise
+
+Modules: M01–M50
+
+Export: txt, md, pdf, json
+
+Cloud history: ✅
+
+API: ✅
+
+Multi‑industry: ✅
+
+Quotas: max_runs_per_day=unlimited* (sau negociat), max_concurrent_runs=20+, storage_gb=200+
+
+Țintă: corporații, integrări, white‑label.
+
+Note: valorile de quota sunt orientative; păstrează‑le configurabile la nivel de org în entitlements.payload.quotas.
+
+H5) Industry Packs (chei per domain → feature_flags)
+
+Fiecare industry pack conferă:
+
+acces la domain (ex.: fintech) + preset 7D & compliance,
+
+capabilități suplimentare (ex.: fintech_canUsePCIControls).
+
+Cheie de industrie: activată per org, per domain. Fără cheie validă ⇒ domain ascuns în UI + 403 în API.
+
+industry_packs.json (exemplu)
+
+{
+  "fintech": {
+    "requires_key": true,
+    "adds_feature_flags": {
+      "allowedDomains": ["fintech"],
+      "fintech_compliance": true,
+      "fintech_redaction_strict": true
+    }
+  },
+  "ecommerce": {
+    "requires_key": true,
+    "adds_feature_flags": { "allowedDomains": ["ecommerce"] }
+  },
+  "education": {
+    "requires_key": false,
+    "adds_feature_flags": { "allowedDomains": ["education"] }
+  }
+}
+
+
+Cheie (format & verificare)
+
+Format recomandat (offline‑verifiable):
+PFV3-{INDUSTRY}-{ORGID}-{EXP}-{HMAC8}
+
+HMAC8 = first8(HMAC_SHA256(secret, INDUSTRY|ORGID|EXP))
+
+Serverul nu păstrează cheia în clar; salvezi doar sha256(key) + metadata.
+
+Verificare la runtime:
+
+industry ∈ packs, exp în viitor,
+
+org_id corespunde,
+
+semnătura HMAC validă,
+
+status active.
+
+H6) Config planuri (plans.json)
+[
+  {
+    "code": "pilot",
+    "name": "Pilot",
+    "feature_flags": {
+      "modules_range": "M01-M10",
+      "canExportTXT": true, "canExportMD": true, "canExportPDF": false, "canExportJSON": false,
+      "hasCloudHistory": false, "hasAPI": false, "hasMultiIndustry": false,
+      "allowedDomains": ["*"],
+      "quotas": {"max_runs_per_day": 50, "max_concurrent_runs": 2, "storage_gb": 2},
+      "seats": 1
+    }
+  },
+  {
+    "code": "pro",
+    "name": "Pro",
+    "feature_flags": {
+      "modules_range": "M01-M30",
+      "canExportTXT": true, "canExportMD": true, "canExportPDF": true, "canExportJSON": false,
+      "hasCloudHistory": true, "hasAPI": false, "hasMultiIndustry": false,
+      "allowedDomains": ["*"],
+      "quotas": {"max_runs_per_day": 300, "max_concurrent_runs": 5, "storage_gb": 20},
+      "seats": 5
+    }
+  },
+  {
+    "code": "enterprise",
+    "name": "Enterprise",
+    "feature_flags": {
+      "modules_range": "M01-M50",
+      "canExportTXT": true, "canExportMD": true, "canExportPDF": true, "canExportJSON": true,
+      "hasCloudHistory": true, "hasAPI": true, "hasMultiIndustry": true,
+      "allowedDomains": ["*"],
+      "quotas": {"max_runs_per_day": -1, "max_concurrent_runs": 20, "storage_gb": 200},
+      "seats": 25
+    }
+  }
+]
+
+H7) Gating — UI & API
+UI (principii)
+
+Selector Module: afișează numai intervalul modules_range.
+
+Export Panel: bifele pentru formate nepermise sunt ascunse.
+
+Domain Picker: listezi numai allowedDomains ∩ chei industrie valide.
+
+Upsell: dacă user apasă pe ceva nepermis → modal cu „Upgrade la Pro/Enterprise” sau „Activează Industry Pack”.
+
+API (middleware)
+type CapsNeeded = {
+  moduleCode?: string; exportFormats?: ("txt"|"md"|"pdf"|"json")[];
+  needAPI?: boolean; needHistory?: boolean; domains?: string[];
+};
+
+export async function entitlementGuard(orgId: string, need: CapsNeeded) {
+  const ent = await loadOrgEntitlements(orgId); // pliază plan + packs + addons
+  // 1) Module range
+  if (need.moduleCode && !inRange(need.moduleCode, ent.flags.modules_range))
+    throw err(403,"ENTITLEMENT_MODULES_RANGE");
+  // 2) Export formats
+  for (const f of (need.exportFormats||[]))
+    if (!ent.flags[`canExport${f.toUpperCase()}`]) throw err(403,"ENTITLEMENT_EXPORT_CAP");
+  // 3) API
+  if (need.needAPI && !ent.flags.hasAPI) throw err(403,"ENTITLEMENT_API");
+  // 4) Cloud history
+  if (need.needHistory && !ent.flags.hasCloudHistory) throw err(403,"ENTITLEMENT_HISTORY");
+  // 5) Domains
+  if (need.domains?.length){
+    for (const d of need.domains)
+      if (!isDomainAllowed(ent.flags.allowedDomains, d) || !hasActiveIndustryKey(orgId, d))
+        throw err(403,"ENTITLEMENT_DOMAIN");
+  }
+  // 6) Quotas
+  await enforceQuotas(orgId, ent.flags.quotas);
+  return ent;
+}
+
+
+Rule absolută: „fără entitlement ⇒ ascunzi UI + blochezi endpoint”
+→ UI nu afișează controale, API întoarce 403 ENTITLEMENT_*.
+
+H8) Stripe (propunere de integrare)
+
+Products: Pilot, Pro, Enterprise (monthly & annual prices).
+
+Webhook‑uri:
+
+checkout.session.completed → creezi/atașezi org_id ←→ stripe_customer_id + entitlements(plan_code=...).
+
+customer.subscription.updated|deleted → setezi entitlements.active=true|false.
+
+invoice.paid|payment_failed → eventuri telemetry.
+
+Addons/Packs: Industry Pack = produs separat (ex.: „FinTech Industry Pack”). Pe paid → scrii org_industry_keys.status='active' + generezi cheie.
+
+Seats: folosești quantity pe subscription; sincronizezi cu feature_flags.seats.
+
+H9) Enforcement complet (unde verifici)
+
+/api/run/{module}: entitlementGuard({ moduleCode, needHistory: true }) (dacă planul cere cloud history).
+
+/api/export: entitlementGuard({ exportFormats: req.files }).
+
+/api/domains/{d}/…: entitlementGuard({ domains: [d] }).
+
+/api (toate endpoint‑urile publice): dacă hasAPI=false ⇒ 403 (ENTITLEMENT_API).
+
+Coduri standard de eroare
+
+403 ENTITLEMENT_MODULES_RANGE
+
+403 ENTITLEMENT_EXPORT_CAP
+
+403 ENTITLEMENT_API
+
+403 ENTITLEMENT_HISTORY
+
+403 ENTITLEMENT_DOMAIN
+
+429 QUOTA_EXCEEDED_*
+
+H10) Securitate
+
+NU accepți feature flags trimise de client; calculezi server‑side din DB + config.
+
+Chei de industrie: HMAC + expirare; salvezi hash, nu cheia în clar.
+
+RLS: tabelele entitlements, org_industry_keys vizibile doar org‑ului.
+
+Telemetry minimă: loghezi decizia gating (permit/deny + motiv), nu conținutul clientului.
+
+H11) Telemetrie & audit
+
+audit_log: ENTITLEMENT_GRANTED, ENTITLEMENT_REVOKED, LICENSE_KEY_ACTIVATED, API_DENIED_ENTITLEMENT, QUOTA_EXCEEDED.
+
+telemetry.entitlement_snapshot: flags efective folosite la fiecare run/export.
+
+H12) Teste de acceptanță
+
+Pilot încearcă M18 ⇒ 403.
+
+Pilot export PDF ⇒ ascuns în UI, 403 în API.
+
+Pro are cloud history ⇒ /runs list OK; Pilot ⇒ 403.
+
+Enterprise fără cheie fintech ⇒ domain ascuns; la apel API ⇒ 403; după activare cheie ⇒ OK.
+
+Quotas: max_runs_per_day depășit ⇒ 429.
+
+Pachete multiple: allowedDomains=["education","ecommerce"] ⇒ UI arată exact două domenii.
+
+H13) Exemple concrete (schelete)
+
+1) Consolidarea entitlements (server)
+
+export async function loadOrgEntitlements(orgId: string){
+  const plan = await db.plans.getForOrg(orgId);          // feature_flags de bază
+  const addons = await db.entitlements.list(orgId, {active:true});
+  const packs = await db.orgIndustryKeys.active(orgId);   // transformă în flags (allowedDomains ⊆ chei active)
+  return foldFlags(plan.feature_flags, addons, packs);    // deep-merge controlat (whitelist)
+}
+
+
+2) Interval module (M01–Mxx)
+
+export function inRange(code: string, range: string){
+  const [a,b] = range.split("-"); // "M01","M30"
+  const n = (s:string)=>parseInt(s.replace(/\D/g,''),10);
+  return n(code) >= n(a) && n(code) <= n(b);
+}
+
+
+3) Enforce quotas
+
+async function enforceQuotas(orgId: string, q: Quotas){
+  if (!q) return;
+  const runsToday = await db.runs.countToday(orgId);
+  if (q.max_runs_per_day >= 0 && runsToday >= q.max_runs_per_day)
+    throw err(429, "QUOTA_EXCEEDED_RUNS_DAY");
+  const concurrent = await db.runs.countInStatus(orgId, ["queued","running"]);
+  if (q.max_concurrent_runs >= 0 && concurrent >= q.max_concurrent_runs)
+    throw err(429, "QUOTA_EXCEEDED_CONCURRENCY");
+}
+
+
+4) Validare cheie industrie
+
+export function verifyIndustryKey(key: string, secret: string, orgId: string, industry: string): boolean {
+  const parts = key.split("-");
+  // PFV3-IND-ORG-EXP-HMAC8
+  if (parts.length !== 5 || parts[0] !== "PFV3") return false;
+  const [_, ind, org, exp, sig] = parts;
+  if (ind !== industry || org !== orgId) return false;
+  if (Date.parse(exp) < Date.now()) return false;
+  const mac = hmacSha256(secret, `${ind}|${org}|${exp}`).slice(0,8).toUpperCase();
+  return sig.toUpperCase() === mac;
+}
+
+H14) UX de upsell (recomandat)
+
+Inline locks: lacăt pe module/export nepermise; tooltip „Disponibil în Pro/Enterprise”.
+
+Dialog: explică diferențele de plan pe puncte (modules_range, export, API, multi‑industry).
+
+Un buton: „Activează pack {domain}” când apare domain blocat.
+
+H15) Mentenanță & migrare
+
+Schimbare MAJOR la planuri/flags ⇒ migrare în plans și backfill în entitlements.
+
+Decomisionare pack ⇒ org_industry_keys.status='revoked' + audit.
+
+H16) Erori standardizate (rezumat)
+
+403 ENTITLEMENT_MODULES_RANGE / ENTITLEMENT_EXPORT_CAP / ENTITLEMENT_API / ENTITLEMENT_HISTORY / ENTITLEMENT_DOMAIN
+
+401 UNAUTHENTICATED
+
+429 QUOTA_EXCEEDED_*
+
+409 LICENSE_CONFLICT
+
+500 ENTITLEMENT_RESOLUTION_FAILED
+
+
+
+
+
+
+
+
+I. Securitate & Conformitate complet, executabil: scoping strict cu safe_to_use, DLP/PII pentru export public, telemetrie “privacy‑by‑default” (fără conținut brut). Include schemă DB, middleware, redactor DLP, integrare în export, RLS, audit și teste.
+
+I. Securitate & Conformitate — specificație executabilă
+I1) Principii (non‑negociabile)
+
+Scoping: sistemul poate citi/retrage doar fișiere marcate explicit safe_to_use=true. Orice altceva = 403 + audit.
+
+PII: orice export cu vizibilitate public declanșează DLP → anonimizare/pseudonimizare automată + watermark. Dacă nu trece DLP ⇒ blocat.
+
+Telemetrie: niciodată conținut brut al clientului în logs/bază; doar metadate, hash‑uri și statistici.
+
+I2) Clasificare date (minim)
+
+restricted – date sensibile (PII/contracte), nu ies public niciodată.
+
+internal – acces intern org; pot fi exportate intern fără DLP (dar cu watermark).
+
+public – eligibile pentru export public după DLP OK.
+
+Unde apare: files.classification, runs.telemetry.classification, manifest.visibility.
+
+I3) Model de date & RLS
+1) Tabel fișiere (sursă knowledge)
+create table files (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  name text not null,
+  uri text not null,                -- storage URI
+  safe_to_use boolean not null default false,
+  classification text not null default 'internal' check (classification in ('restricted','internal','public')),
+  meta jsonb not null default '{}'::jsonb, -- {source:'drive|upload', mime:'...', ...}
+  created_at timestamptz not null default now()
+);
+alter table files enable row level security;
+create policy p_files_select on files
+  for select using (org_id = f_auth_org_id());
+
+2) Indici referințe în RAG/Search
+
+Retrieval (RAG) și full‑text index includ doar safe_to_use=true.
+
+Vector store: particionezi per org_id și excluzi doc‑urile safe_to_use=false.
+
+I4) Enforcement: Scoping (ingestion → retrieval → run)
+Ingestion (upload / sync)
+
+Implicit: safe_to_use=false. UI cere explicit comutatorul „File is safe to use”.
+
+Dacă classification='restricted' ⇒ blochezi toggling la true fără aprobarea adminului (policy).
+
+Retrieval (RAG)
+export async function scopedSearch(orgId: string, q: string){
+  return vectorStore.search({
+    orgId, query: q,
+    filters: { safe_to_use: true }      // hard filter
+  });
+}
+
+Pre‑run (guard)
+export async function assertInputsScoped(inputFiles: string[], orgId: string){
+  const rows = await db.files.getMany(inputFiles, orgId);
+  if (rows.some(f => !f.safe_to_use)) throw err(403,"FILE_NOT_SAFE_TO_USE");
+}
+
+UI
+
+Listă de fișiere: etichetă verde „SAFE”, gri „UNSAFE”. Filtru default: „SAFE only”.
+
+I5) DLP/PII — detectare & anonimizare pentru export public
+Detectoare (minim)
+
+Identificatori personali: nume proprii (NER), username, handle.
+
+Contact: email, telefon, pagini social.
+
+Financiar: card (Luhn), IBAN, conturi locale, facturi.
+
+ID guvernamental: CNP/CUI/VAT/SSN‑like (pattern‑based).
+
+Adresă fizică: stradă, număr, cod poștal, oraș.
+
+Altele: IP, MAC, token/secret, linkuri private.
+
+Reguli de redacție (default)
+
+Email: a***@d***.tld
+
+Telefon: +*** *** *** ***
+
+Card: •••• •••• •••• 1234 (păstrezi ultimele 4 dacă trece Luhn)
+
+IBAN: RO** **** **** **** **** **** (maschezi tot în afară de ultimele 4)
+
+Nume persoane: PERSON_[hash8]
+
+Adresă: ADDRESS_[hash8]
+
+ID guvernamental: GOVID_[hash8]
+
+IP: IP_[hash8]
+
+Secret/token: SECRET_[hash8]
+
+Config securitate (ruleset.yml)
+security:
+  exports:
+    default_visibility: "internal"   # internal|public
+    public_requires_dlp: true
+    watermark_pdf: "Confidential · {org} · {run_id}"
+  dlp:
+    enabled: true
+    detectors: [email, phone, credit_card, iban, gov_id, address, ip, secret, name_ner]
+    block_on: [credit_card, gov_id, secret]     # blochează exportul, nu doar maschează
+    pseudonymize_names: true
+
+Redactor DLP (schelet TypeScript)
+import { createHash } from "crypto";
+
+const RX = {
+  email: /\b([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,})\b/gi,
+  phone: /(\+?\d[\d\s().-]{7,}\d)/g,
+  cc: /\b(?:\d[ -]*?){13,19}\b/g,                 // Luhn check afterwards
+  iban: /\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b/g,
+  ip: /\b(?:(?:\d{1,3}\.){3}\d{1,3})\b/g,
+  gov: /\b(\d{13}|\d{10})\b/g,                     // exemplu generic (CNP/CUI‑like)
+  secret: /(api[_-]?key|secret|token|bearer)\s*[:=]\s*[A-Za-z0-9._-]{16,}/gi
+};
+
+const luhn = (s:string)=>{ const d=s.replace(/\D/g,''); let t=0,o=false;
+  for (let i=d.length-1;i>=0;i--){let n=parseInt(d[i]); if(o){n*=2;if(n>9)n-=9} t+=n; o=!o } return t%10===0 };
+
+const h8 = (s:string)=>createHash("sha256").update(s).digest("hex").slice(0,8).toUpperCase();
+
+export function dlpRedact(input: string){
+  const incidents: {type:string, value:string}[] = [];
+  let out = input;
+
+  out = out.replace(RX.secret, m => { incidents.push({type:"secret", value:"[redacted]"}); return "SECRET_[REDACTED]"; });
+  out = out.replace(RX.email, (_m, u, d, tld) => { incidents.push({type:"email", value:`${u}@${d}.${tld}`}); return `${u[0]}***@${d[0]}***.${tld}`; });
+  out = out.replace(RX.phone, m => { incidents.push({type:"phone", value:m}); return "+*** *** *** ***"; });
+  out = out.replace(RX.cc, m => { const d=m.replace(/\D/g,''); if(!luhn(d)) return m;
+                                   incidents.push({type:"credit_card", value:`****${d.slice(-4)}`});
+                                   return `•••• •••• •••• ${d.slice(-4)}`; });
+  out = out.replace(RX.iban, m => { incidents.push({type:"iban", value:m}); return `${m.slice(0,2)}** **** **** **** **** ${m.slice(-4)}`; });
+  out = out.replace(RX.ip, m => { incidents.push({type:"ip", value:m}); return `IP_${h8(m)}`; });
+  out = out.replace(RX.gov, m => { incidents.push({type:"gov_id", value:m}); return `GOVID_${h8(m)}`; });
+
+  return { text: out, incidents };
+}
+
+Politica de blocare
+
+Dacă incidents.type ∈ block_on ⇒ 403 EXPORT_BLOCKED_DLP + listă tipuri.
+
+Altfel, export permis cu mascare și manifest.dlp_summary.
+
+I6) Integrare DLP în pipeline‑ul de export (public)
+export async function preparePublicArtifact(mdOrTxt: string, orgId: string){
+  const { text, incidents } = dlpRedact(mdOrTxt);
+  const block = incidents.some(i => ["credit_card","gov_id","secret"].includes(i.type));
+  if (block) throw err(403,"EXPORT_BLOCKED_DLP",{incidents: uniqTypes(incidents)});
+  return { redacted: text, dlp_summary: summarize(incidents) };
+}
+
+export async function exportBundle(runId: string, filesReq: ("txt"|"md"|"pdf"|"json")[], visibility:"public"|"internal"="internal"){
+  // ... (din capitolul F)
+  if (visibility === "public"){
+    // aplici DLP pe prompt.txt/md/json înainte de scriere
+    const red = await preparePublicArtifact(renderedMarkdown, run.org_id);
+    renderedMarkdown = red.redacted;
+    manifest.dlp_summary = red.dlp_summary;
+    manifest.visibility = "public";
+  } else {
+    manifest.visibility = "internal";
+  }
+  // watermark PDF pentru orice vizibilitate ≠ public? Recomandat: întotdeauna.
+}
+
+
+Manifest (câmpuri noi)
+
+{
+  "visibility": "public",
+  "dlp_summary": { "incidents_count": 3, "types": ["email","phone","iban"] },
+  "security": {
+    "safe_to_use_inputs": true,
+    "classification": "internal"
+  }
+}
+
+I7) Telemetrie „privacy‑by‑default”
+
+Ce loghezi:
+
+run_id, org_id, module_code, module_semver
+
+model, tokens_in/out, cost_usd
+
+final_7d (enumuri), signature_7d
+
+scores, policy_hits, dlp_incidents_types
+
+ruleset_version, entitlement_snapshot
+
+Ce NU loghezi:
+
+Fără prompt sau artefact brut (nici input, nici output).
+
+Fără fragmente de text > 0 cu date client; doar hashuri/număr caractere.
+
+Implementare (schelet)
+
+function hashPreview(s: string){ return "sha256:"+createHash("sha256").update(s).digest("hex"); }
+
+telemetry = {
+  run_id, org_id, module_code, module_semver,
+  model, tokens_in, tokens_out, cost_usd,
+  final_7d, signature_7d,
+  scores, policy_hits,
+  content_hash_in: hashPreview(userInput),    // nu stoca `userInput`!!!
+  content_hash_out: hashPreview(artifact),    // nu stoca `artifact`!!!
+  ruleset_version, entitlement_snapshot,
+  dlp_incidents_types: uniqTypes(incidents),  // doar tipuri, nu valori
+};
+
+
+Debug local (dev‑only)
+
+Sub flag DEBUG_CONTENT=true în mediu izolat, poți păstra temporar mostre redactate; în PROD, flag ignorat/blocat.
+
+I8) Acces, stocare, transport
+
+RLS pe toate tabelele multi‑tenant.
+
+Signed URLs pentru descărcări bundle (S3 presigned, exp 10 min).
+
+Encryption at rest (S3/Supabase Storage + KMS).
+
+TLS 1.2+ end‑to‑end.
+
+Secrets în vault (nu în repo/env necriptat).
+
+No training by default: data_use.training=false (config clar în ToS/manifest).
+
+I9) UI/UX de conformitate
+
+Badge „SAFE”/„UNSAFE” pe fișiere + tooltip „Doar SAFE apar în căutare”.
+
+Comutator vizibilitate export: internal (default) / public; lângă „public” afișezi „DLP va masca PII”.
+
+Rezumat DLP înainte de descărcare publică: „Tipuri detectate: email, telefon; mascare aplicată”.
+
+Banner roșu dacă DLP ar bloca (card cu „de ce”).
+
+I10) Erori standardizate
+
+403 FILE_NOT_SAFE_TO_USE
+
+403 EXPORT_BLOCKED_DLP
+
+403 DLP_REQUIRED_FOR_PUBLIC_EXPORT
+
+403 CONFIDENTIALITY_BREACH
+
+422 UNSUPPORTED_CLASSIFICATION_FOR_PUBLIC
+
+500 DLP_ENGINE_ERROR
+
+I11) Audit & incidente
+
+audit_log: FILE_MARKED_SAFE, FILE_MARKED_UNSAFE, EXPORT_PUBLIC_ATTEMPT, EXPORT_BLOCKED_DLP, PRIVACY_POLICY_HIT.
+
+Playbook incident: în caz de “leak suspicion”, blochezi export public global (feature_flags.freeze_public_export=true) și rulezi re‑scan pe ultimele N bundle‑uri.
+
+I12) Teste de acceptanță (minim)
+
+Scoping: fișier safe_to_use=false selectat în input ⇒ 403.
+
+RAG: căutare nu returnează niciun doc fără safe_to_use.
+
+DLP block: text conține card valid + secret ⇒ EXPORT_BLOCKED_DLP.
+
+DLP mask: email/telefon/IBAN ⇒ export permis, manifest.dlp_summary populat, PDF cu watermark.
+
+Telemetry: DB nu conține artifact/prompt brut; doar hashuri și scoruri.
+
+UI: vizibilitate public afișează preview redacție + sumar incidente.
+
+I13) Extensii (opțional, recomandat)
+
+NER hibrid (rule‑based + model) pentru nume/adrese; cache de entități pe run cu seed stabil.
+
+Policy per industrie (ex.: FinTech → PCI stricte; Healthcare → HIPAA‑like).
+
+Format‑preserving masking (FPE) pentru a menține validitatea numerică în environment de test.
+
+I14) Rezumat implementare (checklist)
+
+ Tabel files cu safe_to_use + RLS.
+
+ Filtre hard în RAG și pre‑run guard.
+
+ DLP redactor + politică block_on.
+
+ Integrare DLP în exportBundle() pentru visibility=public.
+
+ Telemetrie fără conținut brut (hash‑only).
+
+ UI: badge SAFE/UNSAFE, rezumat DLP la public.
+
+ Audit + playbook incidente.
+
+
+
+
+
+
+
+
+design system executabil pentru J. UI/UX, aliniat cu A–I, cu contracte de date, state machines, API wiring, accesibilitate și telemetrie. Îl poți implementa rapid în React/Next + Supabase.
+
+J. UI/UX — specificație executabilă
+J1) Principii
+
+Truth from server: UI doar afișează; gating real în API (entitlements, 7D).
+
+Determinism: șabloane fixe, secțiuni ne‑ștergabile, rezultate repetabile.
+
+Observability: fiecare acțiune logabilă (telemetrie) fără conținut brut (vezi I).
+
+A11y: navigabil complet cu tastatura, ARIA on point, contrast ≥ 4.5:1.
+
+J2) Informație & arie de produs
+
+Selector Module (landing productiv)
+
+Editor (șablon standard prompt)
+
+Test Engine (scor + dif explicativ)
+
+Istoric (runs/bundles cu filtre Domain, M##, scor, TTA)
+
+Rute recomandate:
+
+/modules
+/editor/:projectId/:moduleCode?semver=:semver
+/test/:runId
+/history?project=:pid&domain=:d&M=:m&score=:s&tta=:t
+
+
+Design tokens (minim):
+
+:root {
+  --pf-bg: #0b0d12; --pf-surface: #11151c; --pf-ink: #e6e8ec;
+  --pf-accent: #6ea8fe; --pf-ok: #58d68d; --pf-warn: #f5b041; --pf-err: #ec7063;
+  --pf-muted: #8e9aaf; --pf-border: #1e2430; --pf-focus: #c7f284;
+  --pf-font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
+}
+
+J3) Selector Module — doar eligibile (7D + entitlements)
+Date necesare
+
+entitlementSnapshot (fold plan + packs)
+
+final_7d (din normalize7D)
+
+modules (catalog curent)
+
+industryKeys active (pentru domains)
+
+UI & comportament
+
+Grid/listă cu carduri M## (cod, vector, purpose, semver curent, tags).
+
+Vizibilitate: arăți numai modulele în modules_range și compatibile cu domain (cheie industrie activă).
+
+State locks:
+
+Locked (gri, lacăt) dacă planul nu include M## → tooltip „Disponibil în {plan}”.
+
+Domain‑locked dacă lipsește cheie → „Activează {domain}”.
+
+7D mismatch (când vii cu output dintr-un modul anterior cu altă semnătură) → badge roșu „7D mismatch”.
+
+Bare minimale
+
+Bară sus: Project picker, Domain picker (doar allowed), Semver pin (dropdown la selectarea modulului).
+
+Bară jos (context 7D): chips [domain][scale][urgency][complexity][resources][application][output_format] + semnătură (•••a1b2).
+
+API wiring (pseudo)
+const ent = await GET('/api/entitlements/snapshot'); // flags
+const mods = await GET('/api/modules?enabled=true'); // catalog
+const norm = await POST('/api/normalize-7d', input7d); // final_7d + signature
+
+function filterEligible(mod: Module, ent, final7d) {
+  if (!inRange(mod.module_code, ent.flags.modules_range)) return 'locked-plan';
+  if (!domainAllowed(ent.flags.allowedDomains, final7d.domain) || !hasIndustryKey(final7d.domain)) return 'locked-domain';
+  return 'ok';
+}
+
+Interacțiuni cheie
+
+Click card modul ⇒ mergi în Editor cu moduleCode + final_7d.
+
+Hover „i” ⇒ manifest scurt (outputs.fields, tests, deps).
+
+A11y
+
+Carduri role="button", aria-disabled când locked.
+
+Focus ring custom outline-color: var(--pf-focus).
+
+J4) Editor — șabloane fixe, secțiuni ne‑ștergabile
+Structură
+
+Layout 2 coloane:
+
+Stânga: Form 7D + Inputs custom modul (generat din inputs.custom schema).
+
+Dreapta (tabs): prompt.txt, prompt.md, prompt.json (preview live), plus OUTPUT SPEC.
+
+Reguli
+
+Secțiunile ROLE & GOAL, CONTEXT & 7D, OUTPUT SPEC, PROCESS, GUARDRAILS, EVALUATION HOOKS, TELEMETRY KEYS apar întotdeauna (nu se pot șterge).
+
+Validare live:
+
+7D doar enum; fallback preview; semnătură actualizată.
+
+Inputs custom validate schema JSON (pattern/type).
+
+Compatibilitate chain: dacă vii dintr‑un Run anterior, afișezi un chip „Input: Run #1234 · M07 · signature a1b2…”. Dacă user schimbă 7D ⇒ avertisment „Rupi compatibilitatea”.
+
+CTA
+
+Run (primar) — disabled dacă DoR nu e trecut (vezi C: DoR).
+
+Save Draft — salvează configul local în project recent.
+
+Pin Semver — selector pentru module_semver.
+
+API wiring
+// on RUN click
+const { final_7d } = await POST('/api/normalize-7d', draft.engine7d);
+await entitlementGuardUI({ moduleCode, needHistory: true, domains: [final_7d.domain] }); // simulare client, real gating pe server
+const run = await POST(`/api/run/${moduleCode}?semver=${pin}`, { engine7d: final_7d, custom: inputs });
+router.push(`/test/${run.id}`);
+
+Erori UX
+
+INVALID_ENUM_x – tooltip sub câmp.
+
+*ENTITLEMENT_ ** – modal de upsell.
+
+7D_SIGNATURE_MISMATCH – bară roșie cu buton „Revenire la 7D compatibil”.
+
+A11y
+
+Formular navigabil, label‑uri for, descrieri aria-describedby pentru pattern.
+
+J5) Test Engine — scor vizibil + dif explicativ
+Panouri
+
+Scorecard (suma 0–100 + 4 bare 0–25: Claritate, Execuție, Ambiguitate, Business fit).
+
+Codare culori: <60 roșu, 60–79 chihlimbar, ≥80 verde.
+
+Spec Diff („ce lipsește vs. OUTPUT SPEC”)
+
+Listă required lipsă, câmpuri invalide, format mismatch.
+
+Guardrails (incidente)
+
+Chips: PROMISES_FORBIDDEN, UNGROUNDED_CLAIM, CONFIDENTIALITY_BREACH.
+
+Ambiguitate (hedging & interogații)
+
+Contoare + highlight poziții (index caractere / linie).
+
+Actionability (owner/due/resources/priority/success_metric)
+
+Checklist bifat.
+
+Acțiuni
+
+Tighten once (vizibil doar dacă total <80 și nu a rulat):
+
+explici ce va face: „completează câmpuri lipsă, reduce hedging, mută întrebările, adaugă actionability”.
+
+Export (drop‑down: txt/md/pdf/json) — disabled sub 80 + gating entitlements.
+
+View Bundle când PASS + export realizat (link către manifest).
+
+UI states
+
+running (spinner + ETA textual „rulează evaluarea…”)
+
+pass (verde; „exportă acum”)
+
+tighten-suggested (chihlimbar; CTA „Tighten once”)
+
+fail (roșu; rezumat primele 3 deficite + „Deschide în Editor”)
+
+API wiring
+const ev = await POST('/api/evaluate', { run_id, tighten: false });
+if (ev.next_action === 'tighten') showTightenCTA = true;
+
+async function doTighten() {
+  const ev2 = await POST('/api/evaluate', { run_id, tighten: true });
+  // re-render; dacă tot <80, afișează fail final
+}
+
+Dif explicativ (exemplu randare)
+
+Tabel: Field · Status · Expected · Found · Hint
+
+Link „Sari la secțiune” (scroll în preview).
+
+A11y
+
+Role progressbar cu aria-valuenow pentru scoruri.
+
+Dif tabel navigabil (chei vs valori).
+
+J6) Istoric — filtre Domain, M##, scor, TTA
+Date & KPI
+
+Runs (ultimele N) cu: id, project, module, semver, total, sub‑scoruri, TTA (Time To Artifact = finished_at - started_at), status.
+
+Bundles (dacă există): checksum, visibility, link download.
+
+Filtre
+
+Domain (dropdown, enum)
+
+M## (range sau multi‑select)
+
+Scor (slider 0–100 sau perechi ≥80)
+
+TTA (slider sau preset: <60s, 1–5m, >5m)
+
+Sortări
+
+created_at desc (default), score_total desc, tta asc.
+
+Card/row
+
+Stânga: M## · semver · domain chip · scor total (badge) · TTA
+
+Dreapta: CTA View, Export (dacă PASS & bundle absent), Manifest (dacă exportat)
+
+Empty states
+
+„Niciun run încă. Alege un modul din Selector pentru a începe.”
+
+„Niciun rezultat pentru filtrele curente” + buton „Resetează filtre”.
+
+API wiring
+const q = { project, domain, module_code, score_gte, tta_lte, page, perPage };
+const res = await GET('/api/history', q);
+
+Shortcuts utile
+
+/ focusează căutarea
+
+. re‑rulare ultim modul (dacă input identic)
+
+e export (doar PASS)
+
+A11y
+
+Tabel role="table" cu head/rows.
+
+Paginare aria-label="History pagination".
+
+J7) Componente UI (contracte TS)
+// Selector
+type ModuleCardProps = {
+  module: PFModuleSummary; eligibility: 'ok'|'locked-plan'|'locked-domain';
+  onSelect: (moduleCode: string) => void;
+};
+
+// Editor
+type EditorProps = {
+  projectId: string; moduleCode: string; semver?: string;
+  initial7D: Engine7D; schemaCustom: JSONSchema7; spec: OutputSpec;
+};
+
+// Test Engine
+type TestPanelProps = {
+  runId: string; scores?: Scores; incidents?: Incident[]; diff?: SpecDiff[];
+};
+
+// History
+type HistoryQuery = { project?:string; domain?:string; module_code?:string; score_gte?:number; tta_lte?:number; page?:number; perPage?:number };
+
+J8) Telemetrie UI (fără conținut brut)
+
+Evenimente (trimise la /telemetry/ui):
+
+ui.module_card_view {module_code, eligibility}
+
+ui.editor_open {module_code, semver, domain}
+
+ui.run_click {module_code, signature_7d}
+
+ui.evaluate_done {run_id, total, tighten_suggested}
+
+ui.tighten_click {run_id}
+
+ui.export_click {run_id, formats}
+
+ui.history_filter {domain, module_code, score_gte, tta_lte}
+
+Payload‑urile nu includ prompt/artefact; doar id‑uri și scoruri (vezi I7).
+
+J9) Edge cases & erori
+
+Mismatched ruleset: server → 409 RULESET_CONFLICT ⇒ banner cu „Reîncarcă pagina (s-a actualizat regula)”.
+
+Quotas: 429 QUOTA_EXCEEDED_* ⇒ dialog cu unitatea depășită și timp reset.
+
+Bundle existent: 409 BUNDLE_ALREADY_EXISTS ⇒ opțiune „Descarcă” sau „Re‑exportă (force)”.
+
+J10) Teste UI (acceptanță)
+
+Selector: utilizator Pilot vede doar M01–M10, restul locked.
+
+Editor: ștergerea unei secțiuni obligatorii nu e posibilă; schimbarea domainului reface fallback 7D.
+
+Test Engine: run sub 80 afișează tighten; după tighten, PASS = buton export activ.
+
+Istoric: filtrele reduc corect setul; TTA <60s returnează doar run‑urile rapide.
+
+A11y: navigare completă cu tastatura, focus vizibil, aria labels ok.
+
+J11) Microcopie (exemple)
+
+Locked plan: „Disponibil în Pro. Upgrade pentru M11–M30.”
+
+Domain lock: „Activează FinTech Industry Pack pentru a folosi acest domain.”
+
+Tighten: „Vom completa câmpurile lipsă, reduce hedging și muta întrebările. Nu schimbăm faptele.”
+
+J12) Integrare cu capitolele A–I
+
+A: afișezi signature_7d și validezi chain compat.
+
+B: dropdown‑uri enum; slider diversity_budget 0..1 cu tooltip.
+
+C: OUTPUT SPEC randat din outputs.fields.
+
+D: prompt.txt extras direct, read‑only în preview.
+
+E: rubrică și calc scor în Test Engine.
+
+F: export butoane condiționate; confirm checksum după export.
+
+G: istoricul și manifestul servesc datele; pin semver în Editor.
+
+H: entitlements influențează vizibilitatea tuturor controalelor.
+
+I: marcaje SAFE/UNSAFE pe fișiere; public export → badge „DLP applied”.
+
+
+
+
+
+
+
+
+K. Monetizare
+1. Stripe — Model Comercial
+
+1 produs / plan (free, creator, pro, enterprise) → fiecare mapat la un feature_flags.json.
+
+Industry Pack = SKU separat (≥1.490 €/an, fără stacking de reduceri).
+
+Consultanțe = SKU one-off (stripe_price_id consult/session).
+
+Add-ons (Evaluator AI, Export Designer) = SKU adițional legat de un org/user.
+
+{
+  "plans": {
+    "free": {"price": 0, "flags": ["canUseAllModules=false"]},
+    "creator": {"price": 29, "flags": ["canExportMD"]},
+    "pro": {"price": 99, "flags": ["canExportPDF","canExportJSON","hasEvaluatorAI"]},
+    "enterprise": {"price": 499, "flags": ["hasAPI","hasWhiteLabel","canExportBundleZip"]}
+  },
+  "addons": {
+    "evaluator_ai": {"price": 29, "entitlement": "hasEvaluatorAI"},
+    "export_designer": {"price": 49, "entitlement": "canExportPDF"}
+  },
+  "industry_pack_floor": 1490
+}
+
+2. Target Comercial
+
+🎯 ≥20.000 € în 30 zile
+
+Industry Licenses: 10–12 vândute la 1.990 € = ~20k ARR upfront.
+
+Consultanțe: 2 sesiuni Enterprise (2.000–2.500 €/sesiune) = +4–5k.
+
+Upsell nativ (Product-led) → API, Export Bundle, Industry Pack.
+
+3. Gating & Entitlements
+
+Rule: fără entitlement ⇒ ascunzi UI + blochezi endpoint BE.
+
+Paywall surfaces:
+
+Export .pdf/.json/.bundle ⇒ Pro/Enterprise
+
+GPT Test (real) ⇒ Pro+
+
+API access ⇒ Enterprise only
+
+Industry Pack ⇒ banner upsell dacă nu există entitlement activ.
+
+4. License Notice în Manifest
+
+Fiecare modul/bundle include license_notice → afișat și la export.
+
+Structură:
+
+{
+  "module_id": "M07",
+  "bundle_id": "hash123",
+  "license_notice": {
+    "plan": "pro",
+    "entitlements": ["canExportPDF","canUseGptTestReal"],
+    "valid_until": "2026-01-01",
+    "org_id": "uuid"
+  }
+}
+
+
+Obligație: exportul fără notice ⇒ invalid (nu trece checksum).
+
+5. Flow Stripe → Supabase
+
+User → checkout Stripe (plan/add-on/pack).
+
+Webhook Stripe → upsert subscriptions + entitlements.
+
+Entitlements persistate cu source (plan|addon|pack|license).
+
+FE verifică flags → decide UI gating.
+
+API verifică entitlements → blochează/permite endpoint.
+
+6. Growth Loops
+
+Upsell triggers:
+
+Export .pdf/.json → CTA „Upgrade to Pro”.
+
+API/White-label → CTA „Enterprise Only”.
+
+Domain switch (FinTech/Edu/etc.) → CTA „Add Pack FinTech (1.990 €/an)”.
+
+Telemetry: log PF_EXPORT_CLICK, PF_PAYWALL_VIEWED, PF_CHECKOUT_COMPLETED.
+
+7. Telemetrie Financiară
+
+Metrice: MRR, ARR, uptake pe Industry Pack, consult revenue.
+
+Dashboard: plan adoption, entitlements usage, upsell CTR.
+
+Audit: toate entitlements logate cu source și timestamp.
+
+👉 Asta face ca fiecare clic să fie monetizabil: prompt → bundle export → gating → upsell.
+Ținta de 20k€ se validează prin Industry Packs + 2 consultanțe Enterprise.
+
+
+
+
+
+
+
+
+L. Operare (ritual) ca playbook executabil: ce rulezi zilnic, cum măsori deviațiile KPI (<10%), cum optimizezi, plus procedura de release săptămânal (minor), recalibrare 7D, changelog, monitorizare și rollback. Totul aliniază capitolele A–K.
+
+L. Operare (ritual) — Playbook executabil
+L1) Principii & SLO-uri
+
+Cadenta: operare zilnică + release săptămânal.
+
+SLO‑uri platformă:
+
+TTA (Time‑To‑Artifact): <60s pentru text / <5m pentru SOP-uri grele.
+
+Pass rate: ≥85% (runs cu scor ≥80).
+
+Deviație KPI (pe axele Claritate/Execuție/Ambiguitate/Business fit): <10% față de mediana rulate în ultimele 7 zile.
+
+SSOT: orice default 7D/scoring/export vine din ruleset.yml (fără override din UI).
+
+Defense‑in‑depth: UI doar ascunde; API blochează (entitlements, scoping, securitate).
+
+L2) Ritual zilnic (Daily)
+L2.1 Program (Europe/Chisinau, EET/EEST)
+
+10:00 – Runda #1 (smoke + baseline)
+
+14:00 – Runda #2 (param sweep controlat)
+
+17:30 – Runda #3 (stabilizare + pregătire release notes raw)
+
+„3 rulări/zi pe domenii cheie” = pentru 3 domenii prioritare (ex.: fintech, ecommerce, education), rulezi cel puțin un modul critic / runda (de regulă 2–3 module per domeniu).
+
+L2.2 Selecția domeniilor & modulelor
+
+Domenii cheie (revizuibile săptămânal): prioritizate după venit/pipeline. Exemplu inițial: fintech, ecommerce, education.
+
+Set minim de module per domeniu (exemplu robust, modificabil):
+
+M01 (Brief Synth) → M07 (Value Proposition) → M33 (KPI Spec)
+
+M45 (Crisis Playbook) rulează doar în ziua cu test de reziliență (ex.: miercuri).
+
+Regula de chain: rulezi Mₙ → Mₙ₊₁ numai dacă semnătura 7D se potrivește 1:1.
+
+L2.3 Execuția rulărilor (API)
+
+Normalizezi 7D:
+
+POST /api/normalize-7d
+
+
+Rulare modul:
+
+POST /api/run/{moduleCode}?semver={pin-optional}
+
+
+Evaluare:
+
+POST /api/evaluate { run_id, tighten:false }
+
+
+→ dacă total <80 ⇒ rulezi o singură dată tighten:true.
+
+(Opțional) Export pentru artefactele PASS:
+
+POST /api/export/{run_id}  { "files":["txt","md","pdf"], "visibility":"internal" }
+
+L2.4 Calcul deviații KPI (<10%)
+
+Definiții:
+
+KPI_i ∈ {clarity, execution, ambiguity, business_fit}.
+
+median7_i(domain,module) = mediana scorurilor i pe ultimele 7 zile (doar Runs PASS).
+
+Deviație punctuală:
+
+dev_i = |KPI_i_run - median7_i| / max(median7_i, 1)   // în procente
+
+
+Criteriu:
+
+Alertă dacă dev_i > 0.10 pe oricare axă sau dacă total < median7_total - 8p.
+
+SQL de referință (Supabase):
+
+-- medianele pe 7 zile (ex.: fintech + M07)
+with w as (
+  select (scores->>'clarity')::int as clarity,
+         (scores->>'execution')::int as execution,
+         (scores->>'ambiguity')::int as ambiguity,
+         (scores->>'business_fit')::int as business_fit,
+         created_at
+  from runs
+  where final_7d->>'domain'='fintech'
+    and module_code='M07'
+    and status='success'
+    and created_at >= now()-interval '7 days'
+)
+select
+  percentile_cont(0.5) within group (order by clarity) as median_clarity,
+  percentile_cont(0.5) within group (order by execution) as median_execution,
+  percentile_cont(0.5) within group (order by ambiguity) as median_ambiguity,
+  percentile_cont(0.5) within group (order by business_fit) as median_business_fit
+from w;
+
+L2.5 Bucla de optimizare (dacă dev_i > 10%)
+
+Execuție scăzută (schema coverage <70%):
+
+Asigură câmpurile required (auto‑fill [TBD] minim), verifică formatul (md/json/spec).
+
+Ambiguitate scăzută (hedging/interogații):
+
+Reduce hedging; mută întrebările în „Open Questions”; adaugă blocul „Actionability”.
+
+Claritate scăzută:
+
+Reflectă explicit valorile 7D în text (domain/scale/urgency etc. în primele 120 cuvinte).
+
+Business fit scăzut:
+
+Adaugă outcome + owner + due + resources + success_metric (cel puțin 4/5).
+
+Reguli de siguranță:
+
+Max 3 micro‑edits/run; nu alterezi facts; dacă lipsesc surse → marchezi Assumption:.
+
+L2.6 Livrabile zilnice
+
+Scoreboard (pe proiect/domeniu/modul): medii, mediane, deviații, PASS rate.
+
+Incidente guardrails (promises/ungrounded/confidentiality).
+
+Top 5 sugestii de optimizare (generate din Evaluator).
+
+Endpoint raport zilnic:
+
+GET /api/reports/daily?date=YYYY-MM-DD
+
+L2.7 Închiderea zilei (15–30 minute)
+
+Export intern PDF pentru 1–2 artefacte exemplare (per domeniu).
+
+Notă în changelog brut (/ops/changelog/draft.md).
+
+Ticket rapid pentru orice regresie >10% persistentă 2 runde la rând.
+
+L3) Release săptămânal (Weekly)
+L3.1 Calendar & freeze
+
+Joi 18:00 — code freeze (branch release/x.y.z).
+
+Vineri 10:00–12:00 — testare & tăiere release.
+
+Vineri 14:00 — deploy + monitorizare 24h.
+
+L3.2 Ce intră în release
+
+Increment minor (x.y+1.0) pentru modulele/modificările non‑breaking.
+
+ruleset.yml bump version + eventuale ajustări de scoring/export.
+
+Noi manifest-uri de module (dacă au câmpuri opționale sau KPIs adăugate).
+
+Nu intră schimbări MAJOR fără migrare pregătită (vezi G).
+
+L3.3 Recalibrare defaults 7D (determinist)
+
+Scop: ajustezi defaulturile per domain numai dacă datele ultimei săptămâni o justifică.
+
+Algoritm:
+
+Pentru fiecare domain, calculezi distribuția valorilor folosite în Runs PASS.
+
+Dacă o dimensiune 7D a fost override‑uită în ≥60% din Runs PASS și îmbunătățește mediană total cu ≥5p față de setarea curentă:
+
+propune ca nou default.
+
+Aplică doar schimbări cu impact stabil (varianță <8p pe 7 zile).
+
+Pseudocod:
+
+for (dim of ["scale","urgency","complexity","resources","application","output_format"]) {
+  const adoption = overridesShare(domain, dim);      // % runs PASS cu override
+  const uplift   = medianTotalWithOverride - medianTotalDefault;
+  if (adoption >= 0.60 && uplift >= 5 && varianceOk) proposeDefault(domain, dim, modeOverride);
+}
+
+
+Change budget: max 2 dimensiuni schimbate / domeniu / săptămână.
+
+L3.4 Checklist release
+
+✅ Freeze + CI green (lint, unit, e2e minimal).
+
+✅ Self‑tests module (rulează tests din manifest C2 pentru M01–M50).
+
+✅ Evaluator stabil (rulare suită de regresie pe set „golden”).
+
+✅ Changelog (CHANGELOG.md):
+
+Added/Changed/Fixed/Security
+
+„Impact on 7D defaults”: tabel domeniu→dimensiuni schimbate.
+
+✅ Bump versions:
+
+ruleset.yml: version = x.y+1.0
+
+module semver (minor/patch după caz).
+
+✅ Migrations (dacă există MAJOR pregătit): marcat draft sau applied.
+
+✅ Sign & tag: semnezi tag Git (gpg) + publici checksum‑urile (bundle release).
+
+✅ Deploy: migrezi DB (Supabase), reload ruleset, invalidezi cache.
+
+✅ Post‑release monitorizare (24h):
+
+PASS rate ≥ baseline−2p,
+
+TTA în buget,
+
+dev_KPI ≤ 10%.
+
+L3.5 Changelog template (fragment)
+## x.y+1.0 — 2025-08-22
+### Added
+- M22: nou `contrast_pairs` optional; KPI proof_density adaptat.
+
+### Changed
+- Defaults 7D (fintech): resources → full_stack_org; application → implementation.
+
+### Fixed
+- Evaluator: hedging lexicon extins (ro/en) pentru Ambiguitate.
+
+### Security
+- DLP: block_on include `secret` tokens în orice format nou.
+
+**Impact**: Pass rate +3p pe fintech (median 7d). Nicio schimbare MAJOR.
+
+L3.6 Rollback
+
+Condiții:
+
+PASS rate scade >5p în 24h,
+
+TTA > 2× buget,
+
+bug critic securitate/conformitate.
+
+Procedură:
+
+Reveniți la tag precedent (config + ruleset + module manifest), invalidare cache, anunț în #ops.
+
+Marcați release ca rolled‑back în audit_log.
+
+L4) Dashboard & alerte
+L4.1 KPI operaționale (carduri)
+
+Pass rate (7d) · Median total (7d)
+
+Deviație KPI pe axele 4× (threshold 10%)
+
+TTA P50/P95
+
+Incidente guardrails (pe 1d/7d)
+
+Exporturi/zi + % public vs internal
+
+L4.2 Alarme
+
+dev_i > 0.10 pe oricare axă 3 runde consecutive ⇒ „yellow”.
+
+PASS rate (24h) < (baseline‑5p) ⇒ „red”.
+
+TTA P95 > buget ⇒ „yellow”.
+
+L5) Rapoarte & telemetrie
+L5.1 Raport zilnic (auto)
+
+Livrabil: daily-{YYYY-MM-DD}.md în /ops/reports/
+
+Conținut:
+
+tabel domeniu×modul: medii, mediane, dev, PASS rate,
+
+incidente guardrails,
+
+sugestii top 5.
+
+L5.2 Raport săptămânal (post‑release)
+
+Rezumat schimbări, impact pe KPI, lista domenii cu defaults ajustate, regresii și acțiuni.
+
+L6) Responsabilități & rotație
+
+Owner ritual daily: Ops Lead (backup: Eng Lead).
+
+Release manager (weekly): alternanță Eng Lead ↔ PM.
+
+Securitate/DLP: Security Champion semnează „Security” din changelog.
+
+L7) Checklists (print‑ready)
+Daily SOP (15–25 min/rundă)
+
+ Normalize 7D pe domeniile cheie
+
+ Rulează M01→M07→M33 (și M45 în ziua stabilită)
+
+ Evaluare + Tighten (dacă <80)
+
+ Calculează dev_i; dacă >10% ⇒ aplică micro‑optimizări (<3)
+
+ Export 1–2 artefacte exemplare (PDF)
+
+ Actualizează scoreboard + draft changelog
+
+Weekly Release (60–120 min)
+
+ Freeze + CI verde
+
+ Self‑tests module + suite evaluator
+
+ Recalibrare defaults 7D (regulile L3.3)
+
+ Changelog completat
+
+ Bump versions + sign & tag
+
+ Deploy + monitorizare + rollback plan validat
+
+L8) Note de implementare
+
+SQL metrci TTA & PASS
+
+select
+  module_code, final_7d->>'domain' as domain,
+  count(*) filter (where score_total >= 80) * 100.0 / greatest(count(*),1) as pass_rate_pct,
+  percentile_cont(0.5) within group (order by finished_at - started_at) as tta_p50,
+  percentile_cont(0.95) within group (order by finished_at - started_at) as tta_p95
+from runs
+where created_at >= now()-interval '1 day'
+group by 1,2;
+
+
+API raport săptămânal
+
+GET /api/reports/weekly?end=YYYY-MM-DD
+
+
+GitHub Actions (release minor – schemă)
+
+on:
+  workflow_dispatch:
+  schedule: [cron: "0 8 * * FRI"]
+jobs:
+  release:
+    steps:
+      - run: pnpm test
+      - run: pnpm build
+      - run: node scripts/recalibrate-7d.js
+      - run: node scripts/bump-version --type minor
+      - run: pnpm run self-tests
+      - run: node scripts/tag-and-sign
+

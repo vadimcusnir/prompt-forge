@@ -1,0 +1,52 @@
+# Catalog Module M01–M50
+
+- **M01 Persona & Offer Clarifier** — definești avatar, problemă, promisiune, ofertă.
+- **M02 Message‑Market Fit Map** — mapezi mesaje pe segmente & canale cu dovezi.
+- **M03 Narrative Positioning** — poveste de poziționare (brand spine).
+- **M04 Value Ladder & Bundles** — pachete, upsell/cross‑sell, margini.
+- **M05 Funnel Blueprint** — arhitectură TOFU‑MOFU‑BOFU + KPI.
+- **M06 Objection Mining** — obiecții + contra‑argumente clasate.
+- **M07 Risk & Trust Reversal** — garanții + dovadă → scazi drop‑off.
+- **M08 Social Proof Matrix** — testimoniale, studii, validări sistematizate.
+- **M09 Pricing Strategy** — ancore, planuri, discounting controlat, A/B.
+- **M10 Offer Terms & SLA** — clauze, SLA, rampe de risc, conformitate.
+- **M11 Content Strategy OS** — piloni, calendar, repurpose, distribuție.
+- **M12 SEO/Intent Playbook** — hărți intenție → conținut, briefuri, structuri.
+- **M13 Ads Creative Generator** — concepte, copys, hooks, variații.
+- **M14 Landing Page Spec** — structură, blocuri, micro‑conversii.
+- **M15 Email Lifecycle** — onboarding, nurture, winback cu KPI.
+- **M16 Sales Scripts (JTBD)** — scenarii pe situații, closing paths.
+- **M17 Demo/Deck Architect** — storyboard + slide spec convingător.
+- **M18 Retention & LTV** — anti‑churn, expansion, NRR playbook.
+- **M19 Referral & Ambassador** — program parteneri, stimulente, KPI.
+- **M20 Community Engine** — membership, ritualuri, moderare.
+- **M21 SOP Builder** — procese operaționale + checklisturi auditabile.
+- **M22 QA & Test Harness** — plan de test, criterii, rapoarte, gates.
+- **M23 Support & Success OS** — macro‑procese CS, macros, KB.
+- **M24 Incident & Crisis Comms** — criză, status page, mesaje.
+- **M25 Compliance Pack** — mapezi norme (GDPR/ISO/PCI) → controale.
+- **M26 Data & Metrics Spec** — definiții, surse, dashboards, fiabilitate.
+- **M27 Experimentation Lab** — ipoteze, design test, MDE, analiză.
+- **M28 Partner & Affiliate** — parteneri, termeni, tracking.
+- **M29 Product Research Agent** — colectează/rezumă dovezi.
+- **M30 ICP/Segmentation** — segmentare + mesaje.
+- **M31 Brand Voice Codex** — stil, ritm, lexicon, interdicții, exemple.
+- **M32 Visual Identity Brief** — cerințe vizuale, sistem, livrabile.
+- **M33 Webinar/Workshop Kit** — structură, flow, CTA, execuție.
+- **M34 Crisis Risk Map** — riscuri, probabilitate × impact, plan.
+- **M35 GTM Planner** — lansare: canale, bugete, milestones.
+- **M36 Enterprise RFP Responder** — răspunsuri structurate la RFP.
+- **M37 Procurement Readiness** — pachet legal, securitate, DS, politici.
+- **M38 Knowledge Base Writer** — articole, structuri, taxonomii.
+- **M39 Training Curriculum** — plan pe module, rezultate, evaluări.
+- **M40 Hiring Scorecards** — roluri, criterii, interviuri, decizii.
+- **M41 OKR Designer** — obiective, key results, aliniere.
+- **M42 Roadmapping OS** — hartă trimestrială/anuală, dependențe.
+- **M43 Budget & Unit Economics** — P&L, CAC/LTV, payback.
+- **M44 Localization & Intl** — piețe, adaptări, conformități locale.
+- **M45 Accessibility & A11y** — WCAG, testare, remedieri.
+- **M46 Security Controls Spec** — controale, politici, audit trail.
+- **M47 Data Privacy Pack** — registre, DSR, rețineri, DPIA.
+- **M48 API & Integration Spec** — endpointuri, SLA, versionare.
+- **M49 Telemetry & Observability** — loguri, dashboards, alerte.
+- **M50 Bundle Export Designer** — layout md/json/pdf, watermark, checksum.

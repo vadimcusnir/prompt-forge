@@ -1,0 +1,274 @@
+PROMPTFORGE™ — Bundle Module (Contract + M07 + Catalog)
+
+== module_contract.md ==
+# Contract de Modul PROMPTFORGE™ (valabil M01–M50)
+
+## Obiectiv
+Fiecare modul primește un context 7D + inputuri specifice și livrează un artefact executabil (spec/playbook/json/diagram/bundle), cu KPI măsurabili, guardrails și dependențe clare.
+
+## Câmpuri canonice
+- module_id — ex: "M07"
+- name — scurt, operativ
+- vectors — int[] 1..7 (Strategic, Retoric, Conținut, Cognitiv, Memetic, Date, Criză)
+- purpose — scop în 1–2 fraze
+- inputs
+  - parameter_set_7d — {domain, scale, urgency, complexity, resources, application, output_format}
+  - module_params — chei specifice modulului
+  - context_assets — opțional (brief, CSV/JSON, URL, text)
+- process
+  - steps[] — pași logici (prompt flow)
+  - eval_hooks[] — verificări (clarity, execution, policy)
+  - post_ops[] — formatare, rezumare, bundling
+- outputs
+  - primary {type, schema} — artefactul principal
+  - secondary[] — artefacte suplimentare (checklist, json, diagram)
+- kpi
+  - definition[] — indicatori + formule
+  - targets — ținte implicite per‑domain (override‑abile)
+  - measurement — cum se măsoară (telemetry → prompt_scores)
+- guardrails
+  - policy — reguli (GDPR, IP, domain compliance)
+  - style — ton/stil (bias per domain)
+  - constraints — limite (tokens, temperature, interdicții)
+  - fallbacks — plan de rezervă
+- dependencies
+  - internal — domain_configs, evaluators, templates, taxonomii
+  - external — API‑uri/standarde (Stripe/Supabase/Jira/GA4/ISO/PCI/WCAG etc.)
+- telemetry
+  - run_meta — model, tokens, cost, durată
+  - policy_hits — reguli aplicate
+  - scores — clarity/execution/ambiguity/alignment/business_fit
+- export
+  - formats[] — md/json/pdf/bundle
+  - structure — layout + naming + checksum
+
+## Pipeline (state machine)
+validate_7d → normalize_inputs → plan → generate → evaluate → repair → format → export → log
+
+
+== module_contract.json ==
+{
+  "module_id": "MXX",
+  "name": "",
+  "vectors": [
+    2,
+    6
+  ],
+  "purpose": "",
+  "inputs": {
+    "parameter_set_7d": {
+      "domain": "",
+      "scale": "",
+      "urgency": "",
+      "complexity": "",
+      "resources": "",
+      "application": "",
+      "output_format": ""
+    },
+    "module_params": {},
+    "context_assets": []
+  },
+  "process": {
+    "steps": [
+      "collect",
+      "analyze",
+      "generate",
+      "validate",
+      "adapt",
+      "format"
+    ],
+    "eval_hooks": [
+      "clarity>=80",
+      "execution>=80",
+      "policy_ok"
+    ],
+    "post_ops": [
+      "structure_output",
+      "attach_metrics",
+      "bundle_export"
+    ]
+  },
+  "outputs": {
+    "primary": {
+      "type": "spec",
+      "schema": {
+        "sections": []
+      }
+    },
+    "secondary": [
+      {
+        "type": "checklist",
+        "path": "checklist.md"
+      }
+    ]
+  },
+  "kpi": {
+    "definition": [
+      {
+        "name": "clarity",
+        "calc": "prompt_scores.clarity"
+      },
+      {
+        "name": "execution",
+        "calc": "prompt_scores.execution"
+      }
+    ],
+    "targets": {
+      "clarity": 85,
+      "execution": 85
+    },
+    "measurement": "scores from Evaluator AI + task-specific metrics"
+  },
+  "guardrails": {
+    "policy": [
+      "gdpr",
+      "ip/copyright",
+      "domain_compliance"
+    ],
+    "style": {
+      "tone": "audit-like",
+      "bias": "data-first"
+    },
+    "constraints": {
+      "max_tokens": 6000,
+      "temperature": 0.4
+    },
+    "fallbacks": [
+      "reduce_scope",
+      "ask_for_missing_inputs",
+      "switch_format"
+    ]
+  },
+  "dependencies": {
+    "internal": [
+      "domain_configs",
+      "evaluator_ai",
+      "export_templates"
+    ],
+    "external": []
+  },
+  "telemetry": {
+    "enabled": true
+  },
+  "export": {
+    "formats": [
+      "md",
+      "json",
+      "pdf"
+    ],
+    "structure": "by-domain/module"
+  }
+}
+
+== M07_risk_trust_spec.md ==
+# M07 — Risk & Trust Reversal (FinTech)
+
+## Purpose
+Reduce riscul perceput și obiecțiile prin garanții, dovezi și recadre identitare. Ținta: scădere drop‑off pe pasul critic din funnel.
+
+## Inputs
+- parameter_set_7d: {"domain":"fintech","scale":"enterprise","urgency":"sprint","complexity":"advanced","resources":"full_stack_org","application":"implementation","output_format":"spec"}
+- module_params:
+  - offer_profile: {price, terms, refund, trial, compliance_notes}
+  - objections_top: [listă clasată]
+  - proof_assets: [testimoniale, studii, audit extern]
+  - risk_matrix: {legal, financiar, reputațional, operațional}
+- context_assets: opțional (linkuri, politici, rapoarte)
+
+## Process (steps)
+1) Map obiecții → tip de risc (legal/fin/reputațional/exec)
+2) Propune 3–5 mecanisme reversare (garanții, escrow, milestones, SLA)
+3) Re‑scrie promisiunea în 2 registre (conservator & ofensiv)
+4) Montează dovada (case study, standarde, audit)
+5) Validare compliance (AML/KYC/PCI; fără promisiuni nereglementate)
+6) Formatare artefacte: spec + checklist.md + offer_terms.json
+
+## Output (primary: spec)
+### 1. Context
+### 2. Risk Map (legal/fin/reputațional/exec)
+### 3. Trust Devices (garanții, escrow, milestones, SLA)
+### 4. Terms & SLA (limite, timpi, responsabilități)
+### 5. Proof Set (studii, audit, certificări)
+### 6. Compliance Fit (AML/KYC/PCI/PSD2)
+### 7. Roll‑out Plan (pași, owneri, timeline)
+
+## Secondary
+- checklist.md
+- offer_terms.json
+
+## KPI
+- dropoff_delta: % scădere în pasul critic (A/B)
+- approval_rate: % lead‑uri approve (KYC/credit)
+- time_to_decision: medie până la accept
+**Targets**: dropoff_delta ≤ -25%, approval_rate +10%, time_to_decision -20%
+**Measurement**: înainte/după în 14 zile; Evaluator AI ≥ 85/100
+
+## Guardrails
+- Policy: fără afirmații financiare nereglementate; disclaimere; respect PCI/PSD2
+- Style: audit‑like, autoritar, clar
+- Constraints: temperature ≤ 0.4, max_tokens 7000
+- Fallbacks: dacă lipsesc dovezi → cere assets min.; dacă compliance flag → blochează promisiunea
+
+## Dependencies
+- internal: domain_configs(fintech), evaluator_ai, templates/spec_v2
+- external: PCI DSS ref, PSD2 SCA checklist
+
+## Telemetry & Export
+- Log: tokens, cost, duration; prompt_scores (clarity/execution/alignment/business_fit)
+- Export: md/json/pdf + checksum
+- Bundle path: /bundles/fintech/M07/...
+
+
+== catalog_M01-M50.md ==
+# Catalog Module M01–M50
+
+- **M01 Persona & Offer Clarifier** — definești avatar, problemă, promisiune, ofertă.
+- **M02 Message‑Market Fit Map** — mapezi mesaje pe segmente & canale cu dovezi.
+- **M03 Narrative Positioning** — poveste de poziționare (brand spine).
+- **M04 Value Ladder & Bundles** — pachete, upsell/cross‑sell, margini.
+- **M05 Funnel Blueprint** — arhitectură TOFU‑MOFU‑BOFU + KPI.
+- **M06 Objection Mining** — obiecții + contra‑argumente clasate.
+- **M07 Risk & Trust Reversal** — garanții + dovadă → scazi drop‑off.
+- **M08 Social Proof Matrix** — testimoniale, studii, validări sistematizate.
+- **M09 Pricing Strategy** — ancore, planuri, discounting controlat, A/B.
+- **M10 Offer Terms & SLA** — clauze, SLA, rampe de risc, conformitate.
+- **M11 Content Strategy OS** — piloni, calendar, repurpose, distribuție.
+- **M12 SEO/Intent Playbook** — hărți intenție → conținut, briefuri, structuri.
+- **M13 Ads Creative Generator** — concepte, copys, hooks, variații.
+- **M14 Landing Page Spec** — structură, blocuri, micro‑conversii.
+- **M15 Email Lifecycle** — onboarding, nurture, winback cu KPI.
+- **M16 Sales Scripts (JTBD)** — scenarii pe situații, closing paths.
+- **M17 Demo/Deck Architect** — storyboard + slide spec convingător.
+- **M18 Retention & LTV** — anti‑churn, expansion, NRR playbook.
+- **M19 Referral & Ambassador** — program parteneri, stimulente, KPI.
+- **M20 Community Engine** — membership, ritualuri, moderare.
+- **M21 SOP Builder** — procese operaționale + checklisturi auditabile.
+- **M22 QA & Test Harness** — plan de test, criterii, rapoarte, gates.
+- **M23 Support & Success OS** — macro‑procese CS, macros, KB.
+- **M24 Incident & Crisis Comms** — criză, status page, mesaje.
+- **M25 Compliance Pack** — mapezi norme (GDPR/ISO/PCI) → controale.
+- **M26 Data & Metrics Spec** — definiții, surse, dashboards, fiabilitate.
+- **M27 Experimentation Lab** — ipoteze, design test, MDE, analiză.
+- **M28 Partner & Affiliate** — parteneri, termeni, tracking.
+- **M29 Product Research Agent** — colectează/rezumă dovezi.
+- **M30 ICP/Segmentation** — segmentare + mesaje.
+- **M31 Brand Voice Codex** — stil, ritm, lexicon, interdicții, exemple.
+- **M32 Visual Identity Brief** — cerințe vizuale, sistem, livrabile.
+- **M33 Webinar/Workshop Kit** — structură, flow, CTA, execuție.
+- **M34 Crisis Risk Map** — riscuri, probabilitate × impact, plan.
+- **M35 GTM Planner** — lansare: canale, bugete, milestones.
+- **M36 Enterprise RFP Responder** — răspunsuri structurate la RFP.
+- **M37 Procurement Readiness** — pachet legal, securitate, DS, politici.
+- **M38 Knowledge Base Writer** — articole, structuri, taxonomii.
+- **M39 Training Curriculum** — plan pe module, rezultate, evaluări.
+- **M40 Hiring Scorecards** — roluri, criterii, interviuri, decizii.
+- **M41 OKR Designer** — obiective, key results, aliniere.
+- **M42 Roadmapping OS** — hartă trimestrială/anuală, dependențe.
+- **M43 Budget & Unit Economics** — P&L, CAC/LTV, payback.
+- **M44 Localization & Intl** — piețe, adaptări, conformități locale.
+- **M45 Accessibility & A11y** — WCAG, testare, remedieri.
+- **M46 Security Controls Spec** — controale, politici, audit trail.
+- **M47 Data Privacy Pack** — registre, DSR, rețineri, DPIA.
+- **M48 API & Integration Spec** — endpointuri, SLA, versionare.
+- **M49 Telemetry & Observability** — loguri, dashboards, alerte.
+- **M50 Bundle Export Designer** — layout md/json/pdf, watermark, checksum.

@@ -1,0 +1,1568 @@
+
+standardul oficial pentru PROMPTFORGE™ v3 și îți dau acum modelul complet de Prompt Standard (structură, stil, guardrails, variabilitate controlată). Totul este deja formalizat în documentația ta și în schema de fișiere .cursor/rules + Param Engine 7D.
+
+📐 Standard Oficial de Prompt – PROMPTFORGE™ v3
+
+1. Structură canonică (pipeline fix)
+Un prompt generat are 7 straturi obligatorii:
+Context – situație, roluri, audiență (injectat din parametrii 7D: domain, scale, urgency).
+Cerință – scop clar („ce vrei să obții”).
+Specificație – pași logici, algoritmi, structuri de output (dependent de complexity/resources).
+KPI – indicatori măsurabili (din domain.kpis + application bias).
+Guardrails – restricții etice, legale, comerciale (din domain.compliance + urgency).
+Fallback – scenarii alternative, retry, variabilitate controlată (obligatoriu pentru advanced/expert).
+Output Format – formatul fix (txt/md/json/pdf/bundle) stabilit de output_format param.
+
+2. Stil & Ton
+Domain-aware: tonul se schimbă după industrie (FinTech = formal, Education = gamified, Consulting = audit-like).
+Scale-aware: personal brand = metafore, enterprise = limbaj instituțional.
+Urgency-aware: low = explorator, sprint = checklist, crisis = directiv, binar.
+Complexity-aware: foundational = simplu; expert = ontologic, multi-agent.
+
+3. Guardrails canonice
+Always:
+Nu inventezi date financiare sau medicale.
+Citezi surse în domenii reglementate.
+Blochezi promisiuni nerealiste („garantat profit”, „vindecare”).
+Domain-specific (din packs/*.mdc):
+FinTech → SEC/FCA, no unverified claims.
+Healthcare → HIPAA/GDPR, no diagnostic.
+Legal → contract-valid, no legal advice fără disclaimer.
+Urgency-specific:
+Crisis → zero ambiguitate, include escalation path.
+Planned → poate fi mai explorator.
+
+4. Variabilitate controlată
+Seed determinist (randomizare dar cu reproducibilitate).
+Slots parametrice: [SUBIECT], [CONTEXT], [ROLE], [OUTPUT] → completate de engine.
+Reroll controlat: „Tighten”, „Optimize for Enterprise”, „Crisis Mode”.
+Evaluator AI: scor 0–100 pe claritate, execuție, ambiguitate, alignment, business_fit.
+
+5. Format Output
+Free: doar .txt
+Creator: .txt + .md
+Pro: .txt + .md + .json + .pdf
+Enterprise: bundle .zip (toate + telemetry + checksum)
+
+6. Model de Prompt Template (canonic)
+# PROMPT STRUCTURE — {{module_id}} {{module_name}}
+
+## CONTEXT
+Domeniu: {{domain}}
+Scară: {{scale}}
+Urgență: {{urgency}}
+Resurse: {{resources}}
+Complexitate: {{complexity}}
+Aplicație: {{application}}
+
+## CERINȚĂ
+[descriere scurtă a obiectivului]
+
+## SPECIFICAȚIE
+- Pașii operaționali
+- Roluri + fallback
+- Artefacte de generat
+
+## KPI
+- {{kpis[] din domain_configs}}
+
+## GUARDRAILS
+- {{compliance_notes}}
+- Etice: no guesswork, citează oficial
+
+## FALLBACK
+- Retry path
+- Variabilitate controlată
+
+## OUTPUT
+Format: {{output_format}}
+Chei/structură: …
+
+
+Acesta este standardul oficial, exact ce UI-ul și API-ul PROMPTFORGE v3 livrează la fiecare rulare: context→cerință→spec→KPI→guardrails→fallback→output.
+
+
+
+
+În PROMPTFORGE™ v3, Test Engine-ul este un evaluator automatizat care rulează orice prompt generat prin grila de scoruri, cu praguri clare de trecere.
+
+Iată rubrică standard + praguri:
+
+🧪 Rubrică Test Engine – PROMPTFORGE™ v3
+Criterii de evaluare (0–100 fiecare)
+
+Claritate
+0–49 = neinteligibil, vag, contradictoriu
+50–69 = parțial clar, dar ambiguu sau redundant
+70–84 = clar, lizibil, structură acceptabilă
+85–100 = cristalizat, fără zgomot, ușor de executat
+
+Execuție (Execution Readiness)
+0–49 = neaplicabil, lipsește structură de acțiune
+50–69 = aplicabil parțial, dar lipsesc pași/fallbacks
+70–84 = implementabil cu adaptări
+85–100 = complet implementabil, direct „deployment-ready”
+
+Ambiguitate (scor invers, mai mic = mai bine)
+0–9 = precis, fără interpretări multiple
+10–19 = ușoare zone vagi, dar necritice
+20–29 = ambiguitate moderată, necesită clarificare
+30+ = prea vag, imposibil de aplicat
+
+Business Fit (aliniere cu scopul 7D și domain config)
+0–49 = nu are legătură cu contextul
+50–69 = legătură parțială, generic
+70–84 = adaptat la industrie/scară, dar superficial
+85–100 = adaptare perfectă la domeniu, scală, resurse
+
+Praguri minime de validare
+Claritate ≥ 80
+Execuție ≥ 80
+Ambiguitate ≤ 20
+Business Fit ≥ 75
+
+Dacă un prompt nu trece aceste praguri → este marcat „⚠️ Revizuire necesară” și se trimite automat prin Evaluator AI pentru ajustare („Tighten”, „Optimize Enterprise”, „Crisis Mode”).
+
+Exemplu de scor afișat în UI
+Clarity: 88 ✅
+Execution: 83 ✅
+Ambiguity: 12 ✅
+Business Fit: 79 ⚠️ borderline
+--------------------------------
+Verdict: Partial Pass – recomandă optimizare pe Business Fit
+
+
+
+
+
+
+# Create Test Engine rubric spec files for PROMPTFORGE
+from pathlib import Path
+import json
+from textwrap import dedent
+
+base = Path("/mnt/data")
+base.mkdir(parents=True, exist_ok=True)
+
+# 1) JSON schema for prompt_scores (evaluation result payload)
+prompt_scores_schema = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PROMPTFORGE Prompt Scores",
+  "type": "object",
+  "required": ["run_id", "criteria", "verdict", "version"],
+  "properties": {
+    "version": {"type": "string", "description": "Semver of rubric"}, 
+    "run_id": {"type": "string", "format": "uuid"},
+    "module_id": {"type": "string"},
+    "parameter_set_7d": {
+      "type": "object",
+      "properties": {
+        "domain": {"type": "string"},
+        "scale": {"type": "string"},
+        "urgency": {"type": "string"},
+        "complexity": {"type": "string"},
+        "resources": {"type": "string"},
+        "application": {"type": "string"},
+        "output_format": {"type": "string"}
+      },
+      "additionalProperties": True
+    },
+    "criteria": {
+      "type": "object",
+      "required": ["clarity", "execution", "ambiguity", "business_fit"],
+      "properties": {
+        "clarity": {
+          "type": "object",
+          "required": ["score", "notes"],
+          "properties": {"score": {"type": "integer", "minimum": 0, "maximum": 100}, "notes": {"type": "string"}}
+        },
+        "execution": {
+          "type": "object",
+          "required": ["score", "notes"],
+          "properties": {"score": {"type": "integer", "minimum": 0, "maximum": 100}, "notes": {"type": "string"}}
+        },
+        "ambiguity": {
+          "type": "object",
+          "required": ["score", "notes"],
+          "properties": {"score": {"type": "integer", "minimum": 0, "maximum": 100}, "notes": {"type": "string"}, "inverted": {"type":"boolean", "const": True}}
+        },
+        "business_fit": {
+          "type": "object",
+          "required": ["score", "notes"],
+          "properties": {"score": {"type": "integer", "minimum": 0, "maximum": 100}, "notes": {"type": "string"}}
+        }
+      },
+      "additionalProperties": False
+    },
+    "weights": {
+      "type": "object",
+      "properties": {
+        "clarity": {"type": "number"},
+        "execution": {"type": "number"},
+        "ambiguity_inv": {"type": "number"},
+        "business_fit": {"type": "number"}
+      },
+      "additionalProperties": False
+    },
+    "thresholds": {
+      "type": "object",
+      "properties": {
+        "clarity_min": {"type": "integer", "default": 80},
+        "execution_min": {"type": "integer", "default": 80},
+        "ambiguity_max": {"type": "integer", "default": 20},
+        "business_fit_min": {"type": "integer", "default": 75}
+      },
+      "additionalProperties": False
+    },
+    "composite": {
+      "type": "object",
+      "required": ["score"],
+      "properties": {
+        "score": {"type": "number", "minimum": 0, "maximum": 100},
+        "formula": {"type": "string", "description": "normalized weighted formula applied"}
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "partial_pass", "fail"]
+    },
+    "actions": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Follow-up actions like 'tighten', 'optimize_enterprise', 'crisis_mode'"
+    },
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "model": {"type": "string"},
+        "tokens_used": {"type": "integer"},
+        "duration_ms": {"type": "integer"},
+        "policy_hits": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "additionalProperties": False
+}
+
+schema_path = base / "prompt_scores_schema.json"
+schema_path.write_text(json.dumps(prompt_scores_schema, indent=2, ensure_ascii=False), encoding="utf-8")
+
+# 2) Rubric logic (mdc) with thresholds and verdict rules
+rubric_mdc = dedent("""
+  # Test Engine — Rubrică & Praguri (PROMPTFORGE™ v3)
+
+  ## Criterii (0–100 fiecare; Ambiguitate = invers)
+  - Claritate: 0–49 slab, 50–69 mediu, 70–84 bun, 85–100 excelent.
+  - Execuție: 0–49 slab, 50–69 mediu, 70–84 implementabil, 85–100 deployment‑ready.
+  - Ambiguitate (invers): 0–9 ideal, 10–19 acceptabil, 20–29 moderat, 30+ inacceptabil.
+  - Business Fit: 0–49 off, 50–69 generic, 70–84 bun, 85–100 perfect.
+
+  ## Praguri implicite (global)
+  - claritate_min = 80
+  - execuție_min = 80
+  - ambiguitate_max = 20
+  - business_fit_min = 75
+
+  ## Greutăți (default pentru scor compozit)
+  - clarity = 0.30
+  - execution = 0.35
+  - ambiguity_inv = 0.15   # calc: (100 - ambiguity)
+  - business_fit = 0.20
+  - formula: composite = 0.30*C + 0.35*E + 0.15*(100-A) + 0.20*B
+
+  ## Verdict
+  - PASS dacă (C≥80 ∧ E≥80 ∧ A≤20 ∧ B≥75).
+  - PARTIAL_PASS dacă 3/4 praguri sunt trecute și composite ≥ 80.
+  - FAIL altfel.
+
+  ## Acțiuni automate (fallbacks)
+  - tighten: reduce ambiguitate (clarifică termeni, elimină fluff).
+  - optimize_enterprise: crește business_fit (aliniază la domain/scale/resources).
+  - crisis_mode: maximizează directivitatea (pentru urgency=crisis).
+  - expand_steps: crește execuție (pași, SOP, owners, timpi).
+""").strip()
+
+rubric_path = base / "test_engine_rubric.mdc"
+rubric_path.write_text(rubric_mdc, encoding="utf-8")
+
+# 3) Domain overrides YAML (optional, per industry)
+evaluator_yaml = dedent("""
+  version: "1.0.0"
+  defaults:
+    thresholds:
+      clarity_min: 80
+      execution_min: 80
+      ambiguity_max: 20
+      business_fit_min: 75
+    weights:
+      clarity: 0.30
+      execution: 0.35
+      ambiguity_inv: 0.15
+      business_fit: 0.20
+
+  overrides:
+    healthcare:
+      thresholds:
+        clarity_min: 85
+        execution_min: 85
+        ambiguity_max: 15
+        business_fit_min: 80
+    fintech:
+      thresholds:
+        execution_min: 85
+        business_fit_min: 80
+    cybersecurity:
+      thresholds:
+        ambiguity_max: 12
+      weights:
+        execution: 0.40
+        ambiguity_inv: 0.20
+        clarity: 0.25
+        business_fit: 0.15
+    education:
+      thresholds:
+        clarity_min: 78
+        execution_min: 78
+        business_fit_min: 72
+      weights:
+        clarity: 0.35
+        execution: 0.30
+        ambiguity_inv: 0.15
+        business_fit: 0.20
+""").strip()
+
+yaml_path = base / "evaluator_config.yaml"
+yaml_path.write_text(evaluator_yaml, encoding="utf-8")
+
+# 4) Example payload
+example_payload = {
+  "version": "1.0.0",
+  "run_id": "00000000-0000-0000-0000-000000000001",
+  "module_id": "M14",
+  "parameter_set_7d": {
+    "domain": "saas", "scale": "startup", "urgency": "sprint",
+    "complexity": "advanced", "resources": "lean_team",
+    "application": "implementation", "output_format": "spec"
+  },
+  "criteria": {
+    "clarity": {"score": 88, "notes": "Structură clară, fără jargon inutil"},
+    "execution": {"score": 83, "notes": "Pași implementabili + fallback"},
+    "ambiguity": {"score": 12, "notes": "Doar 2 termeni vagi, definiți la final", "inverted": True},
+    "business_fit": {"score": 79, "notes": "Ar putea include KPI SaaS (NRR, TTV)"}
+  },
+  "weights": {"clarity": 0.30, "execution": 0.35, "ambiguity_inv": 0.15, "business_fit": 0.20},
+  "thresholds": {"clarity_min": 80, "execution_min": 80, "ambiguity_max": 20, "business_fit_min": 75},
+  "composite": {"score": 84.1, "formula": "0.30*C + 0.35*E + 0.15*(100-A) + 0.20*B"},
+  "verdict": "partial_pass",
+  "actions": ["optimize_enterprise"],
+  "telemetry": {"model": "gpt-4o", "tokens_used": 9312, "duration_ms": 1840, "policy_hits": ["gdpr"]}
+}
+
+example_path = base / "prompt_scores_example.json"
+example_path.write_text(json.dumps(example_payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+{
+  "schema": str(schema_path),
+  "rubric": str(rubric_path),
+  "config": str(yaml_path),
+  "example": str(example_path)
+}
+
+
+
+
+
+
+spec-ul complet de Export & Checksum pentru PROMPTFORGE™ v3 pe baza documentației și standardelor oficiale.
+
+📦 Export & Checksum Bundle — Standard PROMPTFORGE™ v3
+1. Conținut bundle (artefacte canonice)
+
+Fiecare rulare → un bundle .zip conține:
+
+prompt.txt – instrucțiune brută
+
+prompt.md – rezumat lizibil + KPI + spec
+
+prompt.json – config + meta + telemetrie
+
+prompt.pdf – export comercial brand-uit
+
+telemetry.json – scoruri, cost, policy_hits
+
+checksum.txt – hash SHA256 pentru toate fișierele
+
+Gating:
+
+Free → doar .txt
+
+Pro → .md, .json, .pdf
+
+Enterprise → .bundle.zip complet
+
+2. Manifest (per bundle)
+{
+  "bundle_id": "uuid",
+  "run_id": "uuid",
+  "module_id": "M07",
+  "version": "1.0.3",
+  "exported_at": "2025-08-19T00:00:00Z",
+  "formats": ["txt","md","json","pdf"],
+  "artifacts": [
+    {"file":"prompt.txt","checksum":"sha256:...","bytes":1234},
+    {"file":"prompt.md","checksum":"sha256:...","bytes":2345},
+    {"file":"prompt.json","checksum":"sha256:...","bytes":3456},
+    {"file":"prompt.pdf","checksum":"sha256:...","bytes":4567},
+    {"file":"telemetry.json","checksum":"sha256:...","bytes":678}
+  ],
+  "signature": {
+    "algorithm": "ed25519",
+    "signed_by": "PROMPTFORGE_KEY_ID",
+    "signature": "base64..."
+  }
+}
+
+3. Semnătură digitală
+
+Algoritm: ed25519
+
+Cheie: generată per instanță (Enterprise-only)
+
+Semnătura se aplică pe întregul manifest.json
+
+Verificare: verify(manifest.json, signature, public_key)
+
+4. Naming convention
+/exports/{org_id}/{module_id}/{run_hash}/
+   ├── prompt.txt
+   ├── prompt.md
+   ├── prompt.json
+   ├── prompt.pdf
+   ├── telemetry.json
+   ├── checksum.txt
+   └── manifest.json
+
+
+{org_id} = workspace UUID
+
+{module_id} = M01…M50
+
+{run_hash} = SHA256 prompt complet
+
+5. Structură bundle.zip
+bundle-{module_id}-{run_hash}.zip
+   ├── manifest.json
+   ├── prompt.txt
+   ├── prompt.md
+   ├── prompt.json
+   ├── prompt.pdf
+   ├── telemetry.json
+   └── checksum.txt
+
+6. Checksum standard
+
+Algoritm: SHA256 obligatoriu
+
+Format checksum.txt:
+
+sha256  9a0364b9e99bb480dd25e1f0284c8555 prompt.txt
+sha256  2b576ac0f17d3a6f7e3f86a1d4fbe6af prompt.md
+sha256  3a7bd3e2360a9b7d9ce9d6f4a7e4d6f8 prompt.json
+sha256  4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s prompt.pdf
+sha256  5a7d9f0c8b6e2d4a7e1b2c3d4e5f6a7b telemetry.json
+
+7. Flux de export
+
+Generare prompt (/api/run/mXX)
+
+Persistare în runs, prompt_history
+
+Creare artefacte (txt/md/json/pdf)
+
+Calcul checksum SHA256 per fișier
+
+Scriere manifest.json + semnătură digitală
+
+Compresie .zip → bundle-{module_id}-{run_hash}.zip
+
+Salvare în Supabase Storage + DB bundles
+
+
+
+
+
+
+# Create exporter skeleton files for PROMPTFORGE Export & Checksum
+from pathlib import Path
+import json, hashlib, zipfile, os
+from datetime import datetime
+
+base = Path("/mnt/data")
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+proj = base / f"promptforge_exporter_{ts}"
+(proj / "exporter" / "templates").mkdir(parents=True, exist_ok=True)
+(proj / "lib").mkdir(parents=True, exist_ok=True)
+
+# 1) lib/bundle.ts — TypeScript skeleton
+bundle_ts = r'''// PROMPTFORGE™ v3 — Export & Checksum
+// lib/bundle.ts
+
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+
+export type Artifact = {
+  file: string;
+  bytes: number;
+  checksum: string; // sha256:<hex>
+};
+
+export type ParameterSet7D = {
+  domain: string; scale: string; urgency: string; complexity: string;
+  resources: string; application: string; output_format: string;
+};
+
+export type Manifest = {
+  bundle_id: string;      // uuid
+  run_id: string;         // uuid
+  module_id: string;      // M01..M50
+  version: string;        // semver of exporter
+  exported_at: string;    // ISO string
+  formats: string[];      // ["txt","md","json","pdf"]
+  artifacts: Artifact[];
+  signature?: {
+    algorithm: "ed25519";
+    signed_by: string;    // KEY_ID
+    signature: string;    // base64
+  };
+  parameter_set_7d?: ParameterSet7D;
+  telemetry?: Record<string, any>;
+};
+
+export function sha256File(absPath: string): string {
+  const hash = crypto.createHash("sha256");
+  const data = fs.readFileSync(absPath);
+  hash.update(data);
+  return "sha256:" + hash.digest("hex");
+}
+
+export function writeChecksumList(dir: string, files: string[], outFile = "checksum.txt"): string {
+  const lines: string[] = [];
+  for (const f of files) {
+    const abs = path.resolve(dir, f);
+    const hex = sha256File(abs).replace("sha256:", "");
+    lines.push(`sha256  ${hex} ${f}`);
+  }
+  const outPath = path.join(dir, outFile);
+  fs.writeFileSync(outPath, lines.join("\n"), "utf-8");
+  return outPath;
+}
+
+export function makeManifest(opts: {
+  dir: string;
+  run_id: string;
+  bundle_id: string;
+  module_id: string;
+  version: string;
+  formats: string[];
+  parameter_set_7d?: ParameterSet7D;
+  telemetry?: Record<string, any>;
+}): Manifest {
+  const files = ["prompt.txt","prompt.md","prompt.json","prompt.pdf","telemetry.json"].filter(f => {
+    try { fs.accessSync(path.join(opts.dir, f)); return true; } catch { return false; }
+  });
+
+  const artifacts: Artifact[] = files.map(f => {
+    const abs = path.join(opts.dir, f);
+    const stat = fs.statSync(abs);
+    return { file: f, bytes: stat.size, checksum: sha256File(abs) };
+  });
+
+  return {
+    bundle_id: opts.bundle_id,
+    run_id: opts.run_id,
+    module_id: opts.module_id,
+    version: opts.version,
+    exported_at: new Date().toISOString(),
+    formats: opts.formats,
+    artifacts,
+    parameter_set_7d: opts.parameter_set_7d,
+    telemetry: opts.telemetry
+  };
+}
+
+// Placeholder signer: inject your Ed25519 keypair in runtime (Enterprise)
+export function signManifestEd25519(manifestJson: string, privateKeyPem?: string) {
+  if (!privateKeyPem) return undefined;
+  const sign = crypto.createSign("SHA256");
+  sign.update(manifestJson);
+  sign.end();
+  const signature = sign.sign(privateKeyPem).toString("base64");
+  return { algorithm: "ed25519", signed_by: "PROMPTFORGE_KEY_ID", signature };
+}
+
+export function writeManifest(dir: string, manifest: Manifest, signPem?: string) {
+  const content = JSON.stringify(manifest, null, 2);
+  const signature = signManifestEd25519(content, signPem);
+  const withSig = signature ? { ...manifest, signature } : manifest;
+  const out = path.join(dir, "manifest.json");
+  fs.writeFileSync(out, JSON.stringify(withSig, null, 2), "utf-8");
+  return out;
+}
+
+export function zipBundle(dir: string, module_id: string, run_hash: string) {
+  const archiver = require("zip-lib");
+  const out = path.join(path.dirname(dir), `bundle-${module_id}-${run_hash}.zip`);
+  return archiver.archiveFolder(dir, out).then(() => out);
+}
+'''
+(proj / "lib" / "bundle.ts").write_text(bundle_ts, encoding="utf-8")
+
+# 2) exporter/schema.json — manifest + checksum schema
+schema = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PROMPTFORGE Export Bundle Manifest",
+  "type": "object",
+  "required": ["bundle_id","run_id","module_id","version","exported_at","formats","artifacts"],
+  "properties": {
+    "bundle_id": {"type":"string","format":"uuid"},
+    "run_id": {"type":"string","format":"uuid"},
+    "module_id": {"type":"string","pattern":"^M(0[1-9]|[1-4][0-9]|50)$"},
+    "version": {"type":"string"},
+    "exported_at": {"type":"string","format":"date-time"},
+    "formats": {"type":"array","items":{"type":"string"}},
+    "artifacts": {
+      "type":"array",
+      "items": {
+        "type":"object",
+        "required":["file","bytes","checksum"],
+        "properties": {
+          "file":{"type":"string"},
+          "bytes":{"type":"integer","minimum":0},
+          "checksum":{"type":"string","pattern":"^sha256:[0-9a-fA-F]{64}$"}
+        }
+      }
+    },
+    "signature": {
+      "type":"object",
+      "properties":{
+        "algorithm":{"type":"string","enum":["ed25519"]},
+        "signed_by":{"type":"string"},
+        "signature":{"type":"string"}
+      },
+      "required":["algorithm","signed_by","signature"]
+    },
+    "parameter_set_7d": {"type":"object"},
+    "telemetry": {"type":"object"}
+  }
+}
+(proj / "exporter" / "schema.json").write_text(json.dumps(schema, indent=2), encoding="utf-8")
+
+# 3) exporter/templates — basic handlebars-like placeholders
+(manifest_t := proj / "exporter" / "templates" / "manifest.json.hbs").write_text(
+'''{
+  "bundle_id": "{{bundle_id}}",
+  "run_id": "{{run_id}}",
+  "module_id": "{{module_id}}",
+  "version": "{{version}}",
+  "exported_at": "{{exported_at}}",
+  "formats": {{formats_json}},
+  "artifacts": {{artifacts_json}},
+  "signature": {{signature_json}},
+  "parameter_set_7d": {{parameter_set_7d_json}},
+  "telemetry": {{telemetry_json}}
+}
+''', encoding="utf-8")
+
+(checksum_t := proj / "exporter" / "templates" / "checksum.txt.hbs").write_text(
+'{{#each files}}\nsha256  {{this.checksum_hex}} {{this.file}}\n{{/each}}\n'.strip(), encoding="utf-8")
+
+(prompt_md_t := proj / "exporter" / "templates" / "prompt.md.hbs").write_text(
+'''# {{module_id}} — {{title}}
+
+## Context 7D
+- Domain: {{domain}}
+- Scale: {{scale}}
+- Urgency: {{urgency}}
+- Complexity: {{complexity}}
+- Resources: {{resources}}
+- Application: {{application}}
+- Output: {{output_format}}
+
+## KPI
+{{kpi_block}}
+
+## Guardrails
+{{guardrails_block}}
+
+## Output
+{{output_block}}
+''', encoding="utf-8")
+
+
+Versionare & Istoric Cloud în Supabase, cu model de date, politici RLS și reguli de migrare. Este gândit să acopere: versionarea prompturilor și modulelor, istoric de rulări, bundle‑uri exportate, semnături, plus “merge/diff” între versiuni.
+
+Arhitectură: entități & relații (rezumat)
+
+orgs → projects → prompts → prompt_versions → runs → bundles/artifacts
+
+modules (M01–M50) au module_versions (pentru template/spec).
+
+manifests & signatures sunt atașate la bundles.
+
+scores (Test Engine) atașate la runs.
+
+merge_requests + version_edges pentru “branșe”/fork & merge.
+
+SQL (DDL) — tabele de bază
+-- 0) EXTENSII
+create extension if not exists "uuid-ossp";
+create extension if not exists pgcrypto;
+
+-- 1) ORGANIZAȚII & PROIECTE
+create table orgs (
+  id uuid primary key default uuid_generate_v4(),
+  slug text unique not null,
+  name text not null,
+  created_at timestamptz default now()
+);
+
+create table projects (
+  id uuid primary key default uuid_generate_v4(),
+  org_id uuid not null references orgs(id) on delete cascade,
+  slug text not null,
+  name text not null,
+  created_at timestamptz default now(),
+  unique (org_id, slug)
+);
+
+-- 2) MODULES (M01–M50) & VERSIUNI
+create table modules (
+  id text primary key,                 -- "M01".."M50"
+  title text not null,
+  description text,
+  created_at timestamptz default now()
+);
+
+create table module_versions (
+  id uuid primary key default uuid_generate_v4(),
+  module_id text not null references modules(id) on delete cascade,
+  semver text not null,                -- ex: "1.0.0"
+  parent_version_id uuid references module_versions(id),
+  changelog text,
+  spec_json jsonb not null,            -- contract/template JSON
+  created_by uuid,
+  created_at timestamptz default now(),
+  unique(module_id, semver)
+);
+
+-- 3) PROMPTS & VERSIUNI
+create table prompts (
+  id uuid primary key default uuid_generate_v4(),
+  project_id uuid not null references projects(id) on delete cascade,
+  module_id text not null references modules(id),
+  title text not null,
+  created_by uuid,
+  created_at timestamptz default now()
+);
+
+create table prompt_versions (
+  id uuid primary key default uuid_generate_v4(),
+  prompt_id uuid not null references prompts(id) on delete cascade,
+  module_version_id uuid references module_versions(id),
+  semver text not null,                -- semver al promptului
+  parent_version_id uuid references prompt_versions(id),
+  status text not null default 'active',  -- active|archived|deprecated
+  params_7d jsonb not null,            -- defaults 7D la momentul versiunii
+  body_md text not null,               -- prompt.md (sursă)
+  body_txt text,                       -- prompt.txt (flat)
+  body_json jsonb,                     -- prompt.json (structurat)
+  diff_json jsonb,                     -- diff față de parent (opțional)
+  checksum_sha256 text not null,       -- hash al conținutului
+  created_by uuid,
+  created_at timestamptz default now(),
+  unique(prompt_id, semver)
+);
+
+-- Graf de versiuni (edge-uri, pentru DAG, inclusiv merges)
+create table version_edges (
+  id bigserial primary key,
+  from_version uuid not null references prompt_versions(id) on delete cascade,
+  to_version uuid not null references prompt_versions(id) on delete cascade,
+  relation text not null check (relation in ('parent','merge')),
+  created_at timestamptz default now(),
+  unique(from_version, to_version, relation)
+);
+
+-- 4) RUNS & SCORURI (Test Engine)
+create table runs (
+  id uuid primary key default uuid_generate_v4(),
+  prompt_version_id uuid not null references prompt_versions(id) on delete cascade,
+  run_hash text not null,                 -- sha256 al inputului efectiv
+  parameter_set_7d jsonb not null,        -- setul efectiv rulat
+  status text not null default 'ok',      -- ok|fail|partial
+  telemetry jsonb,                        -- model, tokens, cost, durată...
+  created_by uuid,
+  created_at timestamptz default now(),
+  unique(prompt_version_id, run_hash)
+);
+
+create table scores (
+  run_id uuid primary key references runs(id) on delete cascade,
+  clarity int not null check (clarity between 0 and 100),
+  execution int not null check (execution between 0 and 100),
+  ambiguity int not null check (ambiguity between 0 and 100),
+  business_fit int not null check (business_fit between 0 and 100),
+  composite numeric(5,2),
+  verdict text not null check (verdict in ('pass','partial_pass','fail')),
+  thresholds jsonb,
+  weights jsonb,
+  notes text
+);
+
+-- 5) BUNDLE, ARTIFACTE, MANIFEST, SEMNĂTURĂ
+create table bundles (
+  id uuid primary key default uuid_generate_v4(),
+  run_id uuid not null references runs(id) on delete cascade,
+  module_id text not null references modules(id),
+  run_hash text not null,
+  formats text[] not null,                -- {"txt","md","json","pdf"}
+  created_at timestamptz default now(),
+  unique(run_id)
+);
+
+create table artifacts (
+  id bigserial primary key,
+  bundle_id uuid not null references bundles(id) on delete cascade,
+  file_name text not null,
+  bytes bigint not null,
+  sha256 text not null,
+  created_at timestamptz default now(),
+  unique(bundle_id, file_name)
+);
+
+create table manifests (
+  bundle_id uuid primary key references bundles(id) on delete cascade,
+  json jsonb not null,                    -- manifest.json
+  created_at timestamptz default now()
+);
+
+create table signatures (
+  bundle_id uuid primary key references bundles(id) on delete cascade,
+  algorithm text not null check (algorithm='ed25519'),
+  signed_by text not null,                -- KEY_ID
+  signature text not null,                -- base64
+  created_at timestamptz default now()
+);
+
+-- 6) MERGE REQUESTS (opțional, pentru aprobări enterprise)
+create table merge_requests (
+  id uuid primary key default uuid_generate_v4(),
+  prompt_id uuid not null references prompts(id) on delete cascade,
+  source_version uuid not null references prompt_versions(id),
+  target_version uuid not null references prompt_versions(id),
+  status text not null default 'open',    -- open|approved|rejected
+  created_by uuid,
+  created_at timestamptz default now(),
+  reviewed_by uuid,
+  reviewed_at timestamptz
+);
+
+VIEWS & INDEXES utile
+-- Versiunea curentă per prompt (max semver lexical sau created_at)
+create view prompt_latest as
+select distinct on (p.id)
+  p.id as prompt_id, pv.id as prompt_version_id, pv.semver, pv.created_at
+from prompts p
+join prompt_versions pv on pv.prompt_id = p.id
+order by p.id, pv.created_at desc;
+
+-- Ultimul bundle per run
+create view run_latest_bundle as
+select r.id as run_id, b.id as bundle_id, b.created_at
+from runs r
+join bundles b on b.run_id = r.id
+order by b.created_at desc;
+
+-- Indexare timpi & căutare rapidă
+create index on prompt_versions (prompt_id, created_at desc);
+create index on runs (prompt_version_id, created_at desc);
+create index on artifacts (bundle_id);
+create index on bundles (run_id);
+
+RLS (Row Level Security) — izolare multi‑tenant
+-- Activează RLS
+alter table orgs enable row level security;
+alter table projects enable row level security;
+alter table prompts enable row level security;
+alter table prompt_versions enable row level security;
+alter table runs enable row level security;
+alter table bundles enable row level security;
+alter table artifacts enable row level security;
+alter table manifests enable row level security;
+alter table signatures enable row level security;
+
+-- Presupunem claim 'org_id' în JWT Supabase
+create policy "org_read" on projects
+  for select using ( org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id' );
+
+create policy "org_write" on projects
+  for insert with check ( org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id' );
+
+-- Propagați aceeași logică pentru prompts/runs/bundles pe lanțul org -> project.
+-- Exemplu pentru prompts:
+create policy "org_prompt_read" on prompts
+  for select using (
+    exists (select 1 from projects pr
+            where pr.id = prompts.project_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy "org_prompt_write" on prompts
+  for all using (true)
+  with check (
+    exists (select 1 from projects pr
+            where pr.id = prompts.project_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+
+Notă: în practică vei replica aceeași condiție exists(...) pentru toate tabelele copil (prompt_versions, runs, bundles etc.), legându-le înapoi de projects.org_id.
+
+Reguli de versionare (SemVer + DAG)
+
+SemVer pentru module_versions și prompt_versions: MAJOR.MINOR.PATCH.
+
+PATCH: modificări cosmetice/compatibile; MINOR: câmpuri noi retro‑compatibile; MAJOR: breaking changes (marchează automat versiunile vechi ca deprecated).
+
+DAG de versiuni: parent_version_id + version_edges (tip parent sau merge) pentru istoricul complet și “merge‑uri” între ramuri.
+
+checksum_sha256: hash pe (body_md + params_7d + module_version.semver) → detectează re‑publicări identice.
+
+Reguli de migrare (Supabase)
+
+Forward‑only: nu se scriu downgrade-uri; rollback = migrare nouă care inversează efectele.
+
+Idempotent: fiecare migrare verifică existența (ex: if not exists) la create index/extension.
+
+Batch mic: separă DDL în pași clari: 0001_base.sql, 0002_rls.sql, 0003_views.sql, 0004_indexes.sql, 0005_seed_modules.sql.
+
+Seed controlat (Enterprise): populați modules (M01–M50) și, opțional, module_versions cu spec_json minim.
+
+Gating pe environment: folosește variabila current_setting('app.env', true) în migrări pentru a activa seed doar pe dev.
+
+Backfill script: pentru adoptarea istoricelor existente, scrieți migrarea 0010_backfill_versions.sql care:
+
+creează prompt_versions din “latest prompts” cu semver = '1.0.0'
+
+calculează checksum_sha256
+
+conectează “runs” vechi la versiunea nou creată.
+
+RLS după migrare: activați RLS după încărcarea de bază; aplicați policies în migrarea următoare pentru a evita blocaje.
+
+Verificare: adăugați o migrare self-test care rulează raise notice cu rezultate (ex: count în tabele cheie).
+
+Exemplu structură fișiere:
+
+/supabase/migrations/
+  0001_base.sql
+  0002_rls.sql
+  0003_views.sql
+  0004_indexes.sql
+  0005_seed_modules.sql
+  0010_backfill_versions.sql
+  0011_add_module_versions.sql
+  0012_add_merge_requests.sql
+
+Triggers & integritate
+-- Actualizează automat checksum la insert/update (ex: body_md sau params_7d)
+create or replace function pf_compute_checksum()
+returns trigger as $$
+declare
+  payload text;
+begin
+  payload := coalesce(new.body_md,'') || coalesce(new.body_txt,'') ||
+             coalesce(new.body_json::text,'') || coalesce(new.params_7d::text,'');
+  new.checksum_sha256 := 'sha256:' || encode(digest(payload, 'sha256'),'hex');
+  return new;
+end; $$ language plpgsql;
+
+drop trigger if exists trg_checksum on prompt_versions;
+create trigger trg_checksum
+before insert or update of body_md, body_txt, body_json, params_7d
+on prompt_versions
+for each row execute function pf_compute_checksum();
+
+Retenție & audit
+
+Soft delete: adăugați deleted_at timestamptz (și excludeți prin views).
+
+Audit: activați pgaudit sau scrieți trigger generic în audit_log (user, acțiune, tabel, payload minimal).
+
+Retenție: “Free”: ultimele 7 zile de runs; “Pro”: 90 zile; “Enterprise”: nelimitat (sau politicile clientului).
+
+Integrare cu Storage (Supabase)
+
+Artefactele binare mari (PDF) pot merge în Storage (bucket /bundles/{org_id}/{module_id}/{run_hash}/…)
+
+În tabelul artifacts.bytes păstrezi doar metadatele; manifests.json păstrează URL‑urile semnate către Storage.
+
+Exemple de interogări utile
+
+Ultima versiune de prompt & bundle:
+
+select p.title, pv.semver, b.id as bundle_id
+from prompts p
+join prompt_latest l on l.prompt_id = p.id
+join prompt_versions pv on pv.id = l.prompt_version_id
+left join runs r on r.prompt_version_id = pv.id
+left join bundles b on b.run_id = r.id
+where p.project_id = $1
+order by pv.created_at desc
+limit 20;
+
+
+Istoric scoruri pentru un prompt:
+
+select pv.semver, r.created_at, s.clarity, s.execution, s.ambiguity, s.business_fit, s.composite, s.verdict
+from prompt_versions pv
+join runs r on r.prompt_version_id = pv.id
+join scores s on s.run_id = r.id
+where pv.prompt_id = $1
+order by r.created_at desc;
+
+Politici de “merge” & release
+
+merge_requests: permit code‑review pe conținutul promptului (diferențe în diff_json, scoruri minime).
+
+release rule: nu promova o versiune la “latest” dacă nu are PASS pe rubrică (sau are doar PARTIAL_PASS dar composite ≥ 85 & fără încălcări guardrails).
+
+deprecation window: menține 2 versiuni active în paralel (rotație în <30 zile) pentru siguranță.
+
+
+
+
+
+
+
+# Generate Supabase migration files for PROMPTFORGE v3
+from pathlib import Path
+from datetime import datetime
+import zipfile, os, textwrap, json
+
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+root = Path(f"/mnt/data/supabase_migrations_{ts}")
+migr = root / "supabase" / "migrations"
+migr.mkdir(parents=True, exist_ok=True)
+
+readme = f"""# PROMPTFORGE™ v3 — Supabase Migrations
+Timestamp: {ts}
+
+Order of execution:
+  0001_base.sql
+  0002_rls.sql
+  0003_views.sql
+  0004_indexes.sql
+  0005_seed_modules.sql
+  0010_backfill_versions.sql
+  0011_add_module_versions.sql
+  0012_add_merge_requests.sql
+
+Notes:
+- Uses SemVer for module_versions and prompt_versions.
+- JWT must include `org_id` claim for RLS policies.
+- Set `app.env` GUC to 'dev' | 'prod' for seeding behavior.
+"""
+
+(root / "README.md").write_text(readme, encoding="utf-8")
+
+sql_0001 = textwrap.dedent(r"""
+-- 0001_base.sql — core schema
+begin;
+
+create extension if not exists "uuid-ossp";
+create extension if not exists pgcrypto;
+
+-- ORGS & PROJECTS
+create table if not exists orgs (
+  id uuid primary key default uuid_generate_v4(),
+  slug text unique not null,
+  name text not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists projects (
+  id uuid primary key default uuid_generate_v4(),
+  org_id uuid not null references orgs(id) on delete cascade,
+  slug text not null,
+  name text not null,
+  created_at timestamptz default now(),
+  unique (org_id, slug)
+);
+
+-- MODULES & VERSIONS
+create table if not exists modules (
+  id text primary key,                 -- "M01".."M50"
+  title text not null,
+  description text,
+  created_at timestamptz default now()
+);
+
+create table if not exists module_versions (
+  id uuid primary key default uuid_generate_v4(),
+  module_id text not null references modules(id) on delete cascade,
+  semver text not null,
+  parent_version_id uuid references module_versions(id),
+  changelog text,
+  spec_json jsonb not null,
+  created_by uuid,
+  created_at timestamptz default now(),
+  unique(module_id, semver)
+);
+
+-- PROMPTS & VERSIONS
+create table if not exists prompts (
+  id uuid primary key default uuid_generate_v4(),
+  project_id uuid not null references projects(id) on delete cascade,
+  module_id text not null references modules(id),
+  title text not null,
+  created_by uuid,
+  created_at timestamptz default now()
+);
+
+create table if not exists prompt_versions (
+  id uuid primary key default uuid_generate_v4(),
+  prompt_id uuid not null references prompts(id) on delete cascade,
+  module_version_id uuid references module_versions(id),
+  semver text not null,
+  parent_version_id uuid references prompt_versions(id),
+  status text not null default 'active',  -- active|archived|deprecated
+  params_7d jsonb not null,
+  body_md text not null,
+  body_txt text,
+  body_json jsonb,
+  diff_json jsonb,
+  checksum_sha256 text not null,
+  created_by uuid,
+  created_at timestamptz default now(),
+  unique(prompt_id, semver)
+);
+
+create table if not exists version_edges (
+  id bigserial primary key,
+  from_version uuid not null references prompt_versions(id) on delete cascade,
+  to_version uuid not null references prompt_versions(id) on delete cascade,
+  relation text not null check (relation in ('parent','merge')),
+  created_at timestamptz default now(),
+  unique(from_version, to_version, relation)
+);
+
+-- RUNS & SCORES
+create table if not exists runs (
+  id uuid primary key default uuid_generate_v4(),
+  prompt_version_id uuid not null references prompt_versions(id) on delete cascade,
+  run_hash text not null,
+  parameter_set_7d jsonb not null,
+  status text not null default 'ok',      -- ok|fail|partial
+  telemetry jsonb,
+  created_by uuid,
+  created_at timestamptz default now(),
+  unique(prompt_version_id, run_hash)
+);
+
+create table if not exists scores (
+  run_id uuid primary key references runs(id) on delete cascade,
+  clarity int not null check (clarity between 0 and 100),
+  execution int not null check (execution between 0 and 100),
+  ambiguity int not null check (ambiguity between 0 and 100),
+  business_fit int not null check (business_fit between 0 and 100),
+  composite numeric(5,2),
+  verdict text not null check (verdict in ('pass','partial_pass','fail')),
+  thresholds jsonb,
+  weights jsonb,
+  notes text
+);
+
+-- BUNDLES & ARTIFACTS & MANIFESTS & SIGNATURES
+create table if not exists bundles (
+  id uuid primary key default uuid_generate_v4(),
+  run_id uuid not null references runs(id) on delete cascade,
+  module_id text not null references modules(id),
+  run_hash text not null,
+  formats text[] not null,                -- {"txt","md","json","pdf"}
+  created_at timestamptz default now(),
+  unique(run_id)
+);
+
+create table if not exists artifacts (
+  id bigserial primary key,
+  bundle_id uuid not null references bundles(id) on delete cascade,
+  file_name text not null,
+  bytes bigint not null,
+  sha256 text not null,
+  created_at timestamptz default now(),
+  unique(bundle_id, file_name)
+);
+
+create table if not exists manifests (
+  bundle_id uuid primary key references bundles(id) on delete cascade,
+  json jsonb not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists signatures (
+  bundle_id uuid primary key references bundles(id) on delete cascade,
+  algorithm text not null check (algorithm='ed25519'),
+  signed_by text not null,
+  signature text not null,
+  created_at timestamptz default now()
+);
+
+-- TRIGGER: checksum auto-recalc
+create or replace function pf_compute_checksum()
+returns trigger as $$
+declare
+  payload text;
+begin
+  payload := coalesce(new.body_md,'') || coalesce(new.body_txt,'') ||
+             coalesce(new.body_json::text,'') || coalesce(new.params_7d::text,'');
+  new.checksum_sha256 := 'sha256:' || encode(digest(payload, 'sha256'),'hex');
+  return new;
+end; $$ language plpgsql;
+
+drop trigger if exists trg_checksum on prompt_versions;
+create trigger trg_checksum
+before insert or update of body_md, body_txt, body_json, params_7d
+on prompt_versions
+for each row execute function pf_compute_checksum();
+
+commit;
+""").strip()
+
+sql_0002 = textwrap.dedent(r"""
+-- 0002_rls.sql — row level security & policies
+begin;
+
+-- Enable RLS
+alter table if exists orgs enable row level security;
+alter table if exists projects enable row level security;
+alter table if exists prompts enable row level security;
+alter table if exists prompt_versions enable row level security;
+alter table if exists version_edges enable row level security;
+alter table if exists runs enable row level security;
+alter table if exists scores enable row level security;
+alter table if exists bundles enable row level security;
+alter table if exists artifacts enable row level security;
+alter table if exists manifests enable row level security;
+alter table if exists signatures enable row level security;
+alter table if exists modules enable row level security;
+alter table if exists module_versions enable row level security;
+
+-- Simple public read on modules/module_versions (optional)
+create policy if not exists modules_read_public on modules
+  for select using (true);
+create policy if not exists module_versions_read_public on module_versions
+  for select using (true);
+
+-- Projects RLS by org_id claim
+create policy if not exists org_read on projects
+  for select using ( org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id' );
+
+create policy if not exists org_write on projects
+  for insert with check ( org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id' );
+
+-- Propagate org scoping via projects for dependent tables
+-- PROMPTS
+create policy if not exists prompts_read on prompts
+  for select using (
+    exists (select 1 from projects pr
+            where pr.id = prompts.project_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy if not exists prompts_write on prompts
+  for all using (true)
+  with check (
+    exists (select 1 from projects pr
+            where pr.id = prompts.project_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+-- PROMPT_VERSIONS
+create policy if not exists prompt_versions_read on prompt_versions
+  for select using (
+    exists (select 1 from prompts p join projects pr on pr.id = p.project_id
+            where p.id = prompt_versions.prompt_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy if not exists prompt_versions_write on prompt_versions
+  for all using (true)
+  with check (
+    exists (select 1 from prompts p join projects pr on pr.id = p.project_id
+            where p.id = prompt_versions.prompt_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+-- VERSION_EDGES
+create policy if not exists version_edges_read on version_edges
+  for select using (
+    exists (select 1 from prompt_versions pv join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where pv.id = version_edges.from_version
+               or pv.id = version_edges.to_version
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+-- RUNS
+create policy if not exists runs_read on runs
+  for select using (
+    exists (select 1 from prompt_versions pv join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where pv.id = runs.prompt_version_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy if not exists runs_write on runs
+  for all using (true)
+  with check (
+    exists (select 1 from prompt_versions pv join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where pv.id = runs.prompt_version_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+-- SCORES
+create policy if not exists scores_rw on scores
+  for all using (
+    exists (select 1 from runs r join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where r.id = scores.run_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  )
+  with check (
+    exists (select 1 from runs r join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where r.id = scores.run_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+-- BUNDLES / ARTIFACTS / MANIFESTS / SIGNATURES
+create policy if not exists bundles_rw on bundles
+  for all using (
+    exists (select 1 from runs r join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where r.id = bundles.run_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  )
+  with check (
+    exists (select 1 from runs r join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where r.id = bundles.run_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy if not exists artifacts_rw on artifacts
+  for all using (
+    exists (select 1 from bundles b join runs r on r.id = b.run_id
+            join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where b.id = artifacts.bundle_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  )
+  with check (
+    exists (select 1 from bundles b join runs r on r.id = b.run_id
+            join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where b.id = artifacts.bundle_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy if not exists manifests_rw on manifests
+  for all using (
+    exists (select 1 from bundles b join runs r on r.id = b.run_id
+            join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where b.id = manifests.bundle_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  )
+  with check (
+    exists (select 1 from bundles b join runs r on r.id = b.run_id
+            join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where b.id = manifests.bundle_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+create policy if not exists signatures_rw on signatures
+  for all using (
+    exists (select 1 from bundles b join runs r on r.id = b.run_id
+            join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where b.id = signatures.bundle_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  )
+  with check (
+    exists (select 1 from bundles b join runs r on r.id = b.run_id
+            join prompt_versions pv on pv.id = r.prompt_version_id
+            join prompts p on p.id = pv.prompt_id
+            join projects pr on pr.id = p.project_id
+            where b.id = signatures.bundle_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+commit;
+""").strip()
+
+sql_0003 = textwrap.dedent(r"""
+-- 0003_views.sql — helper views
+begin;
+
+create or replace view prompt_latest as
+select distinct on (p.id)
+  p.id as prompt_id, pv.id as prompt_version_id, pv.semver, pv.created_at
+from prompts p
+join prompt_versions pv on pv.prompt_id = p.id
+order by p.id, pv.created_at desc;
+
+create or replace view run_latest_bundle as
+select r.id as run_id, b.id as bundle_id, b.created_at
+from runs r
+join bundles b on b.run_id = r.id
+order by b.created_at desc;
+
+commit;
+""").strip()
+
+sql_0004 = textwrap.dedent(r"""
+-- 0004_indexes.sql — performance indexes
+begin;
+
+create index if not exists idx_prompt_versions_latest on prompt_versions (prompt_id, created_at desc);
+create index if not exists idx_runs_by_version on runs (prompt_version_id, created_at desc);
+create index if not exists idx_artifacts_by_bundle on artifacts (bundle_id);
+create index if not exists idx_bundles_by_run on bundles (run_id);
+create index if not exists idx_projects_by_org on projects (org_id);
+
+commit;
+""").strip()
+
+sql_0005 = textwrap.dedent(r"""
+-- 0005_seed_modules.sql — seed for modules (dev only)
+begin;
+
+do $$
+declare env text := current_setting('app.env', true);
+begin
+  if env is null or env = 'dev' then
+    insert into modules (id, title, description) values
+      ('M01','Persona & Offer Clarifier','Avatar, problemă, promisiune, ofertă')
+      on conflict (id) do nothing;
+    insert into modules (id, title, description) values
+      ('M07','Risk & Trust Reversal','Garanții + dovadă → scazi drop‑off')
+      on conflict (id) do nothing;
+    insert into modules (id, title, description) values
+      ('M14','Landing Page Spec','Structură, blocuri, micro‑conversii')
+      on conflict (id) do nothing;
+    -- adaugă restul M02..M50 după nevoie
+  end if;
+end $$;
+
+commit;
+""").strip()
+
+sql_0010 = textwrap.dedent(r"""
+-- 0010_backfill_versions.sql — backfill for existing prompts (dev)
+begin;
+
+do $$
+declare env text := current_setting('app.env', true);
+begin
+  if env is null or env = 'dev' then
+    -- creează versiuni 1.0.0 pentru prompts existente fără versiuni
+    insert into prompt_versions (prompt_id, semver, status, params_7d, body_md, body_txt, body_json, checksum_sha256)
+    select p.id, '1.0.0', 'active', '{}'::jsonb, coalesce(p.title,'') as body_md, p.title, '{}'::jsonb, 'sha256:seed'
+    from prompts p
+    where not exists (select 1 from prompt_versions pv where pv.prompt_id = p.id);
+  end if;
+end $$;
+
+commit;
+""").strip()
+
+sql_0011 = textwrap.dedent(r"""
+-- 0011_add_module_versions.sql — sample module_version seed & link
+begin;
+
+do $$
+declare env text := current_setting('app.env', true);
+begin
+  if env is null or env = 'dev' then
+    insert into module_versions (module_id, semver, changelog, spec_json)
+    values ('M07','1.0.0','Initial spec','{"name":"Risk & Trust Reversal"}'::jsonb)
+    on conflict do nothing;
+  end if;
+end $$;
+
+commit;
+""").strip()
+
+sql_0012 = textwrap.dedent(r"""
+-- 0012_add_merge_requests.sql — MR table (optional enterprise)
+begin;
+
+create table if not exists merge_requests (
+  id uuid primary key default uuid_generate_v4(),
+  prompt_id uuid not null references prompts(id) on delete cascade,
+  source_version uuid not null references prompt_versions(id),
+  target_version uuid not null references prompt_versions(id),
+  status text not null default 'open',    -- open|approved|rejected
+  created_by uuid,
+  created_at timestamptz default now(),
+  reviewed_by uuid,
+  reviewed_at timestamptz
+);
+
+alter table if exists merge_requests enable row level security;
+
+create policy if not exists merge_requests_rw on merge_requests
+  for all using (
+    exists (select 1 from prompts p join projects pr on pr.id = p.project_id
+            where p.id = merge_requests.prompt_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  )
+  with check (
+    exists (select 1 from prompts p join projects pr on pr.id = p.project_id
+            where p.id = merge_requests.prompt_id
+              and pr.org_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id')
+  );
+
+commit;
+""").strip()
+
+files = {
+  "0001_base.sql": sql_0001,
+  "0002_rls.sql": sql_0002,
+  "0003_views.sql": sql_0003,
+  "0004_indexes.sql": sql_0004,
+  "0005_seed_modules.sql": sql_0005,
+  "0010_backfill_versions.sql": sql_0010,
+  "0011_add_module_versions.sql": sql_0011,
+  "0012_add_merge_requests.sql": sql_0012
+}
+
+for name, content in files.items():
+  (migr / name).write_text(content.strip() + "\n", encoding="utf-8")
+
+
+

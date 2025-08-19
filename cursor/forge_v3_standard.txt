@@ -1,0 +1,1781 @@
+
+
+STANDARD OFICIAL .cursor/rules — PROMPTFORGE™ v3 (ready‑to‑ship)
+
+Obiectiv: pune agentul Cursor pe șine stabile: reguli atomice, auto‑atașate pe structuri de cod, cu template‑uri incluse ca context. Folosește formatul MDC cu front‑matter (description, globs, alwaysApply), tipurile Always, Auto Attached, Agent Requested și ierarhie de reguli pe directoare. Regula devine context persistent pentru Agent & Inline Edit. 
+docs.cursor.com
+
+1) Arborele de fișiere (creează 1:1)
+.cursor/
+  rules/
+    00-foundation.mdc
+    01-parameters-7d.mdc
+    02-modules-index.mdc
+    03-api-run-modules.mdc
+    04-gpt-live-editor-test.mdc
+    05-export-bundle.mdc
+    06-telemetry-observability.mdc
+    07-versioning-modules.mdc
+    08-entitlements-pricing.mdc
+    09-security-guardrails.mdc
+    backend/
+      20-supabase.mdc
+      21-stripe.mdc
+      22-openai-runtime.mdc
+    frontend/
+      30-ui-standards.mdc
+      31-test-engine-ui.mdc
+      32-product-led-upsell.mdc
+    packs/
+      fintech.mdc
+      ecommerce.mdc
+      education.mdc
+    templates/
+      @api-route-template.ts
+      @bundle-exporter-template.ts
+      @evaluator-prompt-template.txt
+      @rule-module-template.mdc
+
+Note oficiale:
+— Reguli de proiect în .cursor/rules, cu nested rules permise în subfoldere (se atașează automat pe potrivire de path).
+— Formatul recomandat este MDC (front‑matter + conținut).
+— .cursorrules din rădăcină e legacy; păstrează proiectarea pe Project Rules. 
+docs.cursor.com
+
+2) Reguli canonice (MDC) — copy‑paste & setează tipul în UI
+Instrucțiune: păstrează fiecare regulă sub 500 linii, focus strâns, exemple concrete și/sau fișiere @template atașate pentru context. 
+docs.cursor.com
+2.1 00-foundation.mdc — Always
+---
+description: Standardul de bază al proiectului (stil, stack, convenții).
+globs:
+alwaysApply: true
+---
+- Tip proiect: Next.js + TypeScript, API Routes, UI compact PROMPTFORGE v3.
+- Lint strict, tipare clare, fără magie: Zod pentru validare, error-first.
+- Construcție pe module M01–M50 (nume + contract + handler + output KPI). :contentReference[oaicite:3]{index=3}
+- Toate prompturile = artefacte exportabile (txt/md/json/pdf) + telemetrie. :contentReference[oaicite:4]{index=4}
+2.2 01-parameters-7d.mdc — Always
+---
+description: Param Engine 7D — Domain, Scale, Urgency, Complexity, Resources, Application, Output.
+globs:
+alwaysApply: true
+---
+- Impune schema JSON pentru fiecare run:
+  {
+    "domain": "...", "scale": "...", "urgency": "...",
+    "complexity": "...", "resources": "...",
+    "application": "...", "output_format": "..."
+  }
+- Adaptare automată de ton, guardrails, KPI și format pe fiecare parametru (7D). :contentReference[oaicite:5]{index=5}
+- Domain packs injectabile (FinTech/Edu/Consulting) — vezi `packs/*.mdc`. :contentReference[oaicite:6]{index=6}
+2.3 02-modules-index.mdc — Agent Requested
+---
+description: Catalog M01–M50 — ID, scop, input contract, output, KPI, guardrails, telemetry.
+globs:
+alwaysApply: false
+---
+- Fiecare modul are contract: input, output, telemetry, KPI. :contentReference[oaicite:7]{index=7}
+- Mapare la endpointuri: POST /api/run/{moduleId} (M01..M50). :contentReference[oaicite:8]{index=8}
+- Include @rule-module-template.mdc în răspuns când ceri crearea/actualizarea unui modul.
+2.4 03-api-run-modules.mdc — Auto Attached (app/api/run/**)
+---
+description: Reguli pentru /api/run/{moduleId} — handler unificat + licensing + logs.
+globs:
+  - "app/api/run/**"
+alwaysApply: false
+---
+- Verifică entitlement înainte de execuție (plan/features). 
+- Request → validează Param 7D; Response → include hash, timestamp, kpis[], cost. :contentReference[oaicite:10]{index=10}
+- Log obligatoriu: run_id, user/org, module, tokens_used, duration, status. :contentReference[oaicite:11]{index=11}
+- Folosește @api-route-template.ts ca schelet.
+2.5 04-gpt-live-editor-test.mdc — Auto Attached (app/api/gpt-*/**)
+---
+description: GPT Live pentru Editor & Test Engine (înlocuiește simularea).
+globs:
+  - "app/api/gpt-*/**"
+alwaysApply: false
+---
+- Înlocuiește simulateGptEditing()/simulateGptResponse() cu endpointuri reale. :contentReference[oaicite:12]{index=12}
+- /api/gpt-editor și /api/gpt-test — rate-limit, retries, logs (run_id, model, tokens). :contentReference[oaicite:13]{index=13}
+- Evaluator AI post-run (clarity/execution/ambiguity/alignment/business_fit). :contentReference[oaicite:14]{index=14}
+2.6 05-export-bundle.mdc — Auto Attached (app/api/export/**, lib/export/**)
+---
+description: Export Bundle (txt + md + json + pdf + checksum) — artefact comercial.
+globs:
+  - "app/api/export/**"
+  - "lib/export/**"
+alwaysApply: false
+---
+- Generează: prompt.txt, prompt.md, prompt.json, prompt.pdf, telemetry.json, checksum.txt. :contentReference[oaicite:15]{index=15}
+- Gating pe plan: Free=.txt; Pro=.md/.json/.pdf; Enterprise=.bundle.zip. 
+- Template PDF cu branding; folosește @bundle-exporter-template.ts.
+2.7 06-telemetry-observability.mdc — Auto Attached (lib/telemetry/**)
+---
+description: Closed-Loop Telemetry — măsoară TTI, cost/run, score, policy_hits.
+globs:
+  - "lib/telemetry/**"
+alwaysApply: false
+---
+- Persistă run_id, start/end_ts, src_hashes, tokens, model, cost_usd, score. :contentReference[oaicite:17]{index=17}
+- Dashboards pe agent/proiect/param 7D; SLO: 95% <60s text, <5m SOP. :contentReference[oaicite:18]{index=18}
+2.8 07-versioning-modules.mdc — Auto Attached (lib/versioning/**)
+---
+description: Versionare Mxx + semver + changelog generativ per run.
+globs:
+  - "lib/versioning/**"
+alwaysApply: false
+---
+- Marchează module cu semver + changelog; include în bundle. :contentReference[oaicite:19]{index=19}
+2.9 08-entitlements-pricing.mdc — Auto Attached (app/api/stripe/**, lib/billing/**)
+---
+description: Feature flags & entitlements (Free/Creator/Pro/Enterprise) + add-ons.
+globs:
+  - "app/api/stripe/**"
+  - "lib/billing/**"
+alwaysApply: false
+---
+- Flags canonice: canExportMD/PDF/JSON, canUseGptTestReal, cloudHistory, API, WhiteLabel, BundleZip, seats, industryPacks[]. 
+- Trial Pro 7 zile; Annual n‑2; Founder batch; floors pentru Industry Pack. 
+2.10 09-security-guardrails.mdc — Always
+---
+description: Guardrails etice/tehnice + risc domeniu + disclaimere.
+globs:
+alwaysApply: true
+---
+- Domain-aware guardrails (FinTech/Healthcare/Legal) injectate din packs/*.mdc. :contentReference[oaicite:22]{index=22}
+- Refuzuri/redirectări by policy; log policy_hits în telemetry. :contentReference[oaicite:23]{index=23}
+
+3) Reguli nested — backend
+Subfoldere .cursor/rules se atașează automat când fișierele din folder sunt referite. 
+docs.cursor.com
+3.1 backend/20-supabase.mdc — Auto Attached (lib/db/**, supabase/**)
+---
+description: Supabase Auth/DB/RLS pentru istoric cloud + entitlements.
+globs:
+  - "lib/db/**"
+  - "supabase/**"
+alwaysApply: false
+---
+- Tabele: users, orgs, org_members, subscriptions, entitlements, prompt_history, runs. :contentReference[oaicite:25]{index=25}
+- RLS strict pe org_id; webhook Stripe → upsert entitlements. 
+3.2 backend/21-stripe.mdc — Auto Attached (app/api/stripe/**)
+---
+description: Stripe products/prices, trial, annual n-2, seats, price floors.
+globs:
+  - "app/api/stripe/**"
+alwaysApply: false
+---
+- Pro trial 7 zile fără card; annual=10× lunar; seats Enterprise +59€/seat; floor Industry Pack ≥ 1.490€. 
+3.3 backend/22-openai-runtime.mdc — Auto Attached (lib/ai/**)
+---
+description: OpenAI runtime — retries, backoff, cost estimate, token budgeting.
+globs:
+  - "lib/ai/**"
+alwaysApply: false
+---
+- Editor/Test Engine pe GPT live; temp 0.2 la evaluator; max_tokens setate pe artefact. :contentReference[oaicite:28]{index=28}
+
+4) Reguli nested — frontend
+4.1 frontend/30-ui-standards.mdc — Auto Attached (app/**, components/**)
+---
+description: UI compact PROMPTFORGE v3 — sidebar vectori, preview detaliat, fără spațiu mort.
+globs:
+  - "app/**"
+  - "components/**"
+alwaysApply: false
+---
+- Editor GPT + Test Engine + Export + Istoric vizibile, compacte. :contentReference[oaicite:29]{index=29}
+4.2 frontend/31-test-engine-ui.mdc — Auto Attached (components/test-engine/**)
+---
+description: UI scoruri (clarity/execution/ambiguity/alignment/business_fit) + acțiuni post-score.
+globs:
+  - "components/test-engine/**"
+alwaysApply: false
+---
+- Butoane: "Tighten", "Optimize for Enterprise/Crisis" → variante de reroll. :contentReference[oaicite:30]{index=30}
+4.3 frontend/32-product-led-upsell.mdc — Auto Attached (components/paywall/**)
+---
+description: Upsell nativ pe momentele aha (test real, export bundle, API, domain pack).
+globs:
+  - "components/paywall/**"
+alwaysApply: false
+---
+- Creator→Pro la "Run GPT Test (real)" și "Export .pdf/.json"; Enterprise pe API/White‑label; banner Pack FinTech la schimbarea domain. 
+
+5) Domain Packs — reguli Agent Requested (invocă doar când lucrezi pe domeniu)
+5.1 packs/fintech.mdc
+---
+description: FinTech mode — jargon/KPI/compliance/tone.
+globs:
+alwaysApply: false
+---
+- Jargon: KYC, AML, regtech, sandboxing; KPI: fraud_rate, KYC_time, approval_rate.
+- Guardrails: SEC/FCA, fără claims neverificate; ton: formal, layered. :contentReference[oaicite:32]{index=32}
+Creează analog ecommerce.mdc, education.mdc pe baza schemelor din Domain/Scale/Urgency… 
+
+6) Template‑uri incluse ca context (fișiere templates/@*)
+Orice @filename menționat într‑o regulă este atașat ca extra context când regula se aplică (oficial). 
+docs.cursor.com
+templates/@api-route-template.ts — schelet POST /api/run/{moduleId} cu gating & logs. 
+templates/@bundle-exporter-template.ts — compunere .zip cu txt/md/json/pdf/telemetry/checksum. 
+templates/@evaluator-prompt-template.txt — rubrică 0–100 ×5 + feedback scurt. 
+templates/@rule-module-template.mdc — formă canonică pentru Mxx (contract/KPI/telemetry). 
+
+7) Cum aplici standardul (fără discuții)
+Creează fișierele exact ca în arbore. Setează tipurile:
+— Always: 00-foundation, 01-parameters-7d, 09-security-guardrails.
+— Auto Attached: cele cu globs.
+— Agent Requested: 02-modules-index, packs/*. 
+docs.cursor.com
+Leagă backendul de standard: /api/gpt-*, /api/run/*, /api/export/*, Stripe/Supabase → conform regulilor.
+Activează Export Bundle + GPT live + Cloud History înainte de demo/prod. 
+Atașează Domain Packs când comuți industria (FinTech/Edu/etc.) — ton/KPI/compliance devin implicite. 
+Observabilitate non‑negociabilă: logează cost/run, TTI, score; SLO‑uri active. 
+
+8) De ce acest standard este “oficial‑aligned”
+Locație & ierarhie: .cursor/rules cu nested rules — exact modelul proiect‑scoped recomandat. 
+docs.cursor.com
+Anatomie: MDC front‑matter (description, globs, alwaysApply) + tipuri de aplicare (Always/Auto/Agent/Manual). 
+docs.cursor.com
+Moștenire pragmatică: .cursorrules rămâne legacy; direcția corectă este Project Rules. 
+docs.cursor.com
+Conținut calibrat pe PROMPTFORGE™ v3: 50 module, Param Engine 7D, GPT live, Export Bundle, Cloud History, Evaluator, API public, entitlements & pricing — toate elemente din specificațiile tale.
+
+
+
+
+
+
+
+
+
+
+
+Ai motorul (50 module reale, UI, Editor simulat, Test Engine, istoric local). Îți lipsesc fișierele‑schelă care fac agentul Cursor predictibil, integrabil și auditabil. Le listez pe layere — doar ce contează pentru stabilitate.
+
+0) Layer Cursor Agent (fără asta nu e „stabil”)
+.cursor/environment.json — setup mașină (Node, pnpm, Playwright, Docker, secrets). Agentul de fundal rulează pe acest profil. 
+docs.cursor.com
+.cursor/rules/index.mdc — „Always rules” de proiect (arhitectură PROMPTFORGE, stil commit, acceptanță PR, convenții module M01–M50). Preferă noul format din .cursor/rules/, nu .cursorrules legacy. 
+docs.cursor.com
+Kirill Markin
+.cursor/rules/*.mdc — reguli scoped pe directoare/teme:
+modules.mdc (contract module + validări I/O),
+api.mdc (blueprint endpointuri + middleware),
+telemetry.mdc (ce loghezi, când tragi „retry”),
+export.mdc (artefacte și checksum),
+pricing.mdc (gates Pro/Enterprise),
+tests.mdc (criterii DoD, golden files). 
+docs.cursor.com
+PROJECT_AGENT.md — prompt operațional de inițiere pentru Agent („brief de lucru” standardizat, task templates, scope & guardrails). 
+docs.cursor.com
+
+1) Layer Param Engine 7D (fă‑l fișiere, nu idei)
+params/domain/*.json — 25 fișiere (CORE 25) cu: jargon[], kpis[], compliance_notes, style_bias, default_output_format. (ex: fintech.json, education.json, …). 
+params/scale/*.json — 7 fișiere (Personal→Enterprise) cu tone, dependencies, guardrails, output_format. 
+params/urgency/*.json — 5 fișiere (low→crisis) cu deadline, fallback_required, kpi_focus. 
+params/complexity/*.json — 4 fișiere (foundational→expert) cu steps, roles, validation. 
+params/resources/*.json — 6 fișiere (minimal→enterprise). 
+params/application/*.json — 7 fișiere (training/audit/implementation/…). 
+params/output/*.json — 9 fișiere (txt/md/checklist/spec/playbook/json/yaml/diagram/bundle). 
+
+2) Layer Module OS (M01–M50 ca micro‑servicii de prompt)
+modules/catalog.json — index cu Mxx → name, version, execution_capable, inputs, outputs, telemetry. 
+modules/Mxx/manifest.json — contract la nivel de modul (required inputs, KPI, guardrails, output schema). 
+modules/Mxx/prompt.template.md — șablon generativ (context→cerințe→spec→KPI→guardrails→fallback). 
+modules/Mxx/examples/*.json — intrări/ieșiri „golden” pentru testare. 
+modules/versions.json — semver + changelog generativ per modul. 
+
+3) Layer API (prod, nu simulare)
+apps/web/pages/api/gpt-editor.ts — înlocuiește simulate* cu GPT live. 
+apps/web/pages/api/gpt-test.ts — Test Engine real (model, temp, maxTokens, cost). 
+apps/web/pages/api/run/[moduleId].ts — endpoint public POST /run/mXX (primește params 7D, returnează prompt + bundle meta). 
+apps/web/pages/api/stripe/webhook.ts — sync entitlements/plan seats/add‑ons. 
+apps/web/public/swagger.json + docs/API.md — contract OpenAPI + exemple. 
+
+4) Layer Cloud History & Entitlements (Supabase)
+supabase/migrations/001_init.sql — users, orgs, org_members, plans, subscriptions, entitlements, prompt_history, runs, bundles, eval. 
+lib/supabase.ts — client + RLS policies. 
+config/plans.json + config/feature_flags.json — Free/Creator/Pro/Enterprise + gates (export md/pdf/json, GPT Test live, API, Bundle). 
+scripts/seed_plans.ts — seed planuri + add‑ons (Evaluator AI, Export Designer). 
+
+5) Layer Exporter (artefacte vândabile)
+exporter/bundle.ts — zip: prompt.txt, prompt.md, prompt.json, prompt.pdf, telemetry.json, checksum.txt. 
+exporter/templates/pdf.html + exporter/templates/markdown.md — layout comercial + raport. 
+exporter/schema.json — format canonic bundle. 
+
+6) Layer Evaluator AI (scor + optimizator)
+evaluator/rubric.json — claritate, execuție, ambiguitate, alignment, business_fit. 
+evaluator/prompt.template.md — promptul de evaluare + post‑act „Tighten/Enterprise/Crisis”. 
+apps/web/pages/api/evaluator.ts — scor + feedback + persist în prompt_scores. 
+
+7) Layer Monetizare (Stripe controlat)
+billing/stripe-prices.json — price IDs monthly/annual, seats Enterprise, add‑ons, trial Pro. 
+billing/floor-rules.json — floor 1.490€ pe Industry Pack + policies non‑stacking. 
+docs/PRICING-POLICY.md — reguli executabile (trial, annual n‑2, founder, refunds). 
+
+8) Layer Observabilitate & SLO
+telemetry/schema.json — run_id, start/end_ts, model, tokens, cost, score, policy_hits. 
+telemetry/dashboards.md — KPI: TTI, cost/run, quality_score, CR ofertă, MRR, D7 adoption. 
+
+9) Layer Testare (golden + e2e)
+tests/api.run.spec.ts — POST /run/mXX cu params 7D, așteaptă bundle valid. 
+tests/export.bundle.spec.ts — verifică zip+checksum+format. 
+tests/evaluator.spec.ts — rubrică + praguri de alertă. 
+tests/modules/*.golden.json — fixtures pentru M‑urile critice (M12, M11, M07, M23). 
+
+10) Layer DX & CI/CD
+.env.example + SECURITY.md + PRIVACY.md — secret keys, politici, DPA. 
+.vscode/settings.json + eslint, prettier, tsconfig — coerență cod/AI.
+.github/workflows/ci.yml — linter, tests, build, preview; artefacte bundle ca artifacts.
+Makefile sau Taskfile.yml — comenzi pe care Agentul să le ruleze (make dev/test/export). 
+docs.cursor.com
+README.md (executabil) — comenzi, endpointuri, structuri bundle; CONTRIBUTING.md.
+
+11) Ce „știe deja” produsul și cere fișiere dedicate
+GPT live + export bundle + cloud history + versionare + evaluator AI — sunt deja marcate ca „ce mai trebuie pentru PROD”; convertește-le în fișierele de mai sus. 
+API public + licențiere pe module + orchestrator de agenți — ai instrucțiunile pas‑cu‑pas; materializează-le ca endpoints, scheme și rules. 
+Planuri, entitlements, add‑ons, discounting, floor‑uri, seats — ai politica completă; trad‑o în plans.json, webhooks și RLS. 
+
+12) Structură minimă de repo (arbore)
+.promptforge/
+  .cursor/
+    environment.json
+    rules/
+      index.mdc
+      modules.mdc
+      api.mdc
+      export.mdc
+      telemetry.mdc
+      pricing.mdc
+      tests.mdc
+  params/
+    domain/*.json
+    scale/*.json
+    urgency/*.json
+    complexity/*.json
+    resources/*.json
+    application/*.json
+    output/*.json
+  modules/
+    catalog.json
+    M01/manifest.json
+    M01/prompt.template.md
+    M01/examples/*.json
+    ...
+  exporter/
+    bundle.ts
+    templates/pdf.html
+    templates/markdown.md
+    schema.json
+  evaluator/
+    rubric.json
+    prompt.template.md
+  apps/web/pages/api/
+    gpt-editor.ts
+    gpt-test.ts
+    evaluator.ts
+    run/[moduleId].ts
+    stripe/webhook.ts
+  supabase/
+    migrations/001_init.sql
+  config/
+    plans.json
+    feature_flags.json
+  telemetry/schema.json
+  tests/*.spec.ts
+  billing/stripe-prices.json
+  billing/floor-rules.json
+  docs/API.md
+  public/swagger.json
+  README.md
+  .env.example
+  Makefile
+
+De ce astea și nu altceva
+Agentul are nevoie de reguli și mediu repo‑level ca să nu improvizeze ( .cursor/rules, .cursor/environment.json). 
+docs.cursor.com
++1
+Produsul tău cere GPT live, bundle export, cloud history, API, licențiere — toate sunt deja definite ca lipsuri de PROD, deci trebuie fișiere concrete pentru cod, scheme, șabloane și politici.
+Frameworkul Domain/Scale/Urgency/… există ca logică; stabilizezi execuția doar când devine config JSON. 
+
+Impact (PSIHOLOGIC / SOCIAL / COMERCIAL)
+Psihologic: elimini „ambiguitatea AI”; fiecare click compilează o decizie într‑un artefact verificabil. 
+Social: standardizezi colaborarea (rules + contracts + RLS), deci agentul și oamenii livrează același format. 
+Comercial: poți factura bundle‑uri, API, licențe pe industrie, nu „text”. 
+Verdict: fără aceste fișiere, agentul e poet; cu ele, devine uzină.
+
+
+
+
+MANIFEST
+
+0) Situația reală — ce ai acum (exact)
+
+UI complet funcțional într‑un singur HTML cu 50 de module, generator, editor și test engine simulate — fără backend/DB. Editorul și testerul rulează local prin simulateGptEditing() și simulateGptResponse() (deci fără GPT live). 
+ 
+ 
+
+Chiar tu notezi ce lipsește pentru PROD: GPT live, cloud history, export md/pdf/json (bundle), add‑ons/evaluator, A/B real. 
+
+Ai deja blueprint executabil pentru API public /api/run/{moduleId}, licensing, telemetrie, bundle export, Evaluator AI, Agent Orchestrator — dar lipsesc fișierele/setările care le fac reale. 
+ 
+ 
+ 
+
+Parametrizarea 7D (Domain/Scale/Urgency/Complexity/Resources/Application/Output) e definită conceptual — îți trebuie config JSON per domeniu pentru auto‑adaptare reală. 
+
+1) Ce mai trebuie obligatoriu ca fișiere — ca să dezvolți stabil în Cursor Agent
+
+Standardizează pe Next.js (App Router) + TypeScript + Supabase + Stripe. Țintește Project Rules (nu doar .cursorrules): în Cursor, regulile trăiesc canonic în .cursor/rules/; .cursorrules e legacy/deprecated în 2025 (încă funcționează). 
+docs.cursor.com
+apidog
+Cursor - Community Forum
+
+A. Fișiere Cursor — controlul agentului (non‑negociabil)
+
+.cursor/rules/00-foundation.mdc — scop, stack, convenții de arhitectură, „nu edita X fără test”. Activează întotdeauna (alwaysApply). 
+docs.cursor.com
+
+.cursor/rules/frontend-ui.mdc — păstrează ID‑urile existente, nu rupe generatePrompt()/exportPrompt(), extrage MODULES din HTML → JSON. Mapare clară între controale UI și endpoints. 
+
+.cursor/rules/backend-api.mdc — definește contractele /api/gpt-editor, /api/gpt-test, /api/run/[moduleId], shape request/response, cod de eroare. (Ancorează exemplul tău de contract public). 
+
+.cursor/rules/billing-stripe.mdc — prețuri/planuri, webhookuri, no‑stacking discounts. (Folosește politicile/price‑map din docul tău). 
+
+.cursor/rules/supabase.mdc — tabele/migrații, RLS, entitlements, rate‑limits; cere agentului să scrie migrații idempotente. 
+
+.cursor/rules/testing.mdc — cerințe Vitest/Playwright, fișiere de fixture, teste minime pe fiecare endpoint.
+
+.cursor/rules/security.mdc — .env obligatoriu, niciodată chei în client, validare Zod pe API, CORS locked.
+
+De ce: Cursor urmărește Project Rules în .cursor/rules și le aplică pe fișierele potrivite; e modul stabil de a „dresa” agentul pe un repo viu. 
+docs.cursor.com
+
+B. Scaffold repo (config & scripturi)
+
+package.json, tsconfig.json, next.config.mjs, .gitignore, README.md (comenzi dev/build, diagrame flux).
+
+.env.example — OPENAI_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_SECRET, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_*. (Blochează commitul cheilor).
+
+.github/workflows/ci.yml — lint+typecheck+test, migrații dry‑run, build.
+
+eslint.config.mjs, prettier.config.mjs.
+
+C. Extrage conținutul din HTML → config „ca date”, nu ca UI
+
+config/modules.json — M01…M50 (id, name, spec, kpi, guardrails, execution_capable). (Ai lista completă — mut‑o din UI în JSON). 
+ 
+
+config/plans.json — Free/Creator/Pro/Enterprise + add‑ons (Evaluator/Export Designer) + matrix de entitlements. (Exact ca în docul tău). 
+
+config/7d/domain/*.json, scale.json, urgency.json, complexity.json, resources.json, application.json, output-formats.json — profile executabile (jargon/KPI/guardrails/tone). (Ai schema + exemple; îți lipsesc fișierele JSON reale). 
+
+D. API (Next App Router) — fișiere minime
+
+app/api/gpt-editor/route.ts — înlocuiește simulateGptEditing() cu GPT live. (Chiar îl ceri: „înlocuiește simulate… cu fetch /api/gpt-editor”). 
+
+app/api/gpt-test/route.ts — rulează „Test Engine” pe GPT real (nu simulare), întoarce scor/artefacte. 
+
+app/api/run/[moduleId]/route.ts — contract public: primește 7D, întoarce prompt + metadata + hash; aplică entitlement middleware. (Blueprintul e deja scris). 
+ 
+
+app/api/license/activate/route.ts — activare pack/cheie offline (doar pt. white‑label/self‑host). 
+
+app/api/billing/create-checkout-session/route.ts, app/api/stripe/webhook/route.ts — planuri, proration, seat‑tiering, floor pe Industry Pack. 
+
+E. Biblioteci interne (server)
+
+lib/openai.ts — client GPT, retry/backoff, cost logging.
+
+lib/telemetry.ts — run_id, tokens, duration, policy_hits; scrie în DB la fiecare POST /run. (Cerința apare în “Track Usage per Module”). 
+
+lib/bundle.ts — Export Bundle: .txt, .md, .json, .pdf + checksum. (Exact cum specifici: JSZip + pdf generator). 
+
+lib/evaluator.ts — Prompt Evaluator AI: rubrică (clarity/execution/ambiguity/business‑fit) + post‑score optimizers „Tighten/Enterprise”. 
+ 
+
+lib/entitlements.ts — flags (canExportPDF/canUseGptTestReal/…); mapare plan→flags. 
+
+F. Persistență & migrații
+
+supabase/migrations/2025-08-18_core.sql — users, prompt_history, runs, bundles, versions, evals, orgs, org_members, entitlements. (Exact tabelele și RLS din schema ta). 
+ 
+
+supabase/seed/01-domain-config.sql — seed la DomainConfig per „Core 25” (FinTech etc.). 
+
+G. UI: separă logică de prezentare
+
+app/page.tsx — mută UI din HTML în componente React; scoate MODULES/config din cod. (În HTML, Export e doar .txt — trebuie legat la bundle). 
+
+components/ExportDialog.tsx, components/TestEngine.tsx, components/Editor.tsx.
+
+styles/globals.css (Tailwind) — elimină importurile CDN în producție.
+
+H. Testare & calitate
+
+tests/api/run.spec.ts (Vitest) — contractele /run.
+
+tests/e2e/export-bundle.spec.ts (Playwright) — Export Bundle conține cele 4 fișiere. 
+
+tests/api/entitlements.spec.ts — gating: Free vs Pro vs Enterprise. 
+
+openapi/swagger.yaml — documentează /api/run, /gpt-editor, /gpt-test.
+
+2) Hărți directe între „ce ai” și „ce mai trebuie”
+Suprafețe UI existente	Stare actuală	Ce fișier îți lipsește (exact)
+Editor GPT (buton „Optimizează”)	Simulare (simulateGptEditing)	app/api/gpt-editor/route.ts + lib/openai.ts (GPT live) + wiring UI. 
+ 
+
+Test Engine (buton „Rulează test”)	Simulare (simulateGptResponse)	app/api/gpt-test/route.ts (+ scor, telemetrie). 
+ 
+
+Export	.txt only	lib/bundle.ts + app/api/export/route.ts sau server‑side în run → .md/.json/.pdf/.zip. 
+ 
+
+Licensing/API public	N/A	app/api/run/[moduleId]/route.ts + lib/entitlements.ts + config/plans.json. 
+ 
+ 
+
+Cloud history	Local session list	supabase/migrations/* + wiring prompt_history + dashboard /dashboard. 
+
+Evaluator AI	Scoruri simulate	lib/evaluator.ts + UI „Tighten/Enterprise” post‑score. 
+ 
+3) Arbor e recomandat (minimal, dar stabil)
+/app
+  /api
+    /gpt-editor/route.ts
+    /gpt-test/route.ts
+    /run/[moduleId]/route.ts
+    /billing/create-checkout-session/route.ts
+    /stripe/webhook/route.ts
+  page.tsx
+/components
+  Editor.tsx  TestEngine.tsx  ExportDialog.tsx
+/config
+  modules.json
+  plans.json
+  7d/
+    domain/FinTech.json  ... (Core 25)
+    scale.json urgency.json complexity.json resources.json application.json output-formats.json
+/lib
+  openai.ts  telemetry.ts  bundle.ts  evaluator.ts  entitlements.ts  supabase.ts  stripe.ts
+/supabase
+  /migrations/2025-08-18_core.sql
+  /seed/01-domain-config.sql
+/tests
+  api/run.spec.ts  api/entitlements.spec.ts  e2e/export-bundle.spec.ts
+/.cursor/rules
+  00-foundation.mdc  frontend-ui.mdc  backend-api.mdc  billing-stripe.mdc
+  supabase.mdc  testing.mdc  security.mdc
+.env.example  package.json  tsconfig.json  next.config.mjs  README.md
+
+4) Detalii care țin proiectul „tensionat” în Cursor (agent‑safe)
+
+Rulează pe Project Rules, nu pe noroc. Standardul oficial e .cursor/rules — fii granular (frontend/backend/billing). 
+docs.cursor.com
+
+Îngroapă simulările. UI tău promite „telemetrie activată” la test, dar e doar random local — conectează la GPT live + logging real. 
+ 
+
+Normalizează contractele. /api/run/{moduleId} trebuie să primească 7D și să răspundă cu hash, prompt, metadata — exact cum ai trasat. 
+
+Export = artefact, nu fișier. Livrează .bundle cu .txt/.md/.json/.pdf + checksum și blochează PDF pe plan non‑enterprise (entitlements). 
+ 
+
+Persistă 7D. Creează DomainConfig (jargon/KPI/guardrails). Fără asta, „FinTech mode” nu există decât textual. 
+
+Măsoară. runs, prompt_history, evals, bundles, versions — exact tabelele din schemă, cu RLS la nivel de workspace. 
+
+5) Listă scurtă „create acum”
+
+.cursor/rules/* (7 fișiere) — fixează comportamentul agentului în repo. 
+docs.cursor.com
+
+config/modules.json + config/plans.json + config/7d/* — scoate datele din UI. 
+ 
+ 
+
+API: app/api/gpt-editor, app/api/gpt-test, app/api/run/[moduleId]. 
+ 
+
+Persistență: supabase/migrations/* (users, runs, prompt_history, entitlements…). 
+ 
+
+Bundle: lib/bundle.ts + template PDF. 
+
+Evaluator: lib/evaluator.ts + butoane post‑score. 
+ 
+
+Billing: app/api/billing/*, app/api/stripe/webhook. 
+
+6) Unghiul psihologic / social / comercial
+
+Psihologic: treci de la „simulare” la artefacte verificabile (bundle+telemetrie). Rupe iluzia de output; vinde drepturi/entitlements, nu text. 
+
+Social: .cursor/rules publice îți standardizează stilul de execuție; repo‑ul devine „manualul” echipei & agentului. 
+docs.cursor.com
+
+Comercial: /api/run + packs pe industrie → licență + ARR pe workspace; Export PDF/Bundle = deliverabil vândut. 
+ 
+
+Verdict simbolic: Scoate simulările din scenă; fixează regulile în .cursor/rules; transformă fiecare prompt în bundle semnat și fiecare clic în contract de livrare.
+
+
+
+
+
+
+
+
+
+Construiește baza ca „OS de artefacte” — nu ca blog de prompturi. Obiectiv: fiecare rulare ⇢ un bundle exportabil (.md/.json/.pdf) cu telemetrie, versiuni și drepturi (entitlements) aplicate per plan/industriei. Modulele M01–M50 și parametrii 7D sunt deja normativi în UI și documentație — tratează‑i ca date canonice. 
+ 
+
+0) Arhitectură logică (pivoturi de date)
+
+Identitate: users (Supabase Auth) → profiles; organizations + org_members.
+
+Licențiere: plans + subscriptions (Stripe) → entitlements (feature flags efective). 
+ 
+
+Canonul de execuție: modules (M01–M50) + module_versions. 
+
+Parametrizare 7D: parameter_sets (domain/scale/urgency/complexity/resources/application/output). Domeniile au config JSON (KPIs, jargon, compliance). 
+
+Rulări & artefacte: prompt_history (MVP) + runs (telemetrie) + artifacts + bundles (export). 
+ 
+
+Evaluare & versiuni: eval_scores (Evaluator AI), versionare pe module. 
+ 
+
+Pachete industrie / chei: industry_packs + org_industry_packs (+ license_keys opțional). 
+
+1) MVP Supabase — 10 tabele (prod‑ready, RLS)
+
+Scop: să rulezi GPT live, să persiști istoric, să exporți bundle și să aplici gating pe planuri.
+
+1.1 Tipuri ENUM (derivate din 7D)
+-- valori standardizate 7D (din frameworkul oficial)
+create type scale_t as enum ('personal_brand','solo','startup','boutique_agency','smb','corporate','enterprise');
+create type urgency_t as enum ('low','planned','sprint','pilot','crisis');
+create type complexity_t as enum ('foundational','standard','advanced','expert');
+create type resources_t as enum ('minimal','solo_operator','lean_team','agency_stack','full_stack_org','enterprise_budget');
+create type application_t as enum ('training','audit','implementation','strategy_design','crisis_response','experimentation','documentation');
+create type output_t as enum ('txt','md','checklist','spec','playbook','json','yaml','diagram','bundle');
+
+
+Valorile sunt exact cele din cadrul 7D (domenii, scale, urgențe, complexitate, resurse, aplicații, formate). Definește domeniile în tabel separat (vezi domain_configs). 
+
+1.2 Canon industrii — domain_configs
+create table domain_configs(
+  industry text primary key,                      -- ex: 'FinTech', 'Education', ...
+  jargon jsonb not null default '[]'::jsonb,      -- ["KYC","AML",...]
+  kpis   jsonb not null default '[]'::jsonb,      -- ["fraud_rate","KYC_time",...]
+  compliance_notes text,
+  default_output output_t not null default 'spec',
+  risk_level text check (risk_level in ('low','medium','high')),
+  style_bias text                                 -- ex: "analytical, layered, formal"
+);
+-- exemplu valori nucleu (snapshots oficiale)
+insert into domain_configs(industry,jargon,kpis,compliance_notes,default_output,risk_level,style_bias) values
+('FinTech','["KYC","AML","regtech","sandboxing"]','["fraud_rate","KYC_completion_time","approval_rate"]','SEC/FCA sensitive; no unverified claims','spec','medium','analytical, layered, formal'),
+('Education','["LMS","cohort","async/sync"]','["engagement","completion","retention"]',null,'playbook','medium','gamified, narrative, rational'),
+('Consulting','["OKR","scope","buy-in"]','["ROI","decision_speed","exec_alignment"]',null,'spec','medium','audit-like, high-authority');
+
+
+Conținutul și nomenclatura provin din Domain Parameter Framework. 
+
+1.3 Utilizatori & organizații — profiles, orgs, org_members
+create table profiles(
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  display_name text,
+  created_at timestamptz default now()
+);
+
+create table orgs(
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  created_at timestamptz default now()
+);
+
+create table org_members(
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  role text not null check (role in ('owner','admin','member')),
+  primary key (org_id, user_id)
+);
+
+
+RLS: fiecare user vede doar org‑urile unde e membru. (Model identic cu specificațiile de membership din entitlements.) 
+
+1.4 Planuri, abonamente, drepturi — plans, subscriptions, entitlements
+create table plans(
+  code text primary key,   -- 'free'|'creator'|'pro'|'enterprise'
+  name text not null,
+  flags jsonb not null     -- snapshotul capabilităților (feature flags)
+);
+
+create table subscriptions(
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  stripe_customer_id text unique,
+  stripe_subscription_id text unique,
+  plan_code text references plans(code),
+  status text not null,                        -- active|trialing|past_due|canceled...
+  seats integer not null default 1,
+  current_period_end timestamptz,
+  trial_end timestamptz
+);
+
+create table entitlements(
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id),      -- null => org-wide
+  flag text not null,                          -- ex: canExportPDF, hasAPI...
+  value boolean not null default false,
+  source text not null,                        -- plan|addon|license|manual
+  meta jsonb,
+  expires_at timestamptz,
+  primary key (org_id, coalesce(user_id,'00000000-0000-0000-0000-000000000000'::uuid), flag)
+);
+
+
+Flags canonice: canUseAllModules, canExportMD, canExportPDF, canExportJSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI, hasAPI, hasWhiteLabel, canExportBundleZip, hasSeatsGT1. Matricea pe planuri și mecanica webhook‑urilor Stripe→Supabase sunt deja definite în politicile comerciale oficiale. 
+
+1.5 Canon module — modules
+create table modules(
+  id text primary key,            -- 'M01'..'M50'
+  name text not null,
+  description text,
+  vectors smallint[] not null,    -- ex: {2,6}
+  requirements text,
+  spec text,
+  output text,
+  kpi text,
+  guardrails text
+);
+-- seed din UI (50 module reale: nume, vectors, kpi, guardrails etc.)
+-- ex:
+insert into modules(id,name,vectors,kpi,guardrails)
+values ('M07','Risk & Trust Reversal', '{2,7}', 'drop-off -25%', 'juridic valid');
+
+
+Conținutul pentru M01–M50 (nume, vectori, KPI, guardrails) e deja prezent în site/JS. Nu inventa — importă. 
+
+1.6 Parametrizare 7D — parameter_sets
+create table parameter_sets(
+  id uuid primary key default gen_random_uuid(),
+  industry text references domain_configs(industry),   -- 'FinTech', ...
+  scale scale_t not null,
+  urgency urgency_t not null,
+  complexity complexity_t not null,
+  resources resources_t not null,
+  application application_t not null,
+  output output_t not null,
+  extras jsonb default '{}'::jsonb,                    -- orice câmp suplimentar per domeniu
+  created_at timestamptz default now()
+);
+
+
+Structura și valorile 7D sunt normative în framework; folosește‑le ca sursă de adevăr pentru adaptarea prompturilor. 
+
+1.7 Istoric & artefacte — prompt_history, artifacts, bundles
+create table prompt_history(
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id),
+  org_id uuid references orgs(id),
+  module_id text references modules(id),
+  hash text not null,                        -- run hash din UI
+  config jsonb not null,                     -- snapshot UI (inclusiv 7D)
+  output text not null,                      -- prompt complet generat
+  version integer not null default 1,
+  created_at timestamptz default now()
+);
+
+create table artifacts(
+  id uuid primary key default gen_random_uuid(),
+  history_id uuid references prompt_history(id) on delete cascade,
+  kind output_t not null,                    -- 'md'|'json'|'pdf'|'txt'|'bundle'
+  path text not null,                        -- URL Supabase Storage
+  checksum text,
+  bytes int,
+  created_at timestamptz default now()
+);
+
+create table bundles(
+  id uuid primary key default gen_random_uuid(),
+  history_id uuid references prompt_history(id) on delete cascade,
+  formats output_t[] not null,               -- ex: {'md','json','pdf'}
+  paths text[] not null,                     -- fișierele din pachet
+  telemetry jsonb default '{}'::jsonb,       -- run_id, policy_hits, cost
+  exported_at timestamptz default now()
+);
+
+
+prompt_history reflectă exact schema sugerată în ghidul tău de MVP; bundles și artifacts implementează „1 prompt = 1 pachet exportabil”. 
+ 
+
+2) Extensii Faza 2 (7–14 zile) — +8 tabele
+
+Scop: telemetrie granulară, evaluări AI, versiuni pe module, pachete industrie, API chei.
+
+-- rulări reale (GPT editor/test) + cost/tokens
+create table runs(
+  id uuid primary key default gen_random_uuid(),
+  history_id uuid references prompt_history(id) on delete cascade,
+  run_type text check (run_type in ('generate','edit','test','evaluate')),
+  model text, tokens int, cost_usd numeric(10,4),
+  started_at timestamptz default now(), finished_at timestamptz,
+  status text check (status in ('success','error','timeout')),
+  telemetry jsonb default '{}'::jsonb
+);
+
+-- scoruri Evaluator AI
+create table eval_scores(
+  run_id uuid primary key references runs(id) on delete cascade,
+  clarity int, execution int, ambiguity int, alignment int, business_fit int,
+  feedback jsonb, created_at timestamptz default now()
+);
+
+-- versiuni pe module (changelog)
+create table module_versions(
+  id uuid primary key default gen_random_uuid(),
+  module_id text references modules(id),
+  semver text not null,           -- 'v1.0.0'
+  changelog text,
+  created_at timestamptz default now()
+);
+
+-- pachete de industrie & atașare la workspace
+create table industry_packs(
+  slug text primary key,                               -- 'fintech','ecommerce',...
+  modules text[] not null,                             -- subset Mxx
+  domain_preset jsonb not null                         -- KPI/guardrails/jargon preset
+);
+
+create table org_industry_packs(
+  org_id uuid references orgs(id) on delete cascade,
+  pack_slug text references industry_packs(slug),
+  activated_at timestamptz default now(),
+  primary key(org_id, pack_slug)
+);
+
+-- API keys pentru Enterprise
+create table api_keys(
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  name text, key_hash text unique,                    -- stochezi hash, nu cheia
+  rate_limit_per_min int default 60,
+  created_at timestamptz default now(), revoked_at timestamptz
+);
+
+-- licențe offline opționale
+create table license_keys(
+  key text primary key, org_id uuid references orgs(id),
+  product text, seats int, expiry timestamptz, status text,
+  signature text
+);
+
+
+Toate aceste extensii corespund „CE MAI TREBUIE PENTRU PROD? / API / Evaluator / licențe industrie”. 
+ 
+ 
+
+3) Relații dintre variabile (hartă)
+
+orgs 1–N org_members; orgs 1–1 subscriptions; subscriptions → plans; plans → entitlements (materializate). 
+
+modules 1–N prompt_history; prompt_history 1–N artifacts; prompt_history 1–1 bundles; prompt_history 1–N runs; runs 1–1 eval_scores. 
+ 
+
+parameter_sets se injectează în config la prompt_history (snapshot); industry referă domain_configs.industry. 
+
+industry_packs N–N orgs prin org_industry_packs; când activ → extinde entitlements & presets. 
+
+4) RLS & indici (executabile)
+-- vizibilitate pe organizații
+alter table orgs enable row level security;
+create policy "org_read_members" on orgs
+  for select using (exists (select 1 from org_members m where m.org_id = orgs.id and m.user_id = auth.uid()));
+
+alter table org_members enable row level security;
+create policy "member_self" on org_members for select using (user_id = auth.uid());
+
+-- entitlements: user vede flags org-wide + user-level
+alter table entitlements enable row level security;
+create policy "entitlements_by_membership" on entitlements
+  for select using (
+    org_id in (select org_id from org_members where user_id = auth.uid())
+  );
+
+-- prompt_history vizibil doar membrilor org
+alter table prompt_history enable row level security;
+create policy "history_by_org" on prompt_history
+  for select using (
+    org_id in (select org_id from org_members where user_id = auth.uid())
+    or user_id = auth.uid()
+  );
+
+-- indici de performanță
+create index on prompt_history (org_id, module_id, created_at desc);
+create index on runs (history_id, started_at desc);
+create index on entitlements (org_id, flag) where value = true;
+
+
+Modelul RLS/entitlements e congruent cu specificațiile tale de gating și planuri. 
+
+5) Seed minim (valori reale)
+5.1 Planuri + flags
+insert into plans(code,name,flags) values
+('free','Free',   '{"canUseAllModules":false,"canExportMD":false,"allowedModules":["M01","M10","M18"]}'),
+('creator','Creator','{"canUseAllModules":true,"canExportMD":true,"allowedModules":"ALL"}'),
+('pro','Pro',     '{"canUseAllModules":true,"canExportMD":true,"canExportPDF":true,"canExportJSON":true,"canUseGptTestReal":true,"hasCloudHistory":true,"hasEvaluatorAI":true}'),
+('enterprise','Enterprise','{"canUseAllModules":true,"canExportMD":true,"canExportPDF":true,"canExportJSON":true,"canUseGptTestReal":true,"hasCloudHistory":true,"hasEvaluatorAI":true,"hasAPI":true,"hasWhiteLabel":true,"canExportBundleZip":true,"hasSeatsGT1":true}');
+
+
+Matricea de capabilități reflectă exact „plan → capabilitate” din politicile comerciale. 
+
+5.2 Module (exemple reale)
+insert into modules(id,name,vectors,description,kpi,guardrails)
+values
+('M01','AI‑IDEI.SOPFORGE™','{1,6,5}','Pipeline research→validare→SOP','TTI, %steps_passed, defect<2%','no guesswork, citează oficial'),
+('M07','Risk & Trust Reversal','{2,7}','Garanții cuantificate high‑ticket','drop‑off -25%','juridic valid'),
+('M13','Pricing Psychology','{4}','Ancorare, pachete, decoy','ARPU↑, CR net↑','transparență preț');
+
+
+Denumiri/KPI/guardrails copiate din baza UI. 
+
+5.3 Parameter set (7D) exemplu
+insert into parameter_sets(industry,scale,urgency,complexity,resources,application,output,extras)
+values ('FinTech','enterprise','sprint','advanced','full_stack_org','implementation','playbook',
+        '{"deadline":"7d","compliance":"SEC/FCA"}');
+
+
+Valorile urmează exact nomenclatura 7D oficială (FinTech, Enterprise, Sprint etc.). 
+
+6) Fluxuri critice (cum o construiești — fără discuții)
+
+Generate → Save: la click „Generează Prompt”, inserează prompt_history (hash, module_id, config 7D) + creează artifacts (.txt). UI deja produce hash/config. 
+
+GPT Live (Editor/Test): înlocuiește simulările cu /api/gpt-editor și /api/gpt-test, loghează un runs cu run_type='test', tokens, cost, status; la final atașează eval_scores dacă Evaluator AI e activ. 
+ 
+
+Export Bundle: pe Pro/Enterprise, compune bundles + fișiere în Storage (artifacts pentru .md/.json/.pdf). Enforce gating din entitlements. 
+ 
+
+Plan gating: webhook Stripe actualizează subscriptions, regenerează entitlements din plans.flags + add‑ons; FE ascunde/activează butoane (Test real, Export .pdf/.json, API). 
+
+Industry Pack: la select „FinTech”, dacă nu există entitlement, afișează upsell; la activare, inserează în org_industry_packs, aplică preset din industry_packs.domain_preset în UI și evaluare. 
+
+7) Întrebarea „câte tabele?” — răspuns decisiv
+
+MVP stabil: 10 tabele (cele din §1) — suficient pentru rulare live, istoric, export, gating.
+
+Prod extins (enterprise‑ready): 18 tabele (MVP + §2) — telemetrie, evaluări, versiuni, pack‑uri industrie, API keys, licențe.
+
+8) Query‑uri utile (operaționale)
+-- ultimele execuții pe modul, cu scor
+select ph.hash, ph.module_id, r.model, r.tokens, es.clarity, es.execution, r.status, r.finished_at
+from prompt_history ph
+left join runs r on r.history_id = ph.id
+left join eval_scores es on es.run_id = r.id
+where ph.org_id = :org and ph.module_id='M12'
+order by r.finished_at desc
+limit 50;
+-- verifică drepturi export .pdf
+select exists(
+  select 1 from entitlements e
+  where e.org_id=:org and e.flag='canExportPDF' and e.value=true
+) as can_export_pdf;
+-- set implicit pentru FinTech (din preset pack)
+select domain_preset from industry_packs where slug='fintech';
+
+Toate reflectă fluxurile din MVP v3 (evaluare, export, gating, preset‑uri domeniu). 
+ 
+9) Anti‑fragilitate (guardrails DB)
+RLS strict pe org_id peste tot.
+Hash prompt + checksum bundle salvate în artifacts/bundles pentru integritate comercială. 
+Plan floor pentru Industry Pack (opțional invoices_shadow + trigger „price_floor_violation”). 
+
+10) Ce mapăm direct din site + docs (fără ambiguități)
+M01–M50: nume, vectors, KPI, guardrails → modules (seed din UI). 
+Param 7D: liste canonice → tipuri/validatoare → parameter_sets. 
+„CE MAI TREBUIE PENTRU PROD?”: GPT live, Cloud history, Export bundle, Versioning, Evaluator → exact tabelele din schema. 
+ 
+
+
+
+
+
+
+
+
+Construiește schema direct pe IP‑ul existent: 50 module reale + editor/test engine + export bundle + entitlements. Nu inventa câmpuri; encodează exact parametrii 7D (domain/scale/urgency/complexity/resources/application/output) și livrabilele/bundling/telemetria definite deja. Ţintește API‑ul /api/run/mXX și exportul .bundle ca obiecte de prim rang. 
+
+1) Modelul de date (nucleu stabil)
+
+12 tabele core (prod‑ready). Relatează‑le strict.
+
+orgs — workspaces.
+id (uuid PK) · name (text) · created_at (timestamptz)
+Folosește workspace‑gating pentru licențe/planuri și RLS.
+
+org_members — membri per workspace.
+org_id (uuid FK) · user_id (uuid FK auth.users) · role (enum: owner|admin|member) · PK(org_id,user_id)
+
+plans — catalog planuri.
+code (text PK: free|creator|pro|enterprise) · name (text) · flags (jsonb)
+flags = snapshot de entitlements la nivel de plan.
+
+subscriptions — mapare Stripe→org.
+id (uuid PK) · org_id (FK) · stripe_customer_id · stripe_subscription_id · plan_code (FK plans) · seats (int) · status · trial_end
+
+entitlements — drepturi efective.
+org_id (FK) · user_id (uuid null) · flag (text) · value (bool) · source (plan|addon|license) · meta (jsonb) · expires_at · PK(org_id,coalesce(user_id,0),flag)
+Gătează capabilități: canExportPDF, canUseGptTestReal, hasAPI, canExportBundleZip etc.
+
+user_addons — add‑on‑uri per user (Evaluator/Export Designer).
+org_id (FK) · user_id (FK) · addon_code (text) · stripe_price_id · status · PK(org_id,user_id,addon_code)
+
+modules — M01…M50.
+id (text PK: 'M01'…) · name (text) · vectors (int[]) · description (text) · requirements (text) · spec (text) · output_schema (text) · kpi (text) · guardrails (text)
+Seed din arhiva celor 50 module. 
+
+module_versions — versionare pe modul.
+id (uuid PK) · module_id (FK modules) · semver (text) · changelog (text) · created_at
+
+parameter_sets — Param Engine 7D (normativ).
+id (uuid PK) · domain (text) · scale (text) · urgency (text) · complexity (text) · resources (text) · application (text) · output_format (text) · extras (jsonb)
+Normalizează exact nomenclaturile CORE 25 + scale/urgency/…
+
+runs — fiecare generare/test.
+id (uuid PK) · org_id (FK) · user_id (FK) · module_id (FK) · param_set_id (FK) · hash (text unique) · mode (enum: sim|real) · model (text) · tokens (int) · cost_usd (numeric) · status (queued|ok|fail) · runtime_ms (int) · telemetry (jsonb) · created_at
+Contractul /api/run/mXX se mapează 1:1 aici.
+
+artifacts — fișiere generate/exportate.
+id (uuid PK) · run_id (FK runs) · kind (enum: txt|md|json|pdf|bundle) · path (text) · checksum (text) · size_bytes (int) · exported_at
+Conține .txt/.md/.json/.pdf și .bundle.zip.
+
+prompt_scores — Evaluator AI.
+run_id (PK FK runs) · clarity (int) · execution (int) · ambiguity (int) · alignment (int) · business_fit (int) · feedback (jsonb) · scored_at
+
++ 6 tabele extinse (scalare/monetizare/pack‑uri)
+
+domain_configs — profile per industrie (jargon/KPI/guardrails).
+id (uuid PK) · industry (text) · config (jsonb)
+
+industry_packs — licențe verticale.
+id (uuid PK) · slug (text unique) · title (text) · modules (text[] 'Mxx') · domain_config (jsonb) · price_eur (int)
+
+org_industry_packs — atașare pack la org.
+org_id (FK) · pack_id (FK) · activated_at · expires_at · PK(org_id,pack_id)
+
+api_keys — chei API per org.
+id (uuid PK) · org_id (FK) · key_hash (text) · scopes (text[]) · rate_limit_rpm (int) · created_at · revoked_at
+
+event_log — product‑led upsell/usage.
+id (uuid PK) · org_id · user_id · event (text 'PF_*') · payload (jsonb) · created_at
+Ex.: PF_EXPORT_CLICK, PF_CHECKOUT_COMPLETED.
+
+stripe_events — umbre webhook pentru audit/floor.
+id (text PK) · type (text) · payload (jsonb) · received_at
+Asigură „price floor” la Industry Pack.
+
+2) Nomenclatoare — valori canonice (Param Engine 7D)
+
+Folosește exact aceste coduri (stabile, testate în v3).
+
+domain: saas|fintech|ecommerce|consulting|education|healthcare|legal|marketing|media|real_estate|hr|ngo|government|web3|aiml|cybersec|manufacturing|logistics|travel|gaming|fashion|beauty|spiritual|architecture|agriculture (CORE 25).
+
+scale: personal_brand|solo|startup|boutique_agency|smb|corporate|enterprise.
+
+urgency: low|planned|sprint|pilot|crisis.
+
+complexity: foundational|standard|advanced|expert.
+
+resources: minimal|solo|lean_team|agency_stack|full_stack_org|enterprise_budget.
+
+application: training|audit|implementation|strategy|crisis|experimentation|documentation.
+
+output_format: txt|md|checklist|spec|playbook|json|yaml|diagram|bundle.
+
+3) Relații (ER clar)
+
+orgs 1—N org_members (membri).
+
+orgs 1—1 subscriptions (Stripe plan→flags).
+
+plans 1—N subscriptions + pliază în entitlements (derivat).
+
+modules 1—N module_versions.
+
+parameter_sets 1—N runs; modules 1—N runs; orgs 1—N runs.
+
+runs 1—N artifacts; runs 1—1 prompt_scores.
+
+industry_packs N—N orgs via org_industry_packs.
+
+orgs 1—N api_keys (Enterprise).
+
+4) DDL minim (execută în Supabase SQL editor)
+-- CORE
+create table orgs (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  created_at timestamptz not null default now()
+);
+
+create table org_members (
+  org_id uuid not null references orgs(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null check (role in ('owner','admin','member')),
+  primary key (org_id, user_id)
+);
+
+create table plans (
+  code text primary key,
+  name text not null,
+  flags jsonb not null
+);
+
+create table subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null references orgs(id) on delete cascade,
+  stripe_customer_id text unique,
+  stripe_subscription_id text unique,
+  plan_code text references plans(code),
+  seats int not null default 1,
+  status text not null,
+  trial_end timestamptz
+);
+
+create table entitlements (
+  org_id uuid not null references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  flag text not null,
+  value boolean not null default false,
+  source text not null,
+  meta jsonb,
+  expires_at timestamptz,
+  primary key (org_id, coalesce(user_id, '00000000-0000-0000-0000-000000000000'::uuid), flag)
+);
+
+create table user_addons (
+  org_id uuid not null references orgs(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  addon_code text not null,
+  stripe_price_id text not null,
+  status text not null,
+  primary key (org_id, user_id, addon_code)
+);
+
+create table modules (
+  id text primary key, -- 'M01'...'M50'
+  name text not null,
+  vectors int[] not null,
+  description text,
+  requirements text,
+  spec text,
+  output_schema text,
+  kpi text,
+  guardrails text
+);
+
+create table module_versions (
+  id uuid primary key default gen_random_uuid(),
+  module_id text not null references modules(id) on delete cascade,
+  semver text not null,
+  changelog text,
+  created_at timestamptz not null default now()
+);
+
+create table parameter_sets (
+  id uuid primary key default gen_random_uuid(),
+  domain text not null,
+  scale text not null,
+  urgency text not null,
+  complexity text not null,
+  resources text not null,
+  application text not null,
+  output_format text not null,
+  extras jsonb
+);
+
+create table runs (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null references orgs(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  module_id text not null references modules(id),
+  param_set_id uuid not null references parameter_sets(id),
+  hash text unique not null,
+  mode text not null check (mode in ('sim','real')),
+  model text,
+  tokens int,
+  cost_usd numeric(10,4),
+  status text not null check (status in ('queued','ok','fail')),
+  runtime_ms int,
+  telemetry jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table artifacts (
+  id uuid primary key default gen_random_uuid(),
+  run_id uuid not null references runs(id) on delete cascade,
+  kind text not null check (kind in ('txt','md','json','pdf','bundle')),
+  path text not null,
+  checksum text,
+  size_bytes int,
+  exported_at timestamptz not null default now()
+);
+
+create table prompt_scores (
+  run_id uuid primary key references runs(id) on delete cascade,
+  clarity int check (clarity between 0 and 100),
+  execution int check (execution between 0 and 100),
+  ambiguity int check (ambiguity between 0 and 100),
+  alignment int check (alignment between 0 and 100),
+  business_fit int check (business_fit between 0 and 100),
+  feedback jsonb,
+  scored_at timestamptz not null default now()
+);
+
+-- EXTENDED
+create table domain_configs (
+  id uuid primary key default gen_random_uuid(),
+  industry text not null,
+  config jsonb not null
+);
+
+create table industry_packs (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title text not null,
+  modules text[] not null,
+  domain_config jsonb,
+  price_eur int not null
+);
+
+create table org_industry_packs (
+  org_id uuid not null references orgs(id) on delete cascade,
+  pack_id uuid not null references industry_packs(id) on delete cascade,
+  activated_at timestamptz not null default now(),
+  expires_at timestamptz,
+  primary key (org_id, pack_id)
+);
+
+create table api_keys (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null references orgs(id) on delete cascade,
+  key_hash text not null,
+  scopes text[] not null,
+  rate_limit_rpm int not null default 60,
+  created_at timestamptz not null default now(),
+  revoked_at timestamptz
+);
+
+create table event_log (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  event text not null,
+  payload jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table stripe_events (
+  id text primary key,
+  type text not null,
+  payload jsonb not null,
+  received_at timestamptz not null default now()
+);
+
+
+Notă RLS: activează RLS și aplică politici „membrii văd doar org‑urile lor; runs/artifacts/scores filtrate pe org_id; entitlements vizibil org‑wide + per user; webhook write doar cu service role.” (pattern din entitlements/Stripe→Supabase).
+
+5) Seed minim (exemple verificabile)
+
+plans.flags (snapshot entitlements per plan) — conform matricei oficiale:
+free: {canUseAllModules:false, canExportMD:false, canExportPDF:false, canExportJSON:false, canUseGptTestReal:false, hasCloudHistory:false, hasEvaluatorAI:false, hasAPI:false, hasWhiteLabel:false, canExportBundleZip:false, allowedModules:['M01','M10','M18']}
+creator: … + canUseAllModules:true, canExportMD:true, allowedModules:'ALL'
+pro: … + canExportPDF:true, canExportJSON:true, canUseGptTestReal:true, hasCloudHistory:true, hasEvaluatorAI:true
+enterprise: … + hasAPI:true, hasWhiteLabel:true, canExportBundleZip:true
+
+modules — exemplu M12 și M13 (din arhivă):
+M12 name: “Diagnostic de Vizibilitate” · vectors [1] · kpi: completion>70%, reply to plan>25% · spec: “Chestionar→score→raport→email”.
+M13 name: “Pricing Psychology” · vectors [4] · kpi: “ARPU↑, CR net↑” · spec: “Experimente pe preț; Stripe Price API”. 
+
+domain_configs (FinTech) — extras JSON:
+{"jargon":["KYC","AML","regtech","sandboxing"],"kpis":["fraud_rate","kyc_time","approval_rate"],"compliance_notes":"SEC/FCA sensitive","style_bias":"analytical, layered, formal"}.
+
+industry_packs — fintech_core
+modules: ['M07','M13','M14','M22','M31','M32'] · price_eur:1990 · domain_config: <FinTech JSON>. (Pack anual licențiat pe verticală, conform politicilor.)
+
+event_log — evenimente product‑led upsell:
+PF_EXPORT_CLICK, PF_PAYWALL_VIEWED{surface:'export'}, PF_CHECKOUT_COMPLETED{plan:'pro'}, PF_PACK_BANNER_VIEWED('fintech').
+
+6) Fluxuri critice mapate în DB (execuție end‑to‑end)
+
+Run API /api/run/mXX → runs (+ parameter_sets) → artefacte .txt/.md/.json/.pdf → .bundle.zip în artifacts. Gătează accesul pe entitlements (export/test/API).
+
+Export Bundle → salvează 4 fișiere + telemetry.json + checksum în artifacts (1 row/fișier + 1 row pentru .bundle).
+
+Evaluator AI → scrie scorurile în prompt_scores + păstrează feedback în feedback JSON.
+
+Licență pe industrie → org_industry_packs activează preseturi domain/KPI/guardrails + recomandă Mxx; entitlements rămân la plan.
+
+Stripe → subscriptions + webhook populând entitlements (flags deterministe per plan + add‑ons), audit în stripe_events. Enforce floor pentru Industry Pack.
+
+7) Construiește în 7 pași (Supabase)
+
+Creează tabelele (DDL de mai sus) + bucket artifacts (storage). Stochezi .txt/.md/.json/.pdf/.zip după export.
+
+Seed plans (free/creator/pro/enterprise) cu flags din matrice.
+
+Seed modules M01–M50 (din arhivă). Normalizează vectors/descriere/kpi/guardrails. 
+
+Seed domain_configs pentru CORE 25 (JSON din framework).
+
+RLS: politici pe org_id; webhook service‑role pentru subscriptions/entitlements.
+
+Indexes: runs(hash) unique, artifacts(run_id,kind), event_log(org_id,created_at), entitlements(org_id,flag).
+
+Migrate UI: butoanele de paywall/export/test real se leagă de entitlements + logează în event_log evenimentele PF_*.
+
+8) Variabile cheie (coloane care decid monetizarea & risc)
+
+Access flags: canUseGptTestReal, canExportPDF|JSON, canExportBundleZip, hasAPI, hasWhiteLabel. Toate mapează 1:1 pe UI/paywall.
+
+Param 7D: domain|scale|urgency|complexity|resources|application|output_format — fiecare run are doar un param_set_id. Determină ton, guardrails, format, fallback.
+
+Telemetry (runs.telemetry): run_id, policy_hits, cost, model, SLOs. Intră și în bundle.
+
+Scores (prompt_scores): clarity|execution|ambiguity|alignment|business_fit. Activează upsell “Optimizează pt. Enterprise/Crisis”.
+
+9) De ce numărul ăsta de tabele?
+
+12 core acoperă produsul complet: identitate, planuri→entitlements, IP (module), execuție (runs), livrabile (artifacts), calitate (scores), parametri (7D).
+
++6 extinse acoperă licențiere pe verticală, API enterprise, growth telemetry și audit Stripe cu price floor industrial — exact ceea ce MVP v3 cere pentru PROD.
+
+10) Mapare directă pe specificațiile v3 (validabil)
+
+UI existent (generator + editor + test + istoric) mapează 1:1 pe parameter_sets→runs→artifacts (+ session hash). 
+
+Ce mai trebuie pentru PROD: GPT live, cloud history, export bundle, versioning — toate au tabele dedicate în schema propusă.
+
+API public + licențiere module: api_keys + gating în entitlements + logging în runs.
+
+
+
+
+
+
+
+
+
+
+
+packs/ — standardize ca “Industry Pack Spec” (executabil, nu PDF decorativ)
+packs/fintech.mdc — “FinTech Pack (12 module, compliance‑grade)”
+
+1) PURPOSE
+– Activează mod FinTech: ton formal, risc controlat, probe verificabile. Injectează jargon, KPI și guardrails în toate modulele M01–M50. 
+
+2) DOMAINCONFIG (JSON)
+
+{
+  "industry": "FinTech",
+  "jargon": ["KYC", "AML", "regtech", "sandboxing", "approval rate", "chargeback"],
+  "kpis": ["KYC_time", "approval_rate", "fraud_rate", "CAC", "LTV"],
+  "compliance_notes": "FCA/SEC; interzise promisiuni de randament; cere probe verificabile.",
+  "default_output_format": "spec",
+  "risk_level": "medium",
+  "style_bias": "analytical, layered, formal"
+}
+
+
+(Formatul și câmpurile provin din “Domain Parameter Framework”.) 
+
+3) 7D DEFAULTS (preseturi care guvernează prompturile)
+
+scale: Enterprise
+
+urgency: Planned (schimbă în Crisis pentru incidente fraude)
+
+complexity: Advanced
+
+resources: Full Stack Org
+
+application: Audit / Implementation
+
+output: spec + json
+(Presetarea 7D e standard în motorul v3 — ai UI pentru domain/scale/urgency etc.) 
+
+4) MODULE SET (12)
+
+M07 Risk & Trust Reversal (garanții, termeni, refund milestones)
+
+M13 Pricing Psychology (Stripe price tests pentru pachete)
+
+M12 Diagnostic de Vizibilitate (score→plan execuție)
+
+M31 Closed‑Loop Telemetry (GA4/Mixpanel→BQ→re‑antrenare)
+
+M33 Lead Scoring Model (intenție semantică + evenimente)
+
+M41 Agent de Criză PR (detect→triage→respond)
+
+M44 Ethical Guardrails în GPT (policy tests + logs)
+
+M10 Zero‑Party Data OS (consimțământ + personalizare)
+
+M22 SOP Lead Gen (Make/Notion/Telegram failover)
+
+M11 Funnel Nota Doi (lead→quiz→VIP→curs; idempotent)
+
+M45 Simulator de Contrafactuale (fără buget media)
+
+M50 CUSNIR.OS™ (registry/benchmarks/ontologie comună)
+(Selectezi după catalogul celor 50 module reale din v3.) 
+
+5) KPI & ACCEPTANCE
+
+KYC_time ≤ X min, approval_rate ≥ Y%, fraud_rate ≤ Z% (definește ținte per produs).
+
+TTI (time‑to‑implementation) < 7 zile pentru SOP‑uri critice.
+
+Policy_hits=0 la “promisiuni nereglementate” (testare cu M44).
+
+6) COMPLIANCE & GUARDRAILS
+
+“No false promise”, “no unverified claims”, citare oficială; SEC/FCA‑aware. 
+
+7) TELEMETRY CONTRACT
+{ run_id, module, domain:"fintech", tokens_used, cost_usd, policy_hits[], kpi_snapshot{} } (cerut de pipeline‑ul Bundle+API).
+
+8) ENTITLEMENTS
+
+Pro: export .pdf/.json, GPT Test real, cloud history.
+
+Enterprise: API /api/run/mXX, white‑label, .bundle.zip. (Mapează exact pe gates.) 
+
+packs/ecommerce.mdc — “E‑commerce Pack (12 module, LTV↑, CR↑)”
+
+1) PURPOSE
+– Optimizează CR, LTV, retenție, upsell (post‑purchase). 
+
+2) DOMAINCONFIG (JSON)
+
+{
+  "industry": "E-Commerce",
+  "jargon": ["ATC", "AOV", "CR", "LTV", "churn", "winback"],
+  "kpis": ["CR", "ATC_rate", "AOV", "D30_retention", "LTV"],
+  "compliance_notes": "Claritate preț, retur și garanții; evită clickbait.",
+  "default_output_format": "playbook",
+  "risk_level": "medium",
+  "style_bias": "actionable, commercial, test-driven"
+}
+
+
+(Bazat pe “Domain Parameter Framework”.) 
+
+3) 7D DEFAULTS
+
+scale: Startup/SMB
+
+urgency: Sprint
+
+complexity: Standard/Advanced
+
+application: Implementation
+
+output: playbook + checklist 
+
+4) MODULE SET (12)
+
+M03 Codul 7:1™ (campanii E2E cu KPI)
+
+M14 Authority Content→Commerce (pilon editorial→ofertă)
+
+M35 Content Heatmap (sloturi/segmente care convertesc)
+
+M11 Funnel Nota Doi
+
+M22 SOP Lead Gen
+
+M08 Status‑Tier Loyalty (bronze→mythic)
+
+M09 Post‑Purchase Subscription Engine
+
+M34 K‑Factors pentru comunitate
+
+M32 Cohort Experiments
+
+M31 Closed‑Loop Telemetry
+
+M13 Pricing Psychology
+
+M46 Librăria de Swipe Files
+(Confirmă numele/rolurile din catalog.) 
+
+5) KPI & ACCEPTANCE
+
+CR +X%, ATC_rate +Y%, D30_retention >35% (target standard M09), ARPU↑ (M13). 
+
+6) TELEMETRY & EXPORT
+
+Bundle multi‑format pentru livrare: .md + .json + .pdf + telemetry.json.
+
+packs/education.mdc — “Education Pack (12 module, completion↑)”
+
+1) PURPOSE
+– Construiește curricule, SOP educaționale, feedback automatizat, securitate cunoaștere. 
+
+2) DOMAINCONFIG (JSON)
+
+{
+  "industry": "Education",
+  "jargon": ["LMS", "cohort-based", "rubrics", "completion", "assessment"],
+  "kpis": ["completion_rate", "engagement", "TTE", "D30_retention"],
+  "compliance_notes": "bias disclosure, privacy, plagiat",
+  "default_output_format": "playbook",
+  "risk_level": "low",
+  "style_bias": "clear, instructional, scaffolded"
+}
+
+
+(Conform “Domain Parameter Framework”.) 
+
+3) 7D DEFAULTS
+
+scale: Solo Business/SMB/Corporate (LMS)
+
+urgency: Planned
+
+complexity: Standard/Advanced
+
+application: Training / Documentation
+
+output: playbook + spec 
+
+4) MODULE SET (12)
+
+M21 SOP pentru AI în Moodle
+
+M47 Curriculum INTELIGENȚIA™
+
+M23 SOP Podcast→Carte
+
+M20 Manifest Voice (cadru editorial zilnic)
+
+M38 Blueprint Antișcoală (design system educațional)
+
+M39 Promptoscopie™ (analiză semantică pe termeni‑cheie)
+
+M49 Assistant Onboarding GPT
+
+M31 Closed‑Loop Telemetry
+
+M12 Diagnostic de Vizibilitate (adaptat pe piloni educaționali)
+
+M01 AI‑IDEI.SOPFORGE™
+
+M10 Zero‑Party Data OS (consimțământ elevi)
+
+M25 SOP Knowledge Security (clasificare + redactions)
+(Selectate din biblioteca v3.) 
+
+5) KPI & ACCEPTANCE
+
+completion >70% (M47), latency <3s/essay (M21), TTE <14 zile (M23). 
+
+6) EXPORT & TELEMETRY
+
+Pachet .bundle.zip pentru handoff la instituții (Enterprise).
+
+templates/ — sabloane rulabile, nu “exemple drăguțe”
+templates/@api-route-template.ts — “POST /api/run/[moduleId] (Next.js)”
+
+CONȚINUT OBLIGATORIU
+
+Handler TypeScript cu:
+
+validare plan/entitlements (Supabase)
+
+gating pe export/test real (Creator/Pro/Enterprise)
+
+orchestrare runtime GPT (editor/test)
+
+telemetrie + cost estimat + policy_hits
+
+răspuns JSON determinist: {hash, timestamp, prompt, metadata{module,version,kpis[]}}
+(Contractul de API & licensing sunt deja definite în roadmap.) 
+
+SKELETON (scurtat, executabil după wiring)
+
+// pages/api/run/[moduleId].ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { verifyEntitlements } from '@/lib/entitlements'; // Supabase
+import { buildPrompt } from '@/lib/promptforge';
+import { openaiRun } from '@/lib/openai-runtime'; // GPT live
+import { logRun } from '@/lib/telemetry';         // BigQuery/Supabase
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).end();
+  const { moduleId } = req.query as { moduleId: string };
+  const { params7D, mode, exportFmt } = req.body;
+
+  const ent = await verifyEntitlements(req); // plan gates: Pro/Ent
+  // Gate examples (plan→capabilități)
+  if (mode === 'real' && !ent.canUseGptTestReal) return res.status(402).json({error:'pro_needed'});
+  if (exportFmt === 'pdf' && !ent.canExportPDF)   return res.status(402).json({error:'pro_needed'});
+  if (exportFmt === 'json' && !ent.canExportJSON) return res.status(402).json({error:'pro_needed'});
+
+  const { prompt, metadata } = await buildPrompt(moduleId, params7D); // v3 generator
+  const run = mode === 'real' ? await openaiRun(prompt) : { output: 'SIM', tokens: 0, cost: 0 };
+
+  const rec = await logRun({ moduleId, params7D, ent, prompt, run });
+  return res.status(200).json({ hash: rec.hash, timestamp: rec.ts, prompt, metadata });
+}
+
+
+(Entitlements și gates derivă din politica planurilor Free/Creator/Pro/Enterprise.) 
+
+templates/@bundle-exporter-template.ts — “Export .bundle (md+json+pdf+telemetry)”
+
+CONȚINUT OBLIGATORIU
+
+Funcție exportBundle(prompt, config, telemetry, fmt[])
+
+Generează:
+
+prompt.txt (raw)
+
+prompt.md (raport uman)
+
+prompt.json (config+meta+telemetry)
+
+prompt.pdf (doar Pro/Enterprise, Enterprise → branding white‑label)
+
+.zip final cu checksum
+(Exact fluxul bundle multi‑format propus pentru PROD.)
+
+SKELETON
+
+// lib/exporter.ts
+import JSZip from 'jszip';
+import { renderPDF } from './pdf'; // puppeteer/react-pdf
+
+export async function exportBundle(input: {
+  promptText: string; config: any; telemetry: any; formats: ('txt'|'md'|'json'|'pdf')[];
+}) {
+  const zip = new JSZip();
+  if (input.formats.includes('txt'))  zip.file('prompt.txt', input.promptText);
+  if (input.formats.includes('md'))   zip.file('prompt.md', renderMarkdown(input));
+  if (input.formats.includes('json')) zip.file('prompt.json', JSON.stringify(toJson(input), null, 2));
+  if (input.formats.includes('pdf'))  zip.file('prompt.pdf', await renderPDF(input));
+  zip.file('telemetry.json', JSON.stringify(input.telemetry));
+  zip.file('checksum.txt', checksum(zip));
+  return await zip.generateAsync({ type: 'nodebuffer' });
+}
+
+
+(Gating export .pdf/.json pe planuri Pro/Enterprise.) 
+
+templates/@evaluator-prompt-template.txt — “Evaluator AI (scor 0–100 + feedback)”
+
+CONȚINUT OBLIGATORIU
+– Rubrică standard: Clarity, Execution Readiness, Ambiguity (low=good), Alignment, Business Fit + micro‑acțiuni “Tighten tone / Optimize for Enterprise/Crisis”. (Designul evaluatorului AI este stabilit.)
+
+TEMPLATE (injectează 7D + prompt)
+
+SYSTEM: You are a professional prompt evaluator. Be strict, numeric, concise.
+USER:
+Evaluate the PROMPT below on 0–100 for:
+1) Clarity
+2) Execution Readiness
+3) Ambiguity (lower is better)
+4) Alignment with CONFIG
+5) Business Fit
+
+CONFIG (7D):
+- Domain: {{domain}}
+- Scale: {{scale}}
+- Urgency: {{urgency}}
+- Complexity: {{complexity}}
+- Resources: {{resources}}
+- Application: {{application}}
+- Output: {{output_format}}
+
+PROMPT:
+{{generated_prompt}}
+
+RETURN JSON:
+{
+  "clarity": <int>,
+  "execution": <int>,
+  "ambiguity": <int>,
+  "alignment": <int>,
+  "business_fit": <int>,
+  "feedback": {
+    "clarity": "...",
+    "execution": "...",
+    "ambiguity": "...",
+    "alignment": "...",
+    "business_fit": "..."
+  },
+  "suggestions": ["Tighten tone", "Optimize for Enterprise", "Add fallback"]
+}
+
+templates/@rule-module-template.mdc — “Spec oficial pentru MXX (rule‑module)”
+
+CONȚINUT OBLIGATORIU (HEADERS)
+
+id: MXX • name: • vectors: [V1..V7] • version: semver • owner: • status: draft/ga
+
+requirements: input slots canonice • guardrails: ce refuzi/ce redirecționezi • kpi: măsurabile
+
+spec: pași/agenți/algoritmi • output: formate + chei • telemetry: schema de logare
+(Structura reflectă formatul modulelor v3: requirements/spec/output/KPI/guardrails.) 
+
+BODY (MODEL)
+
+# {{MXX}} — {{Module Name}}
+
+## PURPOSE
+Scop operațional și criterii „Done”.
+
+## INPUTS (SLOTS)
+- [SUBIECT], [NIVEL], [CONTEXT] ... (exemplu conform modulului original) 
+
+## SPEC (PIPELINE)
+- Role map, pași, fallback, retries (idempotent).
+
+## OUTPUT CONTRACT
+- JSON keys + MD sections + opțional PDF fragment.
+
+## KPI
+- TTI, %steps_passed, defect_rate<2% (sau specifice modulului).
+
+## GUARDRAILS
+- reguli etice/legale, „no guesswork”, citare.
+
+## TEST CASES
+- 3–5 intrări reale + așteptări.
+
+## TELEMETRY
+- {run_id, module, tokens, cost_usd, policy_hits, kpi_snapshot}
+
+## CHANGELOG
+- v1.0.0 — initial GA; diffs față de draft.
+
+Notes de integrare (să nu te blochezi pe “cum”)
+
+API & Licensing: expune fiecare modul ca endpoint POST /api/run/{moduleId} cu middleware de licențe/entitlements; logează run‑uri pentru billing & usage. (Ai pașii și exemplele deja mapate.)
+
+Entitlements & Paywalls: mapează “canUseGptTestReal / canExportPDF / canExportJSON / canExportBundleZip / hasAPI / hasWhiteLabel” pe planurile Free/Creator/Pro/Enterprise — enforce în FE+BE. 
+
+Bundle Export: tratează fiecare prompt ca artefact comercial (.md/.json/.pdf + telemetry + checksum), exportabil ca .bundle.zip.
+
+Catalog Module & UI: lucrează cu setul complet M01–M50 și selectorul 7D din UI actual (deja implementat). 

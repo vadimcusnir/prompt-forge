@@ -1,0 +1,67 @@
+{
+  "slug": "education",
+  "title": "Education Pack",
+  "price_eur_per_year": 1490,
+  "min_plan": "pro",
+  "modules": [
+    "M21",
+    "M23",
+    "M25",
+    "M31",
+    "M38",
+    "M47"
+  ],
+  "domain_preset": {
+    "jargon": [
+      "LMS",
+      "cohort",
+      "asynchronous/synchronous",
+      "rubric-based grading"
+    ],
+    "kpis": [
+      "completion_rate",
+      "engagement_rate",
+      "retention_rate"
+    ],
+    "compliance_notes": "Privacy first; anti-plagiarism; academic integrity",
+    "style_bias": "supportive, rubric-driven, transparent feedback",
+    "default_output_format": "playbook",
+    "risk_level": "medium"
+  },
+  "defaults_7d": {
+    "scale": "startup",
+    "urgency": "planned",
+    "complexity": "advanced",
+    "resources": "lean_team",
+    "application": "training",
+    "output": [
+      "playbook",
+      "spec",
+      "json"
+    ]
+  },
+  "export_requirements": [
+    "playbook",
+    "spec"
+  ],
+  "evaluator_lints": [
+    "Detect potential plagiarism indicators in examples",
+    "Require anonymization on student data & PII hashing"
+  ],
+  "guardrails": [
+    "No storage of PII without consent; disclose model usage to learners"
+  ],
+  "ui": {
+    "upsell_banner_copy": "Activeaz\u0103 Education Mode: KPI\u2011uri completion/engagement + playbook & spec.",
+    "paywall_feature": "industryPack_education"
+  },
+  "stripe": {
+    "floor_eur": 1490,
+    "product_id": "",
+    "price_id_monthly": "",
+    "price_id_annual": ""
+  },
+  "supabase": {
+    "gating_sql_note": "SELECT 1 FROM org_industry_packs WHERE org_id=$1 AND pack_slug='education';"
+  }
+}

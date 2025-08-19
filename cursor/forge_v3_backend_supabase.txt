@@ -1,0 +1,2734 @@
+
+
+
+0) Premisă de modelare (ancore)
+Engine-ul are 50 module reale + 7 vectori; UI‑ul curent deja standardizează config 7D și transformă fiecare generare în artefact executabil. Calibrează schema pe: module → param set 7D → run → bundle → entitlements. 
+Pentru PROD, treci de la simulare la GPT live, history în cloud, export bundle și licențe pe planuri & industrii. Schema de mai jos reflectă exact aceste extensii.
+
+1) Model canonic Supabase (v1 stabil) — 14 tabele de bază
+orgs — workspaces multi‑user.
+org_members — membri & roluri (owner/admin/member).
+plans — planuri (free/creator/pro/enterprise) + flags implicite.
+subscriptions — Stripe sync (plan, seats, trial, status).
+entitlements — feature flags efective (plan | add‑on | license).
+user_addons — add‑on per user (ex: Evaluator AI).
+api_keys — chei pentru /api/run/mXX (Enterprise).
+modules — M01…M50 (nume, vectori, spec, kpi, guardrails). 
+domain_configs — profiluri industry (jargon, KPIs, compliance).
+parameter_sets — engine 7D: domain/scale/urgency/complexity/resources/application/output.
+prompt_history — fiecare generare (hash, config, output, version).
+runs — execuții & teste (type: generation|test|agent, tokens, cost, status, telemetry).
+prompt_scores — Evaluator AI (clarity, execution, ambiguity, alignment, business_fit + feedback).
+bundles — exporturi .md/.json/.pdf/.zip + checksum + storage paths.
+Observație: plans+entitlements sunt coloana vertebrală pentru gating (export, test GPT real, API, bundle, white‑label) — exact cum ai definit politic.
+
+2) Variabile cheie (tipuri, valori) — definiții operative
+2.1. modules
+module_id text PK (ex: "M07")
+name text, vectors int[] (1..7), requirements jsonb, spec text, output_schema jsonb, kpi text, guardrails text
+Sursă de adevăr: lista M01–M50 și vectorii din UI. 
+
+2.2. domain_configs (CORE 25)
+id uuid PK, industry text (ex: "FinTech"),
+jargon jsonb, kpis jsonb, compliance_notes text, default_output_format text, risk_level text, style_bias text
+Valori acceptate pentru industry: SaaS, FinTech, E‑Commerce, Consulting, Education, Healthcare, Legal, … (25).
+
+2.3. parameter_sets (Engine 7D) — valori canonice
+domain text ∈ CORE 25 (vezi domain_configs).
+scale text ∈ {personal_brand, solo, startup, boutique_agency, smb, corporate, enterprise}.
+urgency text ∈ {low, planned, sprint, pilot, crisis}.
+complexity text ∈ {foundational, standard, advanced, expert}.
+resources text ∈ {minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget}.
+application text ∈ {training, audit, implementation, strategy, crisis_response, experimentation, documentation}.
+output_formats text[] ∈ {txt, md, checklist, spec, playbook, json, yaml, diagram, bundle}.
+plus overrides jsonb (bias-uri locale).
+
+2.4. prompt_history
+id uuid PK, user_id uuid (FK auth.users), org_id uuid (FK orgs),
+module_id text (FK modules), hash text, parameter_set_id uuid (FK),
+config jsonb (snapshot 7D), output text, version int, created_at timestamptz.
+
+2.5. runs (telemetrie unificată)
+id uuid PK, org_id uuid, user_id uuid, module_id text, parameter_set_id uuid,
+type text ∈ {generation, test, agent_execution},
+status text ∈ {queued, success, error},
+model text, tokens_used int, cost_usd numeric, duration_ms int,
+telemetry jsonb (policy_hits, prompts, fallbacks), started_at, finished_at.
+
+2.6. prompt_scores
+run_id uuid (FK runs, PK), clarity int, execution int, ambiguity int, alignment int, business_fit int, feedback jsonb.
+
+2.7. bundles
+id uuid PK, run_id uuid (FK runs),
+formats text[] (ex: {md,json,pdf}), paths jsonb (Supabase Storage URLs),
+checksum text, exported_at timestamptz, version text (semver).
+
+2.8. plans / subscriptions / entitlements / user_addons / api_keys
+plans: code PK, name, flags jsonb (ex: canExportPDF, canUseGptTestReal, hasAPI, canExportBundleZip etc.).
+subscriptions: Stripe IDs + plan_code, seats, status, trial_end.
+entitlements: (org_id, user_id?, flag, value, source, expires_at) PK compus — plan|addon|license → gating executabil.
+user_addons: per‑user add‑ons (Evaluator AI, Export Designer).
+api_keys: key_hash, org_id, rate_limit, last_used_at — doar Enterprise.
+Exact spec & flux webhook Stripe→Supabase: vezi doc.
+
+3) Relații (ER logic)
+orgs 1‑N org_members, 1‑N subscriptions, 1‑N entitlements, 1‑N api_keys, 1‑N runs, 1‑N prompt_history.
+modules 1‑N prompt_history și 1‑N runs (prin module_id). 
+domain_configs opțional 1‑N parameter_sets (sau doar validare prin industry).
+parameter_sets 1‑N prompt_history, 1‑N runs (fixează contextul 7D).
+runs 1‑1 prompt_scores, 1‑N bundles (un run poate exporta multiple bundle‑uri).
+
+4) SQL minim (prod‑ready, condensat)
+-- 1) Orgs & members
+create table orgs (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  created_at timestamptz default now()
+);
+
+create table org_members (
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  role text not null check (role in ('owner','admin','member')),
+  created_at timestamptz default now(),
+  primary key (org_id, user_id)
+);
+
+-- 2) Plans, subs, entitlements, addons, api keys
+create table plans (
+  code text primary key,            -- free|creator|pro|enterprise
+  name text not null,
+  flags jsonb not null              -- feature flags snapshot
+);
+
+create table subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  stripe_customer_id text unique,
+  stripe_subscription_id text unique,
+  plan_code text references plans(code),
+  seats int not null default 1,
+  status text not null,
+  trial_end timestamptz,
+  current_period_end timestamptz
+);
+
+create table entitlements (
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id),
+  flag text not null,
+  value boolean not null default false,
+  source text not null,             -- plan|addon|license|manual
+  meta jsonb,
+  expires_at timestamptz,
+  primary key (org_id, coalesce(user_id, '00000000-0000-0000-0000-000000000000'::uuid), flag)
+);
+
+create table user_addons (
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  addon_code text not null,         -- eval_ai_adv|export_designer
+  stripe_price_id text not null,
+  status text not null,
+  primary key (org_id, user_id, addon_code)
+);
+
+create table api_keys (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  key_hash text not null unique,
+  active boolean default true,
+  rate_limit int default 60,
+  created_at timestamptz default now(),
+  last_used_at timestamptz
+);
+
+-- 3) Modules & domain config
+create table modules (
+  module_id text primary key,       -- 'M01'...'M50'
+  name text not null,
+  vectors int[] not null,           -- ex: {2,6}
+  requirements jsonb,
+  spec text,
+  output_schema jsonb,
+  kpi text,
+  guardrails text
+);
+
+create table domain_configs (
+  id uuid primary key default gen_random_uuid(),
+  industry text not null,           -- SaaS|FinTech|... (CORE 25)
+  jargon jsonb,
+  kpis jsonb,
+  compliance_notes text,
+  default_output_format text,
+  risk_level text,
+  style_bias text
+);
+
+-- 4) Parameter Engine 7D
+create table parameter_sets (
+  id uuid primary key default gen_random_uuid(),
+  domain text not null,
+  scale text not null,
+  urgency text not null,
+  complexity text not null,
+  resources text not null,
+  application text not null,
+  output_formats text[] not null,
+  overrides jsonb,
+  created_at timestamptz default now()
+);
+
+-- 5) History, runs, scores, bundles
+create table prompt_history (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
+  module_id text references modules(module_id),
+  parameter_set_id uuid references parameter_sets(id),
+  hash text not null,
+  config jsonb not null,
+  output text not null,
+  version int not null default 1,
+  created_at timestamptz default now()
+);
+
+create table runs (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
+  module_id text references modules(module_id),
+  parameter_set_id uuid references parameter_sets(id),
+  type text not null check (type in ('generation','test','agent_execution')),
+  status text not null check (status in ('queued','success','error')),
+  model text,
+  tokens_used int,
+  cost_usd numeric(10,4),
+  duration_ms int,
+  telemetry jsonb,
+  started_at timestamptz default now(),
+  finished_at timestamptz
+);
+
+create table prompt_scores (
+  run_id uuid primary key references runs(id) on delete cascade,
+  clarity int, execution int, ambiguity int, alignment int, business_fit int,
+  feedback jsonb
+);
+
+create table bundles (
+  id uuid primary key default gen_random_uuid(),
+  run_id uuid references runs(id) on delete cascade,
+  formats text[] not null,
+  paths jsonb not null,             -- {md:'...',json:'...',pdf:'...',zip:'...'}
+  checksum text not null,
+  version text not null,            -- semver
+  exported_at timestamptz default now()
+);
+
+
+RLS (obligatoriu): org_members controlează tot. Politică: user vede/editează rânduri doar în org_id unde e membru; entitlements expune doar flags org‑wide și per‑user. Webhook Stripe rulează cu service role pentru upsert entitlements.
+
+5) Seed minim (real, verificabil)
+
+modules: inserează M01–M50 din catalogul UI (ex: M07 "Risk & Trust Reversal", vectors {2,7}, kpi "drop‑off -25%"). 
+
+plans.flags (exemplu Pro):
+{"canExportPDF":true,"canExportJSON":true,"canUseGptTestReal":true,"hasCloudHistory":true,"hasEvaluatorAI":true}.
+
+domain_configs: inițiază FinTech cu jargon:["KYC","AML"], kpis:["fraud_rate","KYC_time"], risk_level:"medium".
+
+6) Fluxuri critice (cum construiești relațiile în practică)
+A. Generate → Save → Score → Bundle
+UI produce parameter_sets (7D).
+Generează prompt → prompt_history.insert (snapshot).
+Rulează runs(type='test') cu GPT live; salvează tokens, cost, telemetry.
+prompt_scores.insert (Evaluator AI).
+La export: bundles.insert + upload în Supabase Storage.
+
+B. Gating comercial (la fiecare acțiune)
+Citește entitlements: dacă canUseGptTestReal=false → paywall Pro; dacă canExportBundleZip=false → Enterprise; dacă hasAPI=false → blochează /api/run.
+C. API Enterprise
+POST /api/run/{moduleId} → verifică api_key (org) + entitlements; creează runs; întoarce bundle + telemetry.
+
+7) Indexare & performanță
+prompt_history(org_id, created_at desc) — listare rapidă.
+runs(org_id, module_id, started_at desc) — analitice & cost.
+entitlements(org_id, user_id, flag) — gating O(1).
+bundles(run_id) — join instant la export.
+
+8) De ce e stabil (3 unghiuri)
+Psihologic: separi drepturi (entitlements) de acțiuni (runs) → nu te blochezi în „roluri vagi”; fiecare click verifică o capabilitate binară.
+Social: domain_configs impune limbaj & KPI pe industrie; nu mai pierzi coerența echipei la scară.
+Comercial: bundles sunt artefacte vândute, nu text — .md/.json/.pdf/.zip cu checksum; ușor de licențiat și livrat.
+
+9) Ordinea de implementare (execută, nu discuta)
+Creează orgs, org_members, plans, entitlements + webhook Stripe.
+Încarcă modules (M01–M50) din catalog. 
+Activează parameter_sets → prompt_history → runs → prompt_scores.
+Adaugă bundles + Supabase Storage + export UI.
+Deschide /api/run/mXX (Enterprise) + api_keys + rate‑limit.
+
+10) Exemplu concret (fin, verificabil)
+M07 + parameter_sets (domain=FinTech, scale=enterprise, urgency=crisis, output={playbook,json}) →
+runs(test) cu model='gpt-4o', policy_hits logate →
+prompt_scores (ex: clarity=92, execution=88) →
+bundles → formats={md,pdf,json}, paths={"md":"/storage/bundles/…/prompt.md",…}, checksum="sha256:…". 
+
+
+
+
+
+
+
+schema completă a bazelor de date PROMPTFORGE™ v3:
+
+1. Tabele principale (Supabase/Postgres)
+
+orgs – organizații / workspaces multi-user
+
+id, name, created_at
+
+org_members – membri + roluri (owner/admin/member)
+
+org_id, user_id, role, created_at
+
+plans – planuri (pilot/pro/enterprise) + feature flags
+
+code, name, flags(jsonb)
+
+subscriptions – legătură Stripe → plan
+
+id, org_id, stripe_customer_id, plan_code, status, seats
+
+entitlements – drepturi efective (plan|addon|license)
+
+org_id, user_id?, flag, value, source, expires_at
+
+user_addons – add-on per user (Evaluator, Export Designer)
+
+api_keys – chei pentru acces API Enterprise
+
+modules – catalogul celor 50 module (M01–M50)
+
+module_id, name, vectors, requirements, spec, output_schema, kpi, guardrails
+
+domain_configs – profiluri industry (FinTech, Edu, SaaS…)
+
+id, industry, jargon, kpis, compliance_notes, risk_level, style_bias
+
+parameter_sets – engine 7D
+
+domain, scale, urgency, complexity, resources, application, output_formats
+
+prompt_history – fiecare generare prompt
+
+id, user_id, module_id, hash, config(7D snapshot), output, version, created_at
+
+runs – execuții (generation|test|agent)
+
+id, org_id, module_id, parameter_set_id, type, status, model, tokens_used, cost_usd, duration_ms, telemetry
+
+prompt_scores – scoruri Evaluator AI
+
+run_id, clarity, execution, ambiguity, alignment, business_fit, feedback
+
+bundles – exporturi .md/.pdf/.json/.zip
+
+id, run_id, formats[], paths, checksum, exported_at, version, license_notice
+
+projects – grouping logic (per client/proiect)
+
+module_versions – istoric semver al fiecărui modul
+
+ruleset_versions & ruleset_overrides_log – istoric ruleset.yml
+
+module_migrations – scripturi de compatibilitate între versiuni
+
+industries – configurări per domeniu (jargon, KPI, compliance)
+
+2. Variabile / câmpuri importante
+
+7D Engine (parameter_sets + ruleset.yml)
+
+domain: fintech, ecommerce, saas, edu, healthcare, legal, etc.
+
+scale: personal_brand, solo, startup, smb, boutique_agency, corporate, enterprise
+
+urgency: low, planned, sprint, pilot, crisis
+
+complexity: foundational, standard, advanced, expert
+
+resources: minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget
+
+application: training, audit, implementation, strategy_design, crisis_response, experimentation, documentation
+
+output_format: txt, md, checklist, spec, playbook, json, yaml, diagram, bundle
+
+Scoruri evaluare
+
+clarity, execution, ambiguity, business_fit (0–25 fiecare, total 100, gate ≥80)
+
+Entitlements & planuri
+
+Pilot → M01–M10, export txt/md
+
+Pro → M01–M30, export txt/md/pdf, cloud history
+
+Enterprise → M01–M50, export complet, API, multi-industry
+
+3. Relații logice
+
+orgs 1-N org_members, subscriptions, entitlements, api_keys, runs, prompt_history
+
+modules 1-N prompt_history și runs
+
+domain_configs 1-N parameter_sets
+
+parameter_sets 1-N runs și prompt_history
+
+runs 1-1 prompt_scores, 1-N bundles
+
+projects 1-N runs & bundles
+
+plans 1-N subscriptions & entitlements
+
+4. Constrângeri / guardrails
+
+DoR: 7D valid + entitlements + output_spec + testcases
+
+DoD: scor ≥80 + output complet + checksum valid + manifest scris + telemetrie salvată
+
+Export: structura fixă bundle (prompt.txt/json/md/pdf + manifest + checksum)
+
+Telemetrie: tta_seconds, score, tokens_in/out, policy_hits, overrides
+
+Pe scurt: baza de date are 20 de tabele canonice (orgs, users, plans, subs, entitlements, modules, runs, bundles, etc.), variabilele centrale sunt cele din motorul 7D + scorurile evaluatorului, iar relațiile sunt trasate clar în fluxul Project → Module → Run → Bundle, totul controlat de ruleset.yml ca SSOT.
+
+
+
+
+
+varianta completă (prod‑ready) pentru tabelul orgs — minimalist (exact câmpurile tale) + extensii recomandate (slug, updated_at, RLS, indici, seed).
+
+0) Specificație (minimală, conform cerinței)
+
+Tabel: orgs – organizații / workspaces multi‑user
+
+Câmpuri:
+
+id uuid PK (implicit gen_random_uuid()),
+
+name text NOT NULL,
+
+created_at timestamptz DEFAULT now()
+
+Modelul e aliniat cu schelele din blueprintul PROMPTFORGE™ v3 (orgs, org_members, RLS multi‑tenant).
+
+1) DDL minimal (Postgres/Supabase)
+-- EXTENSII utile (dacă nu sunt deja)
+create extension if not exists "pgcrypto";
+create extension if not exists "uuid-ossp";
+
+-- Tabelul de bază
+create table if not exists orgs (
+  id         uuid primary key default gen_random_uuid(),
+  name       text not null,
+  created_at timestamptz not null default now()
+);
+
+-- Index util pentru listări cronologice
+create index if not exists orgs_created_at_idx on orgs (created_at desc);
+
+
+Nota: structura minimală reproduce schema canonică (id, name, created_at) deja folosită în modelele PROMPTFORGE pentru workspaces multi‑user.
+
+2) Extensii recomandate (opțional, dar „gata de producție”)
+2.1. Coloană slug (unic, pentru rute/UI) + updated_at
+alter table orgs add column if not exists slug text
+  check (slug ~ '^[a-z0-9-]{3,40}$');
+
+alter table orgs add column if not exists updated_at timestamptz;
+
+create unique index if not exists orgs_slug_uq on orgs (slug);
+
+-- Trigger auto pentru updated_at
+create or replace function trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists set_orgs_updated_at on orgs;
+create trigger set_orgs_updated_at
+before update on orgs
+for each row execute procedure trg_set_updated_at();
+
+2.2. Relații & RLS (Row Level Security)
+
+Modelul multi‑tenant standard: un utilizator vede/editează doar organizațiile în care este membru, prin tabelul org_members (owner/admin/member) — exact fluxul recomandat în proiect.
+
+-- Tabel membri (schemă minimă corelată)
+create table if not exists org_members (
+  org_id  uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  role    text not null check (role in ('owner','admin','member')),
+  created_at timestamptz not null default now(),
+  primary key (org_id, user_id)
+);
+
+-- Activează RLS
+alter table orgs enable row level security;
+alter table org_members enable row level security;
+
+-- Policy: SELECT orgs doar dacă user-ul este membru în org
+create policy orgs_select_by_membership on orgs
+for select using (
+  exists (
+    select 1 from org_members m
+    where m.org_id = orgs.id and m.user_id = auth.uid()
+  )
+);
+
+-- Policy: INSERT orgs permis tuturor utilizatorilor autentificați (poți restrânge ulterior)
+create policy orgs_insert_by_auth on orgs
+for insert with check (auth.uid() is not null);
+
+-- Policy: UPDATE/DELETE doar owner/admin în org
+create policy orgs_update_by_admin on orgs
+for update using (
+  exists (
+    select 1 from org_members m
+    where m.org_id = orgs.id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+
+create policy orgs_delete_by_admin on orgs
+for delete using (
+  exists (
+    select 1 from org_members m
+    where m.org_id = orgs.id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+
+-- Policy-uri minime pe org_members (citire proprie)
+create policy org_members_self on org_members
+for select using (user_id = auth.uid());
+
+
+RLS și politicile „by membership” sunt aliniate 1:1 cu recomandările din modelările PROMPTFORGE (vizibilitate pe organizații, membership‑based).
+
+3) Seed & utilitare
+-- Creează o organizație demo
+insert into orgs (name, slug) values
+  ('PromptForge Labs', 'promptforge-labs')
+on conflict (slug) do nothing;
+
+-- Leagă utilizatorul curent ca owner (exemplu)
+insert into org_members (org_id, user_id, role)
+select o.id, auth.uid(), 'owner'
+from orgs o
+where o.slug = 'promptforge-labs'
+on conflict do nothing;
+
+4) Contract API (sugerat)
+
+GET /api/orgs → listează doar org‑urile unde auth.uid() este membru (RLS se ocupă).
+
+POST /api/orgs → creează org (name, slug) și auto‑inserează (org_id, uid, 'owner') în org_members.
+
+PATCH /api/orgs/:id → permis doar owner/admin (RLS).
+
+DELETE /api/orgs/:id → permis doar owner/admin (RLS).
+
+Exact acest tipar API + RLS este folosit în restul entităților multi‑tenant din schemă.
+
+5) Checklist de calitate
+
+ PK UUID + default gen_random_uuid()
+
+ created_at default now()
+
+ Indice pe created_at
+
+ slug unic (pentru UX, SEO, multi‑org)
+
+ Trigger updated_at
+
+ RLS activ + policy‑uri by membership (select/insert/update/delete)
+
+ Seed de probă
+
+
+
+
+
+
+
+schema prod‑ready pentru org_members (membri + roluri), aliniată la blueprint‑ul PROMPTFORGE™ v3 (multi‑tenant cu RLS by‑membership).
+
+0) Specificație (conform cerinței)
+
+Tabel: org_members — legătură user ↔ org + rol (owner/admin/member)
+
+Câmpuri: org_id uuid, user_id uuid, role text, created_at timestamptz
+
+1) DDL minimal (Postgres/Supabase)
+-- EXTENSII (dacă nu există)
+create extension if not exists "pgcrypto";
+create extension if not exists "uuid-ossp";
+
+-- Tabel org_members (cheie compusă, rol validat)
+create table if not exists org_members (
+  org_id     uuid not null references orgs(id) on delete cascade,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  role       text not null check (role in ('owner','admin','member')),
+  created_at timestamptz not null default now(),
+  primary key (org_id, user_id)
+);
+
+-- Indici utili (căutare după user și listări cronologice)
+create index if not exists org_members_user_idx on org_members (user_id);
+create index if not exists org_members_created_at_idx on org_members (created_at desc);
+
+
+Tabelul și relațiile sunt consecvente cu modelarea multi‑tenant din v3 (orgs ↔ org_members).
+
+2) RLS (Row Level Security) — „by membership”
+
+Model standard PROMPTFORGE: un utilizator vede doar organizațiile unde este membru; aceleași reguli se aplică și pe org_members.
+
+-- Activează RLS
+alter table org_members enable row level security;
+
+-- SELECT: fiecare își vede membership‑urile + cele din org‑urile unde e membru
+create policy org_members_select_self_or_org on org_members
+for select using (
+  -- membership propriu
+  user_id = auth.uid()
+  -- sau orice membership dintr-o org unde sunt membru
+  or exists (
+    select 1 from org_members m2
+    where m2.org_id = org_members.org_id and m2.user_id = auth.uid()
+  )
+);
+
+-- INSERT: poate adăuga membru doar un owner/admin al org‑ului
+create policy org_members_insert_by_admin on org_members
+for insert
+with check (
+  exists (
+    select 1 from org_members m2
+    where m2.org_id = org_members.org_id
+      and m2.user_id = auth.uid()
+      and m2.role in ('owner','admin')
+  )
+);
+
+-- UPDATE: poate modifica/retrograda/promova doar owner/admin ai org‑ului
+create policy org_members_update_by_admin on org_members
+for update using (
+  exists (
+    select 1 from org_members m2
+    where m2.org_id = org_members.org_id
+      and m2.user_id = auth.uid()
+      and m2.role in ('owner','admin')
+  )
+);
+
+-- DELETE: doar owner/admin
+create policy org_members_delete_by_admin on org_members
+for delete using (
+  exists (
+    select 1 from org_members m2
+    where m2.org_id = org_members.org_id
+      and m2.user_id = auth.uid()
+      and m2.role in ('owner','admin')
+  )
+);
+
+3) Reguli de integritate (opțional, recomandat PROD)
+3.1. Asigură minim un owner / org
+
+Protejezi orfane de ownership (nu lăsa o org fără owner).
+
+-- Număr owneri într-o org
+create or replace function f_org_owner_count(p_org uuid)
+returns int language sql stable as
+$$ select count(*)::int from org_members where org_id = p_org and role = 'owner' $$;
+
+-- Blochează DELETE/UPDATE care ar duce la 0 owneri
+create or replace function trg_guard_owner()
+returns trigger language plpgsql as $$
+declare v_left int;
+begin
+  if TG_OP = 'DELETE' and old.role = 'owner' then
+    v_left := f_org_owner_count(old.org_id) - 1;
+    if v_left < 1 then
+      raise exception 'Cannot remove the last owner of this organization';
+    end if;
+  elsif TG_OP = 'UPDATE' and old.role = 'owner' and new.role <> 'owner' then
+    v_left := f_org_owner_count(old.org_id) - 1;
+    if v_left < 1 then
+      raise exception 'Cannot demote the last owner of this organization';
+    end if;
+  end if;
+  return coalesce(new, old);
+end $$;
+
+drop trigger if exists guard_owner_upd on org_members;
+create trigger guard_owner_upd
+before update on org_members
+for each row execute procedure trg_guard_owner();
+
+drop trigger if exists guard_owner_del on org_members;
+create trigger guard_owner_del
+before delete on org_members
+for each row execute procedure trg_guard_owner();
+
+3.2. Unicitate user într‑o org (asigurată de PK compus)
+
+primary key (org_id, user_id) garantează că un user apare o singură dată în aceeași org.
+
+3.3. Normalizare valori rol (enum soft)
+
+check (role in ('owner','admin','member')) (deja setată).
+
+4) Seed & utilitare
+-- Adaugă membrul curent ca owner într-o org existentă
+insert into org_members (org_id, user_id, role)
+select o.id, auth.uid(), 'owner'
+from orgs o
+where o.slug = 'promptforge-labs'         -- dacă ai folosit slug pe orgs
+on conflict (org_id, user_id) do nothing;
+
+-- Promovează un user la admin
+update org_members set role = 'admin'
+where org_id = (select id from orgs where slug='promptforge-labs')
+  and user_id = '00000000-0000-0000-0000-000000000000';
+
+5) API (contract sugerat)
+
+GET /api/orgs/:orgId/members → listă membri (vizibilă membrilor acelei org; RLS se ocupă)
+
+POST /api/orgs/:orgId/members → add member (doar owner/admin)
+
+body: { user_id, role }
+
+PATCH /api/orgs/:orgId/members/:userId → change role (owner/admin)
+
+DELETE /api/orgs/:orgId/members/:userId → remove member (owner/admin; guard „last owner” oprește)
+
+6) Teste de acceptanță (SQL)
+-- 1) Un user non-membru nu poate vedea membri altei org (expect 0 rows)
+select * from org_members where org_id = :other_org and user_id <> auth.uid();
+
+-- 2) Un member (role=member) nu poate insera alți membri (INSERT blocked by policy)
+insert into org_members(org_id, user_id, role) values (:org, :other_user, 'member');
+
+-- 3) Owner poate adăuga admin/member (INSERT allowed)
+-- 4) Nu poți down‑grada/șterge ultimul owner (trigger exception)
+-- 5) PK compus blochează dublicate pe aceeași org
+
+De ce așa?
+
+Conformitate cu v3: orgs ↔ org_members + RLS pe org_id (izolare multi‑tenant).
+
+Siguranță operațională: niciodată o org fără owner; roluri strict validate.
+
+Scalabilitate: indici pe user_id și created_at pentru liste rapide.
+
+
+
+
+
+
+iată „plans” cap‑coadă (DDL + seed + bune practici), aliniat la modelul tău de feature‑flags/entitlements din PROMPTFORGE™ v3.
+
+-- 0) Tip auxiliar (opțional) pentru coduri de plan
+create type plan_code_t as enum ('pilot','pro','enterprise');
+
+-- 1) Tabela PLANS (planuri + feature flags)
+create table public.plans (
+  code         plan_code_t primary key,        -- 'pilot'|'pro'|'enterprise'
+  name         text not null,                  -- ex. 'Pilot', 'Pro', 'Enterprise'
+  flags        jsonb not null,                 -- snapshot de capabilități (feature flags)
+  retention_days int not null default 90,      -- retention recomandat pt. istoric cloud
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  -- reguli de igienă pe JSONB
+  constraint ck_flags_is_object check (jsonb_typeof(flags) = 'object'),
+  -- chei obligatorii minime în flags (există în toate planurile din v3)
+  constraint ck_flags_required_keys check (
+    flags ? 'canUseAllModules'    and
+    flags ? 'canExportMD'         and
+    flags ? 'canExportPDF'        and
+    flags ? 'canExportJSON'       and
+    flags ? 'canUseGptTestReal'   and
+    flags ? 'hasCloudHistory'     and
+    flags ? 'hasEvaluatorAI'      and
+    flags ? 'hasAPI'              and
+    flags ? 'hasWhiteLabel'       and
+    flags ? 'canExportBundleZip'
+  )
+);
+
+-- 2) Timestamps trigger (optional)
+create or replace function set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+create trigger trg_plans_updated_at
+before update on public.plans
+for each row execute procedure set_updated_at();
+
+-- 3) Seed: P I L O T / P R O / E N T E R P R I S E
+-- NOTE: valorile sunt mapate pe entitlements canonice (v3), adaptate la cele 3 planuri cerute
+-- - Pilot: cateva module, .txt/.md, fără GPT live/cloud/API
+-- - Pro: export .pdf/.json, Test Engine live, Cloud history, Evaluator
+-- - Enterprise: tot ce are Pro + API, White‑label, bundle .zip, multi‑seat
+insert into public.plans (code, name, flags, retention_days) values
+('pilot','Pilot', jsonb_build_object(
+  'canUseAllModules', false,
+  'canExportMD',      true,
+  'canExportPDF',     false,
+  'canExportJSON',    false,
+  'canUseGptTestReal',false,
+  'hasCloudHistory',  false,
+  'hasEvaluatorAI',   false,
+  'hasAPI',           false,
+  'hasWhiteLabel',    false,
+  'canExportBundleZip', false,
+  -- allowlist minimal – ex: M01–M10
+  'allowedModules',   jsonb_build_array('M01','M02','M03','M04','M05','M06','M07','M08','M09','M10')
+), 30),
+
+('pro','Pro', jsonb_build_object(
+  'canUseAllModules', true,
+  'canExportMD',      true,
+  'canExportPDF',     true,
+  'canExportJSON',    true,
+  'canUseGptTestReal',true,
+  'hasCloudHistory',  true,
+  'hasEvaluatorAI',   true,
+  'hasAPI',           false,
+  'hasWhiteLabel',    false,
+  'canExportBundleZip', false,
+  'allowedModules',   'ALL'
+), 90),
+
+('enterprise','Enterprise', jsonb_build_object(
+  'canUseAllModules', true,
+  'canExportMD',      true,
+  'canExportPDF',     true,
+  'canExportJSON',    true,
+  'canUseGptTestReal',true,
+  'hasCloudHistory',  true,
+  'hasEvaluatorAI',   true,
+  'hasAPI',           true,
+  'hasWhiteLabel',    true,
+  'canExportBundleZip', true,
+  'hasSeatsGT1',      true,
+  'allowedModules',   'ALL'
+), 365);
+
+-- 4) Index util (cautare/afișare)
+create index if not exists idx_plans_updated_at on public.plans(updated_at desc);
+
+-- 5) Vedere publică (read‑only)
+create or replace view public.v_plans as
+select code::text, name, retention_days,
+       flags - 'allowedModules'   as flags_min,   -- flags fără allowlist (rezumat)
+       flags -> 'allowedModules'  as module_allowlist
+from public.plans;
+
+Cum se mapează aceste planuri pe entitlements/feature‑flags (rezumat)
+
+Pilot: subset de module (ex. M01–M10), export .txt/.md doar; fără GPT live, fără cloud, fără API/white‑label, fără bundle .zip. Exact rolul planului entry din v3 („Pilot/M01–M10, text/md, fără capabilități avansate”).
+
+Pro: deblochează export .pdf/.json, Test Engine pe GPT live, Cloud history și Evaluator AI — adică setul „planul de adevăr” din v3 pentru execuție și bundle comercial (fără API/white‑label/bundle zip).
+
+Enterprise: tot ce are Pro + API /run/{module}, white‑label, multi‑seat și export bundle .zip (artefact complet + checksum) — exact diferențierea enterprise din v3.
+
+Entitlements canonice (cheile din flags) sunt cele standard: canUseAllModules, canExportMD/PDF/JSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI, hasAPI, hasWhiteLabel, canExportBundleZip, hasSeatsGT1 etc., așa cum sunt definite în v3.
+În v3, gating‑ul real al UI/API/Export se face pe aceste flag‑uri (ex: PDF/JSON doar Pro+, API/BundleZip doar Enterprise).
+
+De ce JSONB cu snapshot de flags?
+
+Modelul v3 mapează plan→capabilități (feature flags) și face gating la execuție/export/API pe flag‑uri binare; plans.flags stochează snapshotul acestor capabilități (ușor de sincronizat cu Stripe/Supabase în webhooks).
+
+Matricea de planuri și diferențierea (Pilot/Pro/Enterprise) urmează exact mecanica din v3 (Pro = export & test live & cloud; Enterprise = API, white‑label, bundle zip, seats).
+
+Seed recomandat (dacă vrei „strict” după canonul v3)
+
+Dacă dorești să păstrezi nomenclatura din documentația v3 (Free/Creator/Pro/Enterprise), poți clona aceeași structură și să mapezi Pilot ≈ subset „Free/Creator” cu .md — dar pentru cerința ta am păstrat Pilot/Pro/Enterprise ca SKU‑uri operaționale, cu allowedModules pentru Pilot (M01–M10) conform Rulebook v1.
+
+Mini‑contract (JSON) pentru validare flags (orientativ)
+{
+  "type": "object",
+  "required": ["canUseAllModules","canExportMD","canExportPDF","canExportJSON","canUseGptTestReal","hasCloudHistory","hasEvaluatorAI","hasAPI","hasWhiteLabel","canExportBundleZip"],
+  "additionalProperties": true,
+  "properties": {
+    "canUseAllModules":   {"type":"boolean"},
+    "canExportMD":        {"type":"boolean"},
+    "canExportPDF":       {"type":"boolean"},
+    "canExportJSON":      {"type":"boolean"},
+    "canUseGptTestReal":  {"type":"boolean"},
+    "hasCloudHistory":    {"type":"boolean"},
+    "hasEvaluatorAI":     {"type":"boolean"},
+    "hasAPI":             {"type":"boolean"},
+    "hasWhiteLabel":      {"type":"boolean"},
+    "canExportBundleZip": {"type":"boolean"},
+    "hasSeatsGT1":        {"type":"boolean"},
+    "allowedModules":     {"oneOf":[{"type":"string","enum":["ALL"]},{"type":"array","items":{"type":"string","pattern":"^M\\d{2}$"}}]}
+  }
+}
+
+
+Acest „plans” este drop‑in în schema ta existentă: conectează‑l cu subscriptions și entitlements (derivate) exact cum e descris în blueprintul v3 (Stripe→Supabase→UI/API gating)
+
+
+
+
+
+subscriptions complet (DDL + indici + RLS + hook pt. entitlements + seed), aliniat la blueprint‑ul PROMPTFORGE™ v3 (Stripe→Supabase→plan/entitlements).
+
+1) DDL de bază (conform câmpurilor cerute)
+-- tip ENUM pentru status Stripe (poți extinde)
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'subscription_status_t') then
+    create type subscription_status_t as enum (
+      'trialing','active','past_due','canceled','unpaid','incomplete','incomplete_expired','paused'
+    );
+  end if;
+end $$;
+
+create table if not exists public.subscriptions (
+  id                  uuid primary key default gen_random_uuid(),
+  org_id              uuid not null references public.orgs(id) on delete cascade,
+  stripe_customer_id  text not null,
+  plan_code           plan_code_t not null references public.plans (code), -- 'pilot'|'pro'|'enterprise'
+  status              subscription_status_t not null,
+  seats               int not null default 1 check (seats >= 1),
+
+  -- meta utile (opțional, dar recomandat)
+  stripe_subscription_id text,               -- păstrează și ID‑ul subscripției
+  trial_end             timestamptz,        -- capăt trial (dacă e cazul)
+  current_period_end    timestamptz,        -- pentru reînnoiri
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now()
+);
+
+-- updated_at trigger
+create or replace function trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists subscriptions_set_updated_at on public.subscriptions;
+create trigger subscriptions_set_updated_at
+before update on public.subscriptions
+for each row execute procedure trg_set_updated_at();
+
+-- indici practici
+create index if not exists subs_org_idx     on public.subscriptions (org_id);
+create index if not exists subs_plan_idx    on public.subscriptions (plan_code);
+create index if not exists subs_status_idx  on public.subscriptions (status);
+create index if not exists subs_customer_idx on public.subscriptions (stripe_customer_id);
+create index if not exists subs_period_end_idx on public.subscriptions (current_period_end desc);
+
+
+Structura respectă modelările din v3: subscriptions leagă org de plan_code și status Stripe, cu seats/periods pentru runtime gating.
+
+2) RLS multi‑tenant (vizibilitate „by membership”)
+-- RLS ON
+alter table public.subscriptions enable row level security;
+
+-- SELECT: vezi subscripțiile doar în organizațiile unde ești membru
+create policy subs_select_by_membership on public.subscriptions
+for select using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = subscriptions.org_id
+      and m.user_id = auth.uid()
+  )
+);
+
+-- INSERT/UPDATE/DELETE: doar owner/admin din organizație
+create policy subs_iud_by_admin on public.subscriptions
+for all using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = subscriptions.org_id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+) with check (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = subscriptions.org_id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+
+
+Același tipar RLS „by org membership” este standard în v3 la toate entitățile multi‑tenant.
+
+3) Hook entitlements (aplică flags din plan în entitlements)
+
+În v3, entitlements efective se compun din PLAN ⊕ ADDONS ⊕ PACKS ⊕ LICENSE; la o schimbare de plan, refaci flags plan‑based pentru org_id.
+
+-- funcție care aplică entitlements din plan (idempotent)
+create or replace function pf_apply_plan_entitlements(p_org uuid, p_plan plan_code_t)
+returns void language sql as $$
+  insert into public.entitlements(org_id, user_id, flag, value, source, source_ref)
+  select p_org, null, key, (p.flags ->> key)::boolean, 'plan', p_plan::text
+  from public.plans p, jsonb_object_keys(p.flags) as key
+  where p.code = p_plan
+  on conflict (org_id, coalesce(user_id,'00000000-0000-0000-0000-000000000000'::uuid), flag)
+  do update set value = excluded.value, source='plan', source_ref=excluded.source_ref;
+$$;
+
+-- trigger: la INSERT/UPDATE de subscriptions → aplică flags plan
+create or replace function trg_subs_apply_entitlements()
+returns trigger language plpgsql as $$
+begin
+  perform pf_apply_plan_entitlements(new.org_id, new.plan_code);
+  return new;
+end $$;
+
+drop trigger if exists subs_apply_plan on public.subscriptions;
+create trigger subs_apply_plan
+after insert or update of plan_code on public.subscriptions
+for each row execute procedure trg_subs_apply_entitlements();
+
+
+Acest flux reproduce exact mecanica „Stripe→Supabase→entitlements” (plan→flags) din designul v3.
+
+4) Seed & exemple de operare
+-- seed minimal: 1 subscripție Pro activă (cu 5 seats) pentru o org demo
+insert into public.subscriptions (org_id, stripe_customer_id, plan_code, status, seats, current_period_end)
+values (
+  (select id from public.orgs limit 1),
+  'cus_12345_demo',
+  'pro',
+  'active',
+  5,
+  now() + interval '30 days'
+)
+on conflict do nothing;
+
+-- schimbare plan (ex: upgrade la enterprise)
+update public.subscriptions
+   set plan_code = 'enterprise',
+       status = 'active',
+       seats = 10
+ where stripe_customer_id = 'cus_12345_demo';
+-- triggerul va reaplica automat entitlements conform noului plan
+
+5) Note de implementare
+
+Status: enumerarea acoperă stări Stripe uzuale; ajustezi la nevoie (Stripe poate trimite paused, incomplete, incomplete_expired etc.).
+
+Seats: folosit la Enterprise (multi‑seat) conform v3 (hasSeatsGT1) pentru gating la UI/API.
+
+current_period_end/trial_end: utile pentru reînnoiri, trial logic și UI.
+
+entitlements: dacă folosești și Industry Packs/Add‑ons, calculează entitlements efective ca OR logic între surse (plan|addon|pack|license) — exact cum e specificat în v3; aici am pus doar layer‑ul PLAN.
+
+
+
+
+entitlements cap‑coadă (DDL + RLS + indici + view „effective” + utilitare), aliniat 1:1 la blueprintul PROMPTFORGE™ v3 (plan ⊕ addons ⊕ packs ⊕ license).
+
+1) DDL (Postgres/Supabase)
+-- 0) Tipuri & precondiții
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'entitlement_source') then
+    create type entitlement_source as enum ('plan','addon','pack','license','manual');
+  end if;
+end $$;
+
+-- 1) Tabelul ENTITLEMENTS (atomic, sursă explicită)
+create table if not exists public.entitlements (
+  id           bigserial primary key,
+  org_id       uuid not null references public.orgs(id) on delete cascade,
+  user_id      uuid references auth.users(id),         -- null => org-wide
+  flag         text not null,                          -- ex: canExportPDF, hasAPI, ...
+  value        boolean not null default true,
+  source       entitlement_source not null,            -- 'plan'|'addon'|'pack'|'license'|'manual'
+  source_ref   text,                                   -- ex: 'pro', 'fintech', 'eval_ai_adv'
+  meta         jsonb,                                  -- info supl.: qty, seat_id, notes
+  expires_at   timestamptz,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+
+  -- Igienă / consistență
+  constraint ck_flag_not_empty check (length(trim(flag)) > 0),
+  constraint ck_meta_is_object  check (meta is null or jsonb_typeof(meta) = 'object'),
+
+  -- Să nu duplicăm aceeași sursă pentru același flag
+  unique (org_id, coalesce(user_id,'00000000-0000-0000-0000-000000000000'::uuid), flag, source, coalesce(source_ref,''))
+);
+
+-- Trigger updated_at
+create or replace function trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists entitlements_set_updated_at on public.entitlements;
+create trigger entitlements_set_updated_at
+before update on public.entitlements
+for each row execute procedure trg_set_updated_at();
+
+-- 2) Indici practici
+create index if not exists ent_org_idx      on public.entitlements (org_id);
+create index if not exists ent_user_idx     on public.entitlements (user_id);
+create index if not exists ent_flag_idx     on public.entitlements (flag);
+create index if not exists ent_expires_idx  on public.entitlements (expires_at);
+create index if not exists ent_source_idx   on public.entitlements (source, source_ref);
+
+
+De ce așa?
+Modelarea suportă mai multe surse pentru același flag (ex: plan + addon + pack), iar efectivul se calculează cu bool_or(value) pe surse — exact cum e definit în v3.
+
+2) RLS multi‑tenant (vizibilitate „by membership”)
+alter table public.entitlements enable row level security;
+
+-- SELECT: vezi doar entitlements din org-urile în care ești membru
+create policy entitlements_select_by_membership on public.entitlements
+for select using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = entitlements.org_id
+      and m.user_id = auth.uid()
+  )
+);
+
+-- INSERT/UPDATE/DELETE:
+-- de regulă, scrierea o face backend-ul (Edge Function / service role) la webhook Stripe,
+-- deci nu definim politici permisive pentru clienți. (Service role bypassează RLS.)
+create policy entitlements_no_client_writes on public.entitlements
+for all using (false) with check (false);
+
+
+Tiparul RLS „by org membership” și scrierea prin service role sunt standard în v3.
+
+3) View‑uri „effective” (compunere pe surse)
+-- 3.1 Entitlements efective la nivel de ORGANIZAȚIE (OR logic pe surse)
+create or replace view public.entitlements_effective_org as
+select
+  org_id,
+  flag,
+  bool_or(value) as enabled,
+  min(expires_at) filter (where value is true) as first_expiry
+from public.entitlements
+where user_id is null
+group by org_id, flag;
+
+-- 3.2 Entitlements efective la nivel de USER (org-wide ⊕ user-level)
+--  - user vede ORG flags + overriding per-user (ex: add-on per user)
+create or replace view public.entitlements_effective_user as
+with org_flags as (
+  select org_id, flag, bool_or(value) as enabled_org
+  from public.entitlements
+  where user_id is null
+  group by org_id, flag
+),
+user_flags as (
+  select org_id, user_id, flag, bool_or(value) as enabled_user
+  from public.entitlements
+  where user_id is not null
+  group by org_id, user_id, flag
+)
+select
+  coalesce(u.org_id, o.org_id)   as org_id,
+  u.user_id,
+  coalesce(u.flag, o.flag)       as flag,
+  coalesce(u.enabled_user, false)
+  or coalesce(o.enabled_org,  false) as enabled
+from org_flags o
+full join user_flags u
+  on u.org_id = o.org_id and u.flag = o.flag;
+
+
+Exact abordarea din v3: entitlements_effective se obțin prin bool_or peste surse (plan|addon|pack|license).
+
+4) Utilitare recomandate (plan → entitlements)
+
+Aplică flags din plan (snapshot JSONB din plans.flags) ca entitlements „source=plan” — aceeași funcție este folosită în webhook Stripe pentru sync.
+
+create or replace function public.pf_apply_plan_entitlements(p_org uuid, p_plan public.plan_code_t)
+returns void language sql as $$
+  insert into public.entitlements(org_id, user_id, flag, value, source, source_ref)
+  select p_org, null, key, (p.flags->>key)::boolean, 'plan', p_plan::text
+  from public.plans p, jsonb_object_keys(p.flags) as key
+  where p.code = p_plan
+  on conflict (org_id, coalesce(user_id,'00000000-0000-0000-0000-000000000000'::uuid), flag, source, coalesce(source_ref,''))
+  do update set value = excluded.value, updated_at = now();
+$$;
+
+
+Cheile tipice flag în v3: canUseAllModules, canExportMD/PDF/JSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI, hasAPI, hasWhiteLabel, canExportBundleZip, hasSeatsGT1 etc..
+
+5) Exemple de operare
+-- A) Aplică plan 'pro' pentru o organizație
+select public.pf_apply_plan_entitlements(:org_id, 'pro');
+
+-- B) Activează un add-on per user (ex: evaluator avansat)
+insert into public.entitlements(org_id, user_id, flag, value, source, source_ref, meta)
+values (:org_id, :user_id, 'hasEvaluatorAI', true, 'addon', 'eval_ai_adv', '{"tier":"advanced"}')
+on conflict do nothing;
+
+-- C) Atașează un pack de industrie (FinTech) – exemplu
+insert into public.entitlements(org_id, flag, value, source, source_ref)
+values (:org_id, 'industryPack_fintech', true, 'pack', 'fintech')
+on conflict do nothing;
+
+-- D) Verifică entitlements efective (org-level)
+select * from public.entitlements_effective_org where org_id=:org_id;
+
+-- E) Verifică entitlements pentru un user
+select * from public.entitlements_effective_user where org_id=:org_id and user_id=:user_id;
+
+6) Gating (fe/BE) – exemplu de folosire a view‑ului „effective”
+
+Export PDF → vizibil doar dacă enabled('canExportPDF') = true
+
+Run Test (live) → doar dacă enabled('canUseGptTestReal') = true
+
+API /run → doar Enterprise, enabled('hasAPI') = true
+(logica asta este exact cum este folosită în UI/API în v3).
+
+Concluzie
+
+entitlements = surse atomice (plan|addon|pack|license|manual) pe flag‑uri canonice;
+
+compunere OR pentru „effective” (org‑level + user‑level);
+
+RLS după membership de organizație;
+
+utilitare pentru aplicare plan (Stripe→Supabase) deja pregătite.
+
+
+
+
+
+
+user_addons cap‑coadă (DDL + RLS + indici + hook spre entitlements + seed + exemple), aliniat 1:1 la blueprintul PROMPTFORGE™ v3: entitlements = PLAN ⊕ ADDONS ⊕ PACKS ⊕ LICENSE, add‑on‑urile fiind per‑user (ex: Evaluator AI Advanced, Export Designer).
+
+1) DDL (Postgres/Supabase)
+-- 0) ENUM-uri utile (status addon; poți extinde după Stripe)
+do $$ begin
+  if not exists (select 1 from pg_type where typname='addon_status_t') then
+    create type addon_status_t as enum ('active','trialing','past_due','canceled','unpaid','paused');
+  end if;
+end $$;
+
+-- 1) Tabelul user_addons (add-on per user, în cadrul unei organizații)
+create table if not exists public.user_addons (
+  org_id      uuid not null references public.orgs(id) on delete cascade,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+
+  -- cod semantic al add-on-ului (stabil): 'eval_ai_adv' | 'export_designer'
+  addon_code  text not null check (addon_code in ('eval_ai_adv','export_designer')),
+
+  status      addon_status_t not null default 'active',
+  quantity    int not null default 1 check (quantity >= 1),
+
+  -- legături Stripe (opțional dar recomandat)
+  stripe_price_id            text,
+  stripe_subscription_id     text,
+  stripe_subscription_item_id text,
+
+  -- perioade
+  trial_end           timestamptz,
+  current_period_end  timestamptz,
+  expires_at          timestamptz,
+
+  -- meta
+  meta        jsonb,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+
+  primary key (org_id, user_id, addon_code),
+  constraint ck_meta_is_object check (meta is null or jsonb_typeof(meta) = 'object')
+);
+
+-- trigger updated_at
+create or replace function trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists user_addons_set_updated_at on public.user_addons;
+create trigger user_addons_set_updated_at
+before update on public.user_addons
+for each row execute procedure trg_set_updated_at();
+
+-- indici practici
+create index if not exists ua_org_idx    on public.user_addons (org_id);
+create index if not exists ua_user_idx   on public.user_addons (user_id);
+create index if not exists ua_code_idx   on public.user_addons (addon_code);
+create index if not exists ua_status_idx on public.user_addons (status);
+create index if not exists ua_period_idx on public.user_addons (current_period_end desc);
+
+
+În modelul v3, add‑on‑urile per‑user extind capabilitățile „de bază” ale planului (flags) — de ex. Evaluator AI avansat sau Export Designer — iar entitlements efective se calculează cu OR logic între plan/addon/pack/license.
+
+2) RLS (Row Level Security) — vizibilitate „by membership”
+alter table public.user_addons enable row level security;
+
+-- SELECT: vezi doar add-on-urile din org-urile în care ești membru
+create policy ua_select_by_membership on public.user_addons
+for select using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = user_addons.org_id
+      and m.user_id = auth.uid()
+  )
+);
+
+-- INSERT/UPDATE/DELETE: recomandat doar prin service role / webhook Stripe
+-- (clientul final nu scrie direct; controlezi din backend)
+create policy ua_no_client_writes on public.user_addons
+for all using (false) with check (false);
+
+
+Tiparul este identic cu restul entităților multi‑tenant din v3: citire pe bază de membership, scriere orchestrată de backend (service role).
+
+3) Hook spre entitlements (compunere ADDON → flags)
+
+Mapezi add‑on‑urile per‑user în entitlements (source='addon'); compunerea finală se face ca OR peste surse (plan|addon|pack|license) — exact ca în v3.
+
+3.1 Funcție: aplică entitlements pentru un add‑on per‑user
+-- Funcție care mapează addon_code -> flag-uri
+-- (poți adăuga alte coduri/flags în viitor)
+create or replace function public.pf_apply_user_addon_entitlements(
+  p_org   uuid,
+  p_user  uuid,
+  p_code  text,
+  p_on    boolean
+) returns void language plpgsql as $$
+declare
+  _flags  text[];
+begin
+  if p_code = 'eval_ai_adv' then
+    -- exemplu: activează evaluator AI avansat și/sau nuanțează evaluarea
+    _flags := array['hasEvaluatorAI'];             -- păstrezi un singur flag (adv detaliat în meta)
+  elsif p_code = 'export_designer' then
+    _flags := array['hasExportDesigner'];          -- template-uri bundle + versionare
+  else
+    raise exception 'Unknown addon_code: %', p_code;
+  end if;
+
+  -- inserează/actualizează entitlements per flag (source='addon')
+  insert into public.entitlements(org_id, user_id, flag, value, source, source_ref, meta)
+  select p_org, p_user, f, p_on, 'addon', p_code, null
+  from unnest(_flags) as f
+  on conflict (org_id, coalesce(user_id,'00000000-0000-0000-0000-000000000000'::uuid), flag, source, coalesce(source_ref,''))
+  do update set value = excluded.value, updated_at = now();
+end $$;
+
+
+Cheile de entitlement sunt aceleași canonice folosite în v3 (de ex. hasEvaluatorAI, canExportPDF/JSON, hasAPI, etc.). Pentru add‑on‑uri per‑user, păstrezi flags dedicate (ex. hasExportDesigner) sau reutilizezi hasEvaluatorAI cu granularitate în meta.
+
+3.2 Trigger: la INSERT/UPDATE/DELETE în user_addons → (re)aplică entitlements
+create or replace function public.trg_user_addons_apply_entitlements()
+returns trigger language plpgsql as $$
+begin
+  if (TG_OP = 'INSERT') then
+    perform public.pf_apply_user_addon_entitlements(new.org_id, new.user_id, new.addon_code, (new.status in ('active','trialing')));
+    return new;
+  elsif (TG_OP = 'UPDATE') then
+    if (new.status <> old.status or new.addon_code <> old.addon_code) then
+      -- dezactivează vechiul, activează noul
+      perform public.pf_apply_user_addon_entitlements(new.org_id, new.user_id, old.addon_code, false);
+      perform public.pf_apply_user_addon_entitlements(new.org_id, new.user_id, new.addon_code, (new.status in ('active','trialing')));
+    end if;
+    return new;
+  elsif (TG_OP = 'DELETE') then
+    perform public.pf_apply_user_addon_entitlements(old.org_id, old.user_id, old.addon_code, false);
+    return old;
+  end if;
+  return null;
+end $$;
+
+drop trigger if exists user_addons_apply_ent on public.user_addons;
+create trigger user_addons_apply_ent
+after insert or update or delete on public.user_addons
+for each row execute procedure public.trg_user_addons_apply_entitlements();
+
+4) View: add‑on‑uri active (pentru UI / rapoarte)
+create or replace view public.v_user_addons_active as
+select
+  ua.org_id, ua.user_id, ua.addon_code, ua.status, ua.quantity,
+  ua.current_period_end, ua.expires_at, ua.created_at, ua.updated_at
+from public.user_addons ua
+where ua.status in ('active','trialing')
+  and (ua.expires_at is null or ua.expires_at > now());
+
+5) Seed & exemple
+-- Exemplu: activare Evaluator AI Advanced pentru un user
+insert into public.user_addons(org_id, user_id, addon_code, status, stripe_price_id, current_period_end)
+values (:org_id, :user_id, 'eval_ai_adv', 'active', 'price_123', now() + interval '30 days')
+on conflict (org_id, user_id, addon_code) do update
+  set status='active', current_period_end=excluded.current_period_end;
+
+-- Exemplu: activare Export Designer pentru un user
+insert into public.user_addons(org_id, user_id, addon_code, status)
+values (:org_id, :user_id, 'export_designer', 'active')
+on conflict do nothing;
+
+-- Verifică entitlements efective pentru user (org ⊕ user-level)
+select * from public.entitlements_effective_user
+where org_id = :org_id and user_id = :user_id;
+
+-- Dezactivare add-on (ex. la cancel Stripe)
+update public.user_addons
+   set status='canceled', expires_at = now()
+ where org_id=:org_id and user_id=:user_id and addon_code='export_designer';
+-- triggerul va scoate entitlement-ul addon din effective
+
+6) Gating în UI/API (exemple)
+
+Buton „Optimizează pentru Enterprise/Crisis” (Evaluator AI avansat) → vizibil dacă enabled('hasEvaluatorAI') este true la user (din view‑ul effective).
+
+Export Designer (teme bundle + versionare) → vizibil dacă enabled('hasExportDesigner') este true (user‑level).
+
+Combină cu flags de plan (ex. Pro/Enterprise) pentru export .pdf/.json și bundle .zip (Enterprise) — rămân în plan; add‑on‑urile adaugă capabilități „pe deasupra” planului.
+
+Concluzie
+
+user_addons stochează add‑on‑uri per user (Evaluator / Export Designer).
+
+Triggerul menține entitlements sincronizat (source='addon'), iar compunerea finală e plan ⊕ addons ⊕ packs ⊕ license (OR logic pe flags) — exact ca în v3.
+
+RLS by membership protejează izolarea multi‑tenant, scrierile le face backend‑ul (webhook Stripe / service role).
+
+
+
+
+
+
+api_keys cap‑coadă (DDL + RLS + indici + funcții de creare/validare + bune practici), aliniat Enterprise (chei hash‑uite, prefix, rate‑limit, revocare/expirare, scopes).
+
+1) DDL (Postgres/Supabase)
+-- 0) extensii (dacă nu sunt deja)
+create extension if not exists "pgcrypto";    -- gen_random_bytes()
+create extension if not exists "uuid-ossp";
+
+-- 1) tabela API KEYS (doar hash, niciodată secret în clar)
+create table if not exists public.api_keys (
+  id                 uuid primary key default gen_random_uuid(),
+  org_id             uuid not null references public.orgs(id) on delete cascade,
+  name               text not null,                         -- label: "CI key", "Zapier key", etc.
+  key_prefix         text not null,                         -- p.ex. 'pf_live_7GQK' (pt. UX/identificare sigură)
+  key_hash           text not null unique,                  -- sha256/argon2id/blake2b al cheii
+  scopes             jsonb not null default '[]'::jsonb,    -- ex. ["api.run", "api.export"]
+  rate_limit_per_min int  not null default 60 check (rate_limit_per_min > 0),
+  total_calls        bigint     not null default 0,
+  total_tokens       bigint     not null default 0,
+  active             boolean    not null default true,
+  created_by         uuid references auth.users(id),
+  last_used_at       timestamptz,
+  revoked_at         timestamptz,
+  expires_at         timestamptz,
+  created_at         timestamptz not null default now(),
+  updated_at         timestamptz not null default now(),
+  meta               jsonb,
+
+  constraint ck_prefix format '^[a-z0-9_]{6,32}$',
+  constraint ck_scopes_array check (jsonb_typeof(scopes) = 'array'),
+  constraint ck_meta_object check (meta is null or jsonb_typeof(meta) = 'object'),
+  constraint uq_org_name unique (org_id, name)
+);
+
+-- trigger updated_at
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists api_keys_set_updated_at on public.api_keys;
+create trigger api_keys_set_updated_at
+before update on public.api_keys
+for each row execute procedure public.trg_set_updated_at();
+
+-- 2) indici practici
+create index if not exists api_keys_org_idx      on public.api_keys (org_id);
+create index if not exists api_keys_active_idx   on public.api_keys (active) where active;
+create index if not exists api_keys_last_used_idx on public.api_keys (last_used_at desc);
+create index if not exists api_keys_expires_idx   on public.api_keys (expires_at);
+
+
+
+Stocăm doar hash și un prefix public pentru UX; secretul complet nu ajunge niciodată în DB.
+
+2) RLS (Row‑Level Security)
+alter table public.api_keys enable row level security;
+
+-- SELECT: doar owner/admin din org pot lista cheile (nu și membrii simpli)
+create policy api_keys_select_admins on public.api_keys
+for select using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = api_keys.org_id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+
+-- INSERT/UPDATE/DELETE: la fel, doar owner/admin (client) sau service role
+create policy api_keys_iud_admins on public.api_keys
+for all using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = api_keys.org_id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+) with check (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = api_keys.org_id
+      and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+
+
+Recomandat: creare/revocare să fie făcută din backend (service role), clientul doar listează.
+
+3) Secrete & hashing
+
+Folosește un pepper secret la hashing (stocat în config/server), p.ex. app.api_key_pepper.
+
+-- set secret la boot (server-side), exemplu:
+-- select set_config('app.api_key_pepper', '<LONG_RANDOM>', true);
+
+-- utilitar: calculează hash determinist al cheii + pepper (sha256 pentru simplitate)
+create or replace function public.api_hash(p_key text)
+returns text language sql stable as $$
+  select encode(digest( coalesce(current_setting('app.api_key_pepper', true), '') || ':' || p_key
+                      , 'sha256'), 'hex');
+$$;
+
+
+În producție poți folosi argon2id/bcrypt la hashing (via extensii), dar sha256 + pepper este suficient când cheia este lungă și random.
+
+4) Creare cheie (generate & store hash, return plaintext o singură dată)
+-- generează secure random token base64url fără padding
+create or replace function public.api_key_generate_token(p_len int default 48)
+returns text language plpgsql as $$
+declare
+  raw bytea := gen_random_bytes(p_len);
+  b64 text  := replace(replace(encode(raw, 'base64'), '+','-'), '/','_');
+begin
+  -- taie '=' de la final (padding)
+  return regexp_replace(b64, '=+$', '');
+end $$;
+
+-- creează key pentru o org și returnează plaintext-ul complet (o singură dată)
+-- SECURITY DEFINER ca să poată scrie service role
+create or replace function public.api_key_create(
+  p_org_id   uuid,
+  p_name     text,
+  p_scopes   jsonb default '[]'::jsonb,
+  p_rate     int   default 60,
+  p_expires  timestamptz default null,
+  p_created_by uuid default null
+) returns table(key_id uuid, plaintext text)
+language plpgsql security definer as $$
+declare
+  body   text;
+  prefix text;
+  final  text;
+  hsh    text;
+begin
+  -- prefix: pf_live_ + 4 chars ident
+  prefix := 'pf_live_' || upper(substr(api_key_generate_token(4),1,4));
+  body   := api_key_generate_token(54);                    -- corp cheie
+  final  := prefix || '.' || body;                         -- format: pf_live_XXXX.<secret>
+
+  hsh    := public.api_hash(final);
+
+  insert into public.api_keys (org_id, name, key_prefix, key_hash, scopes,
+                               rate_limit_per_min, expires_at, created_by, active)
+  values (p_org_id, p_name, prefix, hsh, coalesce(p_scopes,'[]'::jsonb),
+          greatest(1,coalesce(p_rate,60)), p_expires, p_created_by, true)
+  returning id into key_id;
+
+  plaintext := final;                                      -- returnăm cheia o singură dată
+  return;
+end $$;
+
+
+Cheia completă se vede doar la crearea ei și trebuie afișată/descărcată atunci. În tabel rămân doar key_prefix și key_hash.
+
+5) Validare cheie la runtime (API gateway)
+-- returnează cheia găsită (dacă e activă/validă) + org_id + scopes + rate limit
+create or replace function public.api_key_check(p_plain text)
+returns table(key_id uuid, org_id uuid, scopes jsonb, rate_limit_per_min int, active boolean, expires_at timestamptz)
+language sql stable as $$
+  select k.id, k.org_id, k.scopes, k.rate_limit_per_min, k.active, k.expires_at
+  from public.api_keys k
+  where k.key_hash = public.api_hash(p_plain)
+    and k.active = true
+    and (k.expires_at is null or k.expires_at > now());
+$$;
+
+-- mark usage (opțional: counter + last_used)
+create or replace function public.api_key_mark_used(p_key_id uuid, p_tokens int default 0)
+returns void language sql as $$
+  update public.api_keys
+     set total_calls  = total_calls + 1,
+         total_tokens = total_tokens + greatest(0,coalesce(p_tokens,0)),
+         last_used_at = now()
+   where id = p_key_id;
+$$;
+
+6) Rate‑limit simplu (pe key, per minut)
+
+Pentru volum mare, folosește Redis/pgmq. O variantă SQL „ok”:
+
+-- bucket minute pentru calls
+create table if not exists public.api_key_buckets (
+  key_id    uuid not null references public.api_keys(id) on delete cascade,
+  window_ts timestamptz not null,              -- floor(now() to minute)
+  calls     int not null default 0,
+  primary key (key_id, window_ts)
+);
+
+create or replace function public.api_rate_limit_check(p_key_id uuid, p_limit int)
+returns boolean language plpgsql as $$
+declare
+  w timestamptz := date_trunc('minute', now());
+  c int;
+begin
+  insert into public.api_key_buckets(key_id, window_ts, calls)
+  values (p_key_id, w, 0)
+  on conflict do nothing;
+
+  update public.api_key_buckets
+     set calls = calls + 1
+   where key_id = p_key_id and window_ts = w;
+
+  select calls into c
+  from public.api_key_buckets
+  where key_id = p_key_id and window_ts = w;
+
+  return (c <= p_limit);
+end $$;
+
+
+La fiecare request: validezi cheia, iei rate_limit_per_min, rulezi api_rate_limit_check(id, limit); dacă false → 429.
+
+7) Exemple de folosire (server)
+
+Middleware API (pseudocod):
+
+// 1) extrage Bearer din Authorization: Bearer pf_live_ABCD.xxxxxx
+const token = headerAuth.split(' ')[1];
+
+// 2) validează
+const row = await sql`select * from public.api_key_check(${token})`;
+if (!row) return 401;
+
+// 3) rate limit (per minut)
+const ok = await sql`select public.api_rate_limit_check(${row.key_id}, ${row.rate_limit_per_min})`;
+if (!ok?.public_api_rate_limit_check) return 429;
+
+// 4) marchează usage + atașează org_id/scopes pe request
+await sql`select public.api_key_mark_used(${row.key_id}, ${estimatedTokens})`;
+req.ctx = { orgId: row.org_id, scopes: row.scopes };
+
+
+Revocare / rotație:
+
+update public.api_keys set active=false, revoked_at=now() where id=:key_id;
+-- creează alta cu funcția public.api_key_create(...)
+
+8) Bune practici & politici
+
+Nu loga niciodată cheia în clar (nici în app logs, nici în DB).
+
+Prefixează cheile (ex. pf_live_ / pf_test_) pentru UX și separare env.
+
+Scopes: definește permisiuni granulate (api.run, api.export, api.metrics); validează la fiecare endpoint.
+
+Expirare & rotație: setează expires_at (6–12 luni), oferă rotație fără downtime (creezi noua cheie, comunici, apoi revoci pe cea veche).
+
+Audit: păstrează last_used_at, counters, IP (dacă vrei) în meta sau în tabel dedicat de access logs.
+
+Headers: Acceptă doar Authorization: Bearer <token>; refuză query‑string keys.
+
+Transport: forțează HTTPS.
+
+Pepper secret: setează app.api_key_pepper din environment; nu îl scrie în DB.
+
+9) Seed & demo
+-- creează o cheie nouă (returnează plaintext o singură dată)
+select * from public.api_key_create(
+  p_org_id := :org_id,
+  p_name   := 'CI Deploy Key',
+  p_scopes := '["api.run","api.export"]'::jsonb,
+  p_rate   := 120,
+  p_expires:= now() + interval '180 days',
+  p_created_by := auth.uid()
+);
+-- afișează: key_id, plaintext (salvează-l și arată-l user-ului)
+
+-- listare chei (vizibil owner/admin din org)
+select id, name, key_prefix, scopes, active, last_used_at, created_at
+from public.api_keys where org_id = :org_id;
+
+
+Cu asta ai chei API Enterprise complete: securizate (hash + prefix + pepper), guvernate (RLS, scopes, rate‑limit, revocare/expirare), cu utilitare de creare/validare ce pot fi chemate din webhook‑uri sau din backend.
+
+
+
+
+
+modules cap‑coadă (DDL + indici + RLS + validări JSON + seed + utilitare), aliniat 1:1 la blueprintul PROMPTFORGE™ v3 (catalog global M01–M50, cu vectors 1..7 și câmpurile cerute).
+
+1) DDL (Postgres/Supabase)
+-- EXTENSII (dacă nu sunt deja)
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- ENUM/CONSTRÂNGERI utile
+-- vectors = set de întregi 1..7 (Strategic, Retoric, Conținut, Cognitiv, Memetic, Date, Criză) [contract v3]
+-- module_id = 'M01'..'M50' (pattern + limită hard)
+create or replace function pf_is_valid_module_id(p text)
+returns boolean language sql immutable as $$
+  select p ~ '^M(0[1-9]|[1-4][0-9]|50)$'
+$$;
+
+create or replace function pf_vectors_valid(v int[])
+returns boolean language sql immutable as $$
+  -- toate elementele ∈ [1..7] și fără 0/negativ
+  select coalesce(array_length(v,1),0) > 0
+     and (select bool_and(x between 1 and 7) from unnest(v) as x)
+$$;
+
+-- 1) TABELUL MODULES (catalog global M01–M50)
+create table if not exists public.modules (
+  module_id     text primary key,                   -- 'M01'..'M50'
+  name          text not null,                      -- denumire scurtă, operativă
+  vectors       smallint[] not null,                -- ex: {2,6} (Retoric, Date)
+  requirements  text,                               -- cerințe/inputs high-level
+  spec          text,                               -- descriere/contract narativ (MD/Plain)
+  output_schema jsonb,                              -- schema artefact principal (JSON Schema)
+  kpi           jsonb,                              -- KPI-uri, ponderi/ținte per modul
+  guardrails    jsonb,                              -- reguli: no_promises, compliance, stil etc.
+  enabled       boolean not null default true,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+
+  -- IGIENĂ & VALIDĂRI
+  constraint ck_module_id_format     check (pf_is_valid_module_id(module_id)),
+  constraint ck_vectors_valid        check (pf_vectors_valid(vectors)),
+  constraint ck_output_schema_isobj  check (output_schema is null or jsonb_typeof(output_schema) = 'object'),
+  constraint ck_kpi_isobj            check (kpi is null or jsonb_typeof(kpi) = 'object'),
+  constraint ck_guardrails_isobj     check (guardrails is null or jsonb_typeof(guardrails) = 'object')
+);
+
+-- trigger updated_at
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists modules_set_updated_at on public.modules;
+create trigger modules_set_updated_at
+before update on public.modules
+for each row execute procedure public.trg_set_updated_at();
+
+-- INDICI (căutări rapide)
+create index if not exists modules_name_trgm_idx   on public.modules using gin (name gin_trgm_ops);
+create index if not exists modules_vectors_gin_idx on public.modules using gin (vectors);
+create index if not exists modules_enabled_idx     on public.modules (enabled);
+
+-- Notă: structura și câmpurile sunt cele definite în schema v3 (module_id, name, vectors, requirements, spec,
+-- output_schema, kpi, guardrails) pentru catalogul M01–M50:contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}.
+
+
+module_id, vectors și secțiunile spec / output_schema / kpi / guardrails urmează exact contractul de modul din v3 (M01–M50, vectori 1..7, KPI + guardrails explicite).
+
+2) RLS (catalog global: read‑only pentru clienți, write doar service role)
+alter table public.modules enable row level security;
+
+-- SELECT: permis tuturor utilizatorilor autentificați (sau chiar anon dacă vrei public catalog)
+create policy modules_read_all on public.modules
+for select using (true);
+
+-- INSERT/UPDATE/DELETE: doar backend (service role) – nu permitem scrieri din client
+create policy modules_no_client_writes on public.modules
+for all using (false) with check (false);
+
+
+În v3, „modules” este catalog global stabilit de produs; clienții doar citesc, actualizările vin din pipeline‑ul intern (service role), iar modulele inactive se filtrează prin enabled=false.
+
+3) JSON Schema „minimă” pentru output & KPI (opțional, dar util)
+
+Poți păstra convenții minime pentru consistență la export & evaluare.
+
+-- Validare „soft” (în aplicație) pentru chei uzuale
+-- output_schema: { "artifact_type": "spec|playbook|json|md|diagram|bundle", "fields": [...] }
+-- kpi: { "score_min": 80, "weights": {...}, "targets": {...} }
+-- guardrails: { "no_promises":true, "no_ungrounded_claims":true, "confidentiality":true, "style_rules":[...] }
+
+
+(Validarea strictă a JSON Schema se face convenabil în aplicație, nu în SQL.)
+
+4) Seed (exemple reale – 3 module)
+
+Valorile corespund modelului tău (nume illustrative + vectori + guardrails/KPI) și pot fi extinse până la M50.
+
+-- M01 — AI‑IDEI.SOPFORGE™
+insert into public.modules(module_id, name, vectors, requirements, spec, output_schema, kpi, guardrails)
+values
+('M01','AI‑IDEI.SOPFORGE™', '{1,6,5}',               -- Strategic, Date, Memetic
+ 'SUBIECT, NIVEL, CONTEXT, DEADLINE, BUGET, 6+ surse',
+ 'Pipeline research→validare→SOP (4 agenți: SourceMiner→ConflictResolver→ProcedureBuilder→QAPilot).',
+ '{
+    "artifact_type":"spec",
+    "fields":[
+      {"name":"goal","type":"string","required":true},
+      {"name":"scope","type":"string","required":true},
+      {"name":"roles","type":"array","required":true},
+      {"name":"steps","type":"array","required":true},
+      {"name":"risks","type":"array","required":false},
+      {"name":"fallbacks","type":"array","required":false},
+      {"name":"checklist","type":"array","required":false},
+      {"name":"sources","type":"array","required":true}
+    ]
+  }'::jsonb,
+ '{
+    "score_min":80,
+    "weights":{"clarity":0.30,"execution":0.35,"ambiguity":0.15,"business_fit":0.20},
+    "targets":{"defect_rate_max":0.02,"tti_text_s":60,"tta_sop_s":300}
+  }'::jsonb,
+ '{
+    "no_promises":true,
+    "no_ungrounded_claims":true,
+    "confidentiality":true,
+    "style_rules":["citează oficial","evită superlative absolute"]
+  }'::jsonb
+) on conflict (module_id) do nothing;
+
+-- M07 — Risk & Trust Reversal (high‑ticket)
+insert into public.modules(module_id, name, vectors, requirements, spec, output_schema, kpi, guardrails)
+values
+('M07','Risk & Trust Reversal', '{2,7}',            -- Retoric, Criză
+ 'PREȚ, RISC_PERCEPUT, DOVEZI, GARANȚII',
+ 'Arhitectură: guarantee stack, milestone refunds, escrow opțional; FAQ + terms.',
+ '{
+    "artifact_type":"spec",
+    "fields":[
+      {"name":"claims","type":"array","required":true},
+      {"name":"proofs","type":"array","required":true},
+      {"name":"guarantees","type":"array","required":true},
+      {"name":"terms","type":"markdown","required":true},
+      {"name":"faq","type":"array","required":false}
+    ]
+  }'::jsonb,
+ '{
+    "score_min":80,
+    "targets":{"dropoff_delta_pct":-25}
+  }'::jsonb,
+ '{
+    "no_promises":true,
+    "no_ungrounded_claims":true,
+    "confidentiality":true,
+    "style_rules":["juridic valid","fără afirmații neverificate"]
+  }'::jsonb
+) on conflict (module_id) do nothing;
+
+-- M33 — KPI Instrumentation Spec
+insert into public.modules(module_id, name, vectors, requirements, spec, output_schema, kpi, guardrails)
+values
+('M33','KPI Instrumentation Spec', '{6}',            -- Date
+ 'EVENIMENTE, PROPRIETĂȚI, DASHBOARDS, SLO/SLA',
+ 'Spec evenimente (GA4/Mixpanel) + proprietăți + dashboards + SLO/SLA + alerts.',
+ '{
+    "artifact_type":"spec",
+    "fields":[
+      {"name":"events","type":"array","required":true},
+      {"name":"props","type":"array","required":true},
+      {"name":"dashboards","type":"array","required":true},
+      {"name":"alerts","type":"array","required":false},
+      {"name":"governance","type":"markdown","required":false}
+    ]
+  }'::jsonb,
+ '{
+    "score_min":80,
+    "targets":{"freshness_max_min":15}
+  }'::jsonb,
+ '{
+    "no_promises":true,
+    "no_ungrounded_claims":true,
+    "confidentiality":true,
+    "style_rules":["măsurabil, auditabil","evită ambiguitatea"]
+  }'::jsonb
+) on conflict (module_id) do nothing;
+
+
+Structurile de mai sus reflectă contractul de modul v3 (inputs, outputs, KPI, guardrails, vectors) și pot fi replicate până la M50.
+
+5) Utilitare (înregistrare/actualizare modul) – opțional
+-- Înregistrare/actualizare modul (service role)
+create or replace function public.module_upsert(
+  p_module_id text,
+  p_name text,
+  p_vectors smallint[],
+  p_requirements text,
+  p_spec text,
+  p_output_schema jsonb,
+  p_kpi jsonb,
+  p_guardrails jsonb,
+  p_enabled boolean default true
+) returns void language plpgsql security definer as $$
+begin
+  if not pf_is_valid_module_id(p_module_id) then
+    raise exception 'Invalid module_id. Expected M01..M50';
+  end if;
+  if not pf_vectors_valid(p_vectors) then
+    raise exception 'vectors must be in [1..7]';
+  end if;
+
+  insert into public.modules(module_id,name,vectors,requirements,spec,output_schema,kpi,guardrails,enabled)
+  values (p_module_id,p_name,p_vectors,p_requirements,p_spec,p_output_schema,p_kpi,p_guardrails,p_enabled)
+  on conflict (module_id) do update set
+    name=p_name, vectors=p_vectors, requirements=p_requirements, spec=p_spec,
+    output_schema=p_output_schema, kpi=p_kpi, guardrails=p_guardrails, enabled=p_enabled,
+    updated_at=now();
+end $$;
+
+6) Vederi & filtrări utile
+-- listă module active, doar câmpurile de catalog
+create or replace view public.v_modules_catalog as
+select module_id, name, vectors, enabled
+from public.modules
+where enabled = true;
+
+-- căutare „pe vector” (ex: toate modulele vector=2 – Retoric)
+-- select * from public.modules where 2 = any(vectors);
+
+De ce așa?
+
+Câmpuri & structură: copiază fidel contractul din v3 (M01–M50, vectors 1..7, spec, output_schema, kpi, guardrails).
+
+Read‑only pentru clienți: catalog global stabil (scrie numai service role), exact ca în standard.
+
+Indici: gin pe vectors pentru filtre (ex: „toate modulele Retoric/Date”), trgm pe name pentru căutare fuzzy.
+
+Validări: pattern M01..M50, vectori în [1..7], JSON obiect pentru schema/KPI/guardrails.
+
+Seed: 3 module model (M01, M07, M33) – extinzi la M50 după fișele tale.
+
+
+
+
+
+
+domain_configs cap‑coadă (DDL + RLS + indici + seed pentru domeniile canonice + utilitare), aliniat 1:1 la blueprintul PROMPTFORGE™ v3 (profiluri industry: jargon[], KPI, compliance, ton/stil, risc).
+
+1) DDL (Postgres/Supabase)
+-- 0) ENUM pentru nivel de risc (aliniat v3: low|medium|high)
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'risk_level_t') then
+    create type risk_level_t as enum ('low','medium','high');
+  end if;
+end $$;
+
+-- 1) Tabelul DOMAIN_CONFIGS
+create table if not exists public.domain_configs (
+  id               uuid primary key default gen_random_uuid(),
+  industry         text not null,                                  -- ex: 'FinTech','Education','SaaS'
+  jargon           jsonb not null default '[]'::jsonb,             -- ["KYC","AML",...]
+  kpis             jsonb not null default '[]'::jsonb,             -- ["fraud_rate","KYC_time",...]
+  compliance_notes text,
+  risk_level       risk_level_t not null default 'medium',
+  style_bias       text,                                           -- ex: "analytical, layered, formal"
+  default_output   text,                                           -- ex: "spec","playbook" (opțional, util v3)
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+
+  -- igienă
+  constraint uq_domain_configs_industry unique (industry),
+  constraint ck_jargon_array check (jsonb_typeof(jargon) = 'array'),
+  constraint ck_kpis_array   check (jsonb_typeof(kpis)   = 'array')
+);
+
+-- trigger updated_at
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists domain_configs_set_updated_at on public.domain_configs;
+create trigger domain_configs_set_updated_at
+before update on public.domain_configs
+for each row execute procedure public.trg_set_updated_at();
+
+-- 2) indici practici
+create index if not exists dc_industry_idx on public.domain_configs (industry);
+create index if not exists dc_risk_idx     on public.domain_configs (risk_level);
+create index if not exists dc_style_idx    on public.domain_configs using gin (to_tsvector('simple', style_bias));
+
+
+Câmpurile corespund contractului v3: industry, jargon[], kpis[], compliance_notes, risk_level, style_bias (+ default_output util pentru preseturi pe domeniu).
+
+2) RLS (read‑only pentru clienți; write doar service role)
+alter table public.domain_configs enable row level security;
+
+-- SELECT: permis tuturor (sau doar userilor autentificați, după preferință)
+create policy dc_read_all on public.domain_configs
+for select using (true);
+
+-- INSERT/UPDATE/DELETE: doar service role (backend); clienții nu modifică
+create policy dc_no_client_writes on public.domain_configs
+for all using (false) with check (false);
+
+3) Seed (snapshots pentru domeniile canonice)
+
+Mai jos ai seed‑uri pentru câteva CORE din v3. Poți continua cu restul folosind același tipar (vezi nomenclatorul complet „CORE 25”).
+
+-- SaaS
+insert into public.domain_configs(industry, jargon, kpis, compliance_notes, risk_level, style_bias, default_output)
+values (
+  'SaaS',
+  '["ARR","MRR","CAC","LTV","churn","multi-tenant","API-first","uptime SLA"]'::jsonb,
+  '["MRR_growth","churn_rate","net_retention","activation_rate","time_to_value","NPS"]'::jsonb,
+  'GDPR, SOC2, ISO 27001; data residency EU/US',
+  'medium',
+  'analytical, metrics-driven, clear',
+  'spec'
+) on conflict (industry) do nothing;
+
+-- FinTech
+insert into public.domain_configs(industry, jargon, kpis, compliance_notes, risk_level, style_bias, default_output)
+values (
+  'FinTech',
+  '["KYC","AML","PSD2","open banking","fraud detection","tokenization","risk scoring","compliance stack"]'::jsonb,
+  '["fraud_rate","KYC_completion_time","approval_rate","transaction_success_rate","compliance_incidents","CAC"]'::jsonb,
+  'SEC/FCA sensitive; GDPR; PCI DSS; fără claims neverificate',
+  'high',
+  'analytical, layered, formal (audit-like)',
+  'spec'
+) on conflict (industry) do nothing;
+
+-- E‑Commerce
+insert into public.domain_configs(industry, jargon, kpis, compliance_notes, risk_level, style_bias, default_output)
+values (
+  'E-Commerce',
+  '["conversion rate","AOV","ROAS","checkout funnel","cart abandonment","SKU","RFM"]'::jsonb,
+  '["conversion_rate","AOV","LTV","ROAS","return_rate","repeat_purchase_rate"]'::jsonb,
+  'GDPR; PSD2 SCA; Consumer Protection',
+  'medium',
+  'operational, test‑driven, crisp CTAs',
+  'playbook'
+) on conflict (industry) do nothing;
+
+-- Education
+insert into public.domain_configs(industry, jargon, kpis, compliance_notes, risk_level, style_bias, default_output)
+values (
+  'Education',
+  '["LMS","cohort-based","microlearning","rubric","asynchronous/synchronous"]'::jsonb,
+  '["engagement_rate","completion_rate","knowledge_retention","dropout_rate"]'::jsonb,
+  'FERPA/GDPR; accessibility (WCAG/ADA); anti‑plagiarism',
+  'medium',
+  'supportive, rubric-driven, narrative',
+  'playbook'
+) on conflict (industry) do nothing;
+
+-- Healthcare
+insert into public.domain_configs(industry, jargon, kpis, compliance_notes, risk_level, style_bias, default_output)
+values (
+  'Healthcare',
+  '["EMR","EHR","HIPAA","HL7","clinical trial","ICD-10"]'::jsonb,
+  '["patient_outcome_improvement","readmission_rate","treatment_adherence","time_to_diagnosis"]'::jsonb,
+  'HIPAA (US), GDPR (EU), FDA/EMA; evidențe clinice',
+  'high',
+  'formal, ethical, evidence‑based',
+  'spec'
+) on conflict (industry) do nothing;
+
+-- Legal
+insert into public.domain_configs(industry, jargon, kpis, compliance_notes, risk_level, style_bias, default_output)
+values (
+  'Legal',
+  '["case law","precedent","due diligence","M&A","arbitration","compliance framework"]'::jsonb,
+  '["contract_review_time","compliance_incident_rate","case_win_rate","client_retention_rate"]'::jsonb,
+  'GDPR/SOX/AML; Bar rules; fără legal advice fără disclaimer',
+  'high',
+  'precise, conservative, auditable',
+  'spec'
+) on conflict (industry) do nothing;
+
+
+Valorile sunt conforme cu „CORE 25” și notele de conformitate/ton din v3. Dacă vrei seed pentru toate 25 domenii, clonezi și ajustezi conform listei (AI/ML, Cybersecurity, Logistics, Travel, Gaming, Fashion, Beauty, Spiritual, Architecture, Agriculture etc.).
+
+4) Utilitare (lookup & fallback 7D)
+4.1. Vedere pentru lookup rapid (folosită de Engine 7D)
+create or replace view public.v_domain_preset as
+select
+  industry,
+  jargon,
+  kpis,
+  compliance_notes,
+  risk_level,
+  style_bias,
+  coalesce(default_output,'spec') as default_output
+from public.domain_configs;
+
+4.2. Funcție ajutătoare: dă presetul pentru un industry (sau eroare)
+create or replace function public.domain_preset(p_industry text)
+returns jsonb language sql stable as $$
+  with d as (
+    select industry, jargon, kpis, compliance_notes, risk_level, style_bias,
+           coalesce(default_output,'spec') as default_output
+    from public.domain_configs
+    where lower(industry) = lower(p_industry)
+  )
+  select case
+           when exists(select 1 from d)
+             then jsonb_build_object(
+                    'industry', (select industry from d),
+                    'jargon',   (select jargon from d),
+                    'kpis',     (select kpis from d),
+                    'compliance_notes', (select compliance_notes from d),
+                    'risk_level', (select risk_level::text from d),
+                    'style_bias', (select style_bias from d),
+                    'default_output', (select default_output from d)
+                  )
+           else jsonb_build_object('error','UNKNOWN_INDUSTRY')
+         end;
+$$;
+
+5) Integrare cu Engine 7D / Parameter Sets
+
+domain_configs este sursa pentru defaults de ton/KPI/guardrails pe domeniu și default_output (spec/playbook…), așa cum prevede v3.
+
+În pipeline, când engine7d.domain = 'FinTech', atașezi din domain_configs: jargon, kpis, compliance, style_bias și default_output (dacă utilizatorul nu a ales explicit) — exact modelul v3 „domain‑aware prompts”.
+
+Concluzie
+
+domain_configs devine registrul tău canonic pentru industrie: jargon[], kpi[], compliance, risk, style, default_output — tot ce are nevoie Engine 7D și Prompt Standard ca să adapteze promptul la industria selectată.
+
+RLS read‑only, seed „CORE”, utilitare de lookup — gata de folosit în API‑ul /run și în generatorul de prompturi.
+
+
+
+
+
+
+
+parameter_sets cap‑coadă (DDL + ENUM‑uri 7D + RLS + indici + utilitare de normalizare & semnătură 7D + seed) aliniat 1:1 la Engine‑ul 7D din PROMPTFORGE™ v3.
+
+1) ENUM‑uri 7D (canon v3)
+-- Domain rămâne text (mapat la domain_configs.industry); restul folosesc ENUM standardizate.
+do $$ begin
+  if not exists (select 1 from pg_type where typname='scale_t') then
+    create type scale_t as enum ('personal_brand','solo','startup','boutique_agency','smb','corporate','enterprise');
+  end if;
+  if not exists (select 1 from pg_type where typname='urgency_t') then
+    create type urgency_t as enum ('low','planned','sprint','pilot','crisis');
+  end if;
+  if not exists (select 1 from pg_type where typname='complexity_t') then
+    create type complexity_t as enum ('foundational','standard','advanced','expert');
+  end if;
+  if not exists (select 1 from pg_type where typname='resources_t') then
+    create type resources_t as enum ('minimal','solo','lean_team','agency_stack','full_stack_org','enterprise_budget');
+  end if;
+  if not exists (select 1 from pg_type where typname='application_t') then
+    create type application_t as enum ('training','audit','implementation','strategy_design','crisis_response','experimentation','documentation');
+  end if;
+  if not exists (select 1 from pg_type where typname='output_t') then
+    create type output_t as enum ('txt','md','checklist','spec','playbook','json','yaml','diagram','bundle');
+  end if;
+end $$;
+
+
+Valorile și nomenclatorul sunt cele canonice din v3 pentru 7D.
+
+2) Tabelul parameter_sets (Engine 7D)
+create table if not exists public.parameter_sets (
+  id            uuid primary key default gen_random_uuid(),
+
+  -- 7D:
+  domain        text not null,                 -- mapat la domain_configs.industry
+  scale         scale_t not null,
+  urgency       urgency_t not null,
+  complexity    complexity_t not null,
+  resources     resources_t not null,
+  application   application_t not null,
+  output_formats output_t[] not null,          -- set de livrabile preferate
+
+  overrides     jsonb,                         -- valori suprascrise, dacă există
+  created_at    timestamptz not null default now(),
+
+  -- igienă
+  constraint ck_output_formats_nonempty check (array_length(output_formats,1) >= 1),
+  constraint ck_overrides_obj check (overrides is null or jsonb_typeof(overrides)='object')
+);
+
+-- indici
+create index if not exists ps_domain_idx   on public.parameter_sets (lower(domain));
+create index if not exists ps_combo_idx    on public.parameter_sets (scale, urgency, complexity, resources, application);
+create index if not exists ps_outputs_gin  on public.parameter_sets using gin (output_formats);
+
+
+Structura corespunde exact tablei de „Engine 7D” din modelările v3 (domain, scale, urgency, complexity, resources, application, output).
+
+3) RLS (read‑only pentru clienți; scriere doar din backend)
+alter table public.parameter_sets enable row level security;
+
+-- SELECT: permis tuturor (sau doar userilor autentificați – după preferință)
+create policy ps_read_all on public.parameter_sets
+for select using (true);
+
+-- INSERT/UPDATE/DELETE: rezervat service role (backend)
+create policy ps_no_client_writes on public.parameter_sets
+for all using (false) with check (false);
+
+4) Utilitare: normalizare după defaults de domeniu + semnătură 7D
+
+v3 cere normalizare 7D (completezi lipsurile din domain_configs) și semnătură deterministă sha256(domain|scale|urgency|complexity|resources|application|output_format) pentru chaining.
+
+-- 4.1 hash utilitar (semnătură 7D)
+create or replace function public.pf_signature_7d(
+  p_domain text, p_scale scale_t, p_urgency urgency_t, p_complexity complexity_t,
+  p_resources resources_t, p_application application_t, p_output output_t
+) returns text language sql immutable as $$
+  select encode(digest(
+    lower(coalesce(p_domain,'')) || '|' ||
+    coalesce(p_scale::text,'')   || '|' ||
+    coalesce(p_urgency::text,'') || '|' ||
+    coalesce(p_complexity::text,'') || '|' ||
+    coalesce(p_resources::text,'')  || '|' ||
+    coalesce(p_application::text,'')|| '|' ||
+    coalesce(p_output::text,'')
+  , 'sha256'),'hex');
+$$;
+
+-- 4.2 normalizare: completează lipsurile din domain_configs (default_output),
+-- și întoarce payload 7D final (cu signatura pe primul output)
+create or replace function public.pf_normalize_7d(
+  p_domain text,
+  p_scale scale_t default null,
+  p_urgency urgency_t default null,
+  p_complexity complexity_t default null,
+  p_resources resources_t default null,
+  p_application application_t default null,
+  p_outputs output_t[] default null
+) returns jsonb language plpgsql stable as $$
+declare
+  dc record;
+  v_scale scale_t; v_urgency urgency_t; v_complexity complexity_t;
+  v_resources resources_t; v_application application_t; v_outputs output_t[];
+  v_signature text;
+begin
+  select industry, default_output
+  into dc
+  from public.domain_configs
+  where lower(industry) = lower(p_domain);
+
+  if dc.industry is null then
+    raise exception 'UNKNOWN_DOMAIN: %', p_domain;
+  end if;
+
+  -- fallback pe defaults (poți păstra propriile tale hărți dacă vrei)
+  v_scale       := coalesce(p_scale,       'startup'::scale_t);
+  v_urgency     := coalesce(p_urgency,     'planned'::urgency_t);
+  v_complexity  := coalesce(p_complexity,  'standard'::complexity_t);
+  v_resources   := coalesce(p_resources,   'lean_team'::resources_t);
+  v_application := coalesce(p_application, 'implementation'::application_t);
+  v_outputs     := case
+                     when p_outputs is not null then p_outputs
+                     when dc.default_output is not null then array[dc.default_output::output_t]
+                     else array['spec'::output_t]
+                   end;
+
+  v_signature := public.pf_signature_7d(dc.industry, v_scale, v_urgency, v_complexity, v_resources, v_application, v_outputs[1]);
+
+  return jsonb_build_object(
+    'domain',       dc.industry,
+    'scale',        v_scale,
+    'urgency',      v_urgency,
+    'complexity',   v_complexity,
+    'resources',    v_resources,
+    'application',  v_application,
+    'output_formats', v_outputs,
+    'signature_7d', v_signature
+  );
+end $$;
+
+
+domain_configs furnizează preseturile pe industrie (inclusiv default_output), așa cum prevede v3; semnătura 7D urmează exact contractul din Rulebook v1.
+
+5) Seed (exemple de seturi predefinite)
+insert into public.parameter_sets(domain, scale, urgency, complexity, resources, application, output_formats)
+values
+  ('SaaS',      'startup','planned','advanced','lean_team','implementation',  array['spec'::output_t]),
+  ('FinTech',   'enterprise','sprint','advanced','full_stack_org','implementation', array['spec','json']),
+  ('E-Commerce','smb','sprint','standard','agency_stack','implementation', array['playbook','checklist']),
+  ('Education', 'smb','planned','standard','lean_team','training', array['playbook']);
+
+
+Exemplele respectă defaults/ton pe domeniu din v3: SaaS→spec, FinTech→spec/json, E‑Commerce→playbook/checklist, Education→playbook.
+
+6) Exemple de utilizare
+-- normalizează un input parțial (completează din domain_configs + calculează semnătura)
+select public.pf_normalize_7d('FinTech', null, 'sprint', null, null, 'implementation', null);
+
+-- creează un nou parameter_set din payload-ul normalizat
+with n as (
+  select public.pf_normalize_7d('E-Commerce', null, 'sprint', null, 'lean_team', 'implementation', null) as j
+)
+insert into public.parameter_sets(domain, scale, urgency, complexity, resources, application, output_formats, overrides)
+select
+  (j->>'domain'),
+  (j->>'scale')::scale_t,
+  (j->>'urgency')::urgency_t,
+  (j->>'complexity')::complexity_t,
+  (j->>'resources')::resources_t,
+  (j->>'application')::application_t,
+  array[(j->'output_formats')->>0]::output_t[],  -- simplu: doar primul; poți extinde
+  '{}'::jsonb
+from n;
+
+7) De ce așa?
+
+7D enums & valori: fidel framework‑ului v3 (nomenclator complet & defaults pe domeniu).
+
+Normalizare + semnătură: exact contractul din Rulebook (determinism; chain‑compat).
+
+Compat cu restul DB: parameter_sets.id este referit de runs/prompt_history în v3.
+
+
+
+
+
+
+runs cap‑coadă (DDL + ENUM‑uri + indici + RLS + trigger de durată + utilitare run_start()/run_finish()), aliniat la fluxul v3 (generation | test | agent), cu telemetrie, cost și tokeni.
+
+1) DDL (Postgres/Supabase)
+-- 0) extensii uzuale
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- 1) ENUM‑uri pentru tip & status
+do $$ begin
+  if not exists (select 1 from pg_type where typname='run_type_t') then
+    create type run_type_t as enum ('generation','test','agent');
+  end if;
+  if not exists (select 1 from pg_type where typname='run_status_t') then
+    create type run_status_t as enum ('queued','running','success','error','timeout','canceled');
+  end if;
+end $$;
+
+-- 2) Tabelul RUNS
+create table if not exists public.runs (
+  id               uuid primary key default gen_random_uuid(),
+  org_id           uuid not null references public.orgs(id) on delete cascade,
+  module_id        text not null references public.modules(module_id),
+  parameter_set_id uuid not null references public.parameter_sets(id),
+
+  type             run_type_t   not null,         -- generation|test|agent
+  status           run_status_t not null,         -- queued|running|success|...
+  model            text not null,                 -- ex. 'gpt-4o-mini', 'gpt-4.1'
+  tokens_used      integer not null default 0 check (tokens_used >= 0),
+  cost_usd         numeric(12,4) not null default 0.0000 check (cost_usd >= 0),
+  duration_ms      integer not null default 0 check (duration_ms >= 0),
+  telemetry        jsonb not null default '{}'::jsonb,  -- {policy_hits, scores, notes, ...}
+
+  -- câmpuri operaționale recomandate (auto‑populate)
+  started_at       timestamptz not null default now(),
+  finished_at      timestamptz,
+
+  -- igienă
+  created_by       uuid references auth.users(id),
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+
+  constraint ck_telemetry_object check (jsonb_typeof(telemetry) = 'object')
+);
+
+-- 3) trigger updated_at + trigger care calculează duration_ms
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists runs_set_updated_at on public.runs;
+create trigger runs_set_updated_at
+before update on public.runs
+for each row execute procedure public.trg_set_updated_at();
+
+create or replace function public.trg_runs_duration()
+returns trigger language plpgsql as $$
+begin
+  -- dacă setăm finished_at pentru prima oară, calculează durata
+  if (TG_OP='UPDATE') then
+    if new.finished_at is not null and (old.finished_at is null or new.finished_at <> old.finished_at) then
+      new.duration_ms := greatest(0, cast(extract(epoch from (new.finished_at - new.started_at)) * 1000 as int));
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists runs_duration on public.runs;
+create trigger runs_duration
+before update on public.runs
+for each row execute procedure public.trg_runs_duration();
+
+-- 4) indici practici
+create index if not exists runs_org_idx         on public.runs (org_id, started_at desc);
+create index if not exists runs_module_idx      on public.runs (module_id, started_at desc);
+create index if not exists runs_param_idx       on public.runs (parameter_set_id);
+create index if not exists runs_status_idx      on public.runs (status);
+create index if not exists runs_type_idx        on public.runs (type);
+create index if not exists runs_model_idx       on public.runs (model);
+create index if not exists runs_finished_idx    on public.runs (finished_at);
+-- interogări pe telemetry (jsonb_path_ops e utilizabil dacă ai multe chei)
+create index if not exists runs_telemetry_gin   on public.runs using gin (telemetry jsonb_path_ops);
+
+2) RLS (multi‑tenant, by membership)
+alter table public.runs enable row level security;
+
+-- SELECT: orice membru al organizației vede run‑urile org‑ului
+create policy runs_select_by_membership on public.runs
+for select using (
+  exists (select 1 from public.org_members m
+          where m.org_id = runs.org_id and m.user_id = auth.uid())
+);
+
+-- INSERT: orice membru poate lansa un run (sau restrânge la owner/admin)
+create policy runs_insert_by_member on public.runs
+for insert with check (
+  exists (select 1 from public.org_members m
+          where m.org_id = runs.org_id and m.user_id = auth.uid())
+);
+
+-- UPDATE/DELETE: doar owner/admin sau service role
+create policy runs_update_by_admin on public.runs
+for update using (
+  exists (select 1 from public.org_members m
+          where m.org_id = runs.org_id and m.user_id = auth.uid()
+            and m.role in ('owner','admin'))
+);
+
+create policy runs_delete_by_admin on public.runs
+for delete using (
+  exists (select 1 from public.org_members m
+          where m.org_id = runs.org_id and m.user_id = auth.uid()
+            and m.role in ('owner','admin'))
+);
+
+
+În practică, scrierile critice (setare finished_at, agregare cost/tokeni) le face backend‑ul (service role), iar clientul doar creează run‑ul.
+
+3) Utilitare: run_start() / run_finish()
+-- pornește un run (status=queued → running)
+create or replace function public.run_start(
+  p_org uuid, p_module text, p_param uuid, p_type run_type_t, p_model text, p_created_by uuid default null
+) returns uuid
+language plpgsql security definer as $$
+declare
+  v_id uuid;
+begin
+  insert into public.runs (org_id, module_id, parameter_set_id, type, status, model, created_by)
+  values (p_org, p_module, p_param, p_type, 'running', p_model, p_created_by)
+  returning id into v_id;
+  return v_id;
+end $$;
+
+-- finalizează un run (completează tokens/cost, status & finished_at; concat telemetry)
+create or replace function public.run_finish(
+  p_run uuid,
+  p_status run_status_t,
+  p_tokens int default 0,
+  p_cost numeric(12,4) default 0,
+  p_telemetry jsonb default '{}'::jsonb
+) returns void
+language plpgsql security definer as $$
+begin
+  update public.runs
+     set status      = p_status,
+         tokens_used = greatest(0, coalesce(tokens_used,0) + coalesce(p_tokens,0)),
+         cost_usd    = greatest(0, coalesce(cost_usd,0) + coalesce(p_cost,0)),
+         telemetry   = coalesce(telemetry,'{}'::jsonb) || coalesce(p_telemetry,'{}'::jsonb),
+         finished_at = now()
+   where id = p_run;
+end $$;
+
+4) Exemple
+-- 1) pornește un run de generation
+select public.run_start(:org_id, 'M07', :param_id, 'generation', 'gpt-4o', auth.uid()) as run_id;
+
+-- 2) actualizează pe final (ex: success, 2.31$ și 12.5k tokeni)
+select public.run_finish(:run_id, 'success', 12500, 2.31, '{"scores":{"clarity":88,"execution":83}}');
+
+-- 3) listare ultimele run‑uri dintr‑o org
+select id, module_id, type, status, model, tokens_used, cost_usd, duration_ms, started_at, finished_at
+from public.runs
+where org_id = :org_id
+order by started_at desc
+limit 50;
+
+5) Note & bune practici
+
+Durata: se calculează automat din started_at/finished_at prin trigger (în ms).
+
+Telemetrie: păstreaz‑o concisă (scoruri, policy_hits, retry_count, motive de fail).
+
+Cost/Tokeni: agregă incremental în run_finish (uneori ai mai multe apeluri model/agent).
+
+Indexare: interogările principale se fac pe (org_id, started_at desc) și filtre pe module_id, status, type.
+
+Integritate: module_id și parameter_set_id sunt obligatorii pentru audit și reproducibilitate.
+
+
+
+
+
+prompt_scores cap‑coadă (DDL + RLS + indici + coloană generată pentru scor total + verdict conform pragurilor + utilitar de upsert din payloadul evaluatorului), aliniat 1:1 la schema canonică v3 în care prompt_scores referă 1‑la‑1 runs(id) și conține (clarity, execution, ambiguity, alignment, business_fit, feedback)【】.
+
+1) DDL (Postgres/Supabase)
+-- extensii
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- enum pentru verdict (opțional, dar util în rapoarte)
+do $$ begin
+  if not exists (select 1 from pg_type where typname='score_verdict_t') then
+    create type score_verdict_t as enum ('pass','partial_pass','fail');
+  end if;
+end $$;
+
+-- tabelul PROMPT_SCORES
+create table if not exists public.prompt_scores (
+  run_id        uuid primary key
+                references public.runs(id) on delete cascade,
+
+  -- scoruri 0..100; NOTĂ: la "ambiguity" scor mai mic = mai bine
+  clarity       smallint not null check (clarity between 0 and 100),
+  execution     smallint not null check (execution between 0 and 100),
+  ambiguity     smallint not null check (ambiguity between 0 and 100),
+  alignment     smallint not null check (alignment between 0 and 100),
+  business_fit  smallint not null check (business_fit between 0 and 100),
+
+  -- feedback structurat (evidence, incidents, notes, rubric breakdown)
+  feedback      jsonb not null default '{}'::jsonb
+                check (jsonb_typeof(feedback) = 'object'),
+
+  -- praguri implicite (pot fi suprascrise la nevoie)
+  threshold_clarity_min      smallint not null default 80,
+  threshold_execution_min    smallint not null default 80,
+  threshold_ambiguity_max    smallint not null default 20,
+  threshold_alignment_min    smallint not null default 75,
+  threshold_business_fit_min smallint not null default 75,
+
+  -- scor compozit generat (ponderi default: 0.30, 0.35, 0.10, 0.25)
+  -- Ambiguity se inversează: (100 - ambiguity)
+  total smallint generated always as (
+    round(
+      0.30*clarity
+    + 0.35*execution
+    + 0.10*(100 - ambiguity)
+    + 0.25*((alignment + business_fit)/2.0)
+    )::smallint
+  ) stored,
+
+  -- verdict generat pe baza pragurilor + total
+  verdict score_verdict_t generated always as (
+    case
+      when clarity  >= threshold_clarity_min
+       and execution>= threshold_execution_min
+       and ambiguity<= threshold_ambiguity_max
+       and alignment>= threshold_alignment_min
+       and business_fit>= threshold_business_fit_min
+      then 'pass'::score_verdict_t
+      when (
+             (clarity  >= threshold_clarity_min)::int
+           + (execution>= threshold_execution_min)::int
+           + (ambiguity<= threshold_ambiguity_max)::int
+           + (alignment>= threshold_alignment_min)::int
+           + (business_fit>= threshold_business_fit_min)::int
+           ) >= 4
+           and (total >= 80)
+      then 'partial_pass'::score_verdict_t
+      else 'fail'::score_verdict_t
+    end
+  ) stored,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  constraint ck_weights_praguri_sens makesense
+    check (threshold_clarity_min between 0 and 100
+       and threshold_execution_min between 0 and 100
+       and threshold_ambiguity_max between 0 and 100
+       and threshold_alignment_min between 0 and 100
+       and threshold_business_fit_min between 0 and 100)
+);
+
+-- trigger updated_at
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists prompt_scores_set_updated_at on public.prompt_scores;
+create trigger prompt_scores_set_updated_at
+before update on public.prompt_scores
+for each row execute procedure public.trg_set_updated_at();
+
+Indici utili
+create index if not exists ps_total_idx    on public.prompt_scores (total desc);
+create index if not exists ps_verdict_idx  on public.prompt_scores (verdict);
+-- acces rapid la scoruri din raportări cross-org:
+create index if not exists ps_run_fk_idx   on public.prompt_scores (run_id);
+
+2) RLS (multi‑tenant, prin apartenența la runs.org_id)
+alter table public.prompt_scores enable row level security;
+
+-- SELECT: orice membru al organizației run-ului poate vedea scorul
+create policy ps_select_by_membership on public.prompt_scores
+for select using (
+  exists (
+    select 1
+    from public.runs r
+    join public.org_members m on m.org_id = r.org_id
+    where r.id = prompt_scores.run_id
+      and m.user_id = auth.uid()
+  )
+);
+
+-- INSERT/UPDATE: de regulă făcut de backend (service role) după evaluare
+create policy ps_no_client_writes on public.prompt_scores
+for all using (false) with check (false);
+
+
+Astfel, scorurile sunt vizibile doar membrilor org‑ului care a rulat run_id, exact ca în restul modelului multi‑tenant.
+
+3) Utilitar de upsert din payloadul Evaluatorului AI
+
+Primește un JSON cu scoruri și feedback; salvează/actualizează rândul.
+
+create or replace function public.prompt_scores_upsert(
+  p_run_id   uuid,
+  p_payload  jsonb   -- ex: {"clarity":88,"execution":83,"ambiguity":12,"alignment":79,"business_fit":82,"feedback":{...}}
+) returns void
+language plpgsql security definer as $$
+declare
+  c smallint := coalesce((p_payload->>'clarity')::smallint,       0);
+  e smallint := coalesce((p_payload->>'execution')::smallint,     0);
+  a smallint := coalesce((p_payload->>'ambiguity')::smallint,     0);
+  l smallint := coalesce((p_payload->>'alignment')::smallint,     0);
+  b smallint := coalesce((p_payload->>'business_fit')::smallint,  0);
+  f jsonb    := coalesce((p_payload->'feedback'),'{}'::jsonb);
+begin
+  if not exists (select 1 from public.runs where id = p_run_id) then
+    raise exception 'RUN_NOT_FOUND %', p_run_id;
+  end if;
+
+  insert into public.prompt_scores(run_id, clarity, execution, ambiguity, alignment, business_fit, feedback)
+  values (p_run_id, c, e, a, l, b, f)
+  on conflict (run_id)
+  do update set clarity=c, execution=e, ambiguity=a, alignment=l, business_fit=b, feedback=f, updated_at=now();
+end $$;
+
+4) Exemple de folosire
+-- A) upsert din payload Evaluator
+select public.prompt_scores_upsert(
+  :run_id,
+  '{
+     "clarity": 88,
+     "execution": 83,
+     "ambiguity": 12,
+     "alignment": 79,
+     "business_fit": 82,
+     "feedback": {
+       "notes": "Structură clară; adaugă KPI SaaS în secțiunea Business Fit",
+       "incidents": [],
+       "breakdown": {
+         "clarity": {"7D_match":9,"brief_coverage":9,"style":4},
+         "execution": {"coverage":12,"format":5,"guardrails":4},
+         "ambiguity": {"free_questions":1,"hedging_hits":0},
+         "alignment": {"domain_tone":8,"7D_consistency":7},
+         "business_fit": {"outcome":8,"actionability":8,"proof":6}
+       }
+     }
+   }'::jsonb
+);
+
+-- B) interogare scoruri + verdict pentru ultimele 100 rulari din org
+select s.run_id, s.total, s.verdict, s.clarity, s.execution, s.ambiguity, s.alignment, s.business_fit
+from public.prompt_scores s
+join public.runs r on r.id = s.run_id
+where r.org_id = :org_id
+order by r.started_at desc
+limit 100;
+
+-- C) filtru pentru rulari sub prag (de optimizat)
+select s.run_id, s.total, s.verdict
+from public.prompt_scores s
+where s.verdict <> 'pass'
+order by s.total asc;
+
+5) Notă despre praguri & ponderi
+
+Ponderile și pragurile din coloanele generate sunt raționale pentru pipeline‑ul v3:
+
+Claritate (0.30), Execuție (0.35), Ambiguitate inversată (0.10), Media Alignment & Business Fit (0.25).
+
+Gate standard: pass dacă toate pragurile sunt atinse; partial_pass dacă ≥4/5 praguri + total ≥ 80; altfel fail.
+
+Dacă vrei să mapezi exact rubricile/ponderile din evaluatorul tău, poți:
+
+păstra total/verdict „generated” dar schimba formula, sau
+
+elimina coloanele generate și muta logica 100% în aplicație, păstrând aici doar scorurile brute + feedback.
+
+De ce așa?
+
+Respectă contractul canonic: 1‑la‑1 cu runs + 5 scoruri + feedback JSON, exact cum e listat în schema v3【】.
+
+Oferă consistență de raportare (coloană total & verdict) fără a impune logica în client.
+
+RLS leagă vizibilitatea scorurilor de apartenența la organizația run‑ului (izolare multi‑tenant).
+
+
+
+

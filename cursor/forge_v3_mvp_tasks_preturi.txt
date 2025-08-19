@@ -1,0 +1,1561 @@
+
+
+0) Criteriile care decid „rapid și bănos” (măsoară în ore/zile, nu în impresii)
+
+Timp‑la‑cash (TTC) — zile până intră banii în cont (pre‑plată/avans obligatoriu).
+
+Mărimea tranzacției (ARPC/ACV) — € pe vânzare / pe an.
+
+Fricțiune de vânzare — nr. de pași, stakeholderi, aprobare legală.
+
+Capacitate consumată — ore reale de livrare / client (rulează la 80% utilizare).
+
+Marjă brută — % după comisioane, tooluri, fulfilment.
+
+Predictibilitate & compunere — MRR/ARR vs. one‑off; rată de retenție potențială.
+
+Putere de preț (pricing power) — spațiu de ancorare/decoy/bundle (M13 „Pricing Psychology”). 
+
+Sinergie de pipeline — cât de bine alimentează celelalte linii (SaaS ⇄ Licențe ⇄ Consulting).
+
+Risc & garanții — liability + posibilitatea de „Risk & Trust Reversal” (M07). 
+
+Timp de implementare tehnică — ce ai deja vs. ce trebuie construit (GPT live, export bundle, cloud history). 
+ 
+
+1) Scorecard rapid (1–5) — pe criteriile de mai sus
+Strategie	TTC	ARPC/ACV	Fricțiune	Capacitate	Marjă	Predict.	Power	Sinergie	Risc
+High‑Ticket Consulting (€2.5k–€10k)	5	5	3	2	3	3	4	4	4
+Licență pe Industrie (€1,990/an/org)	4	4	3	4	5	4	4	5	4
+Curs (Retoric Engineering) (€390–€990)	4	4	2	3	4	3	3	4	4
+SaaS Tiers (0/19/49/299 €/lună)	2	2–3	5	5	5	5	3	5	5
+Prompt Marketplace (€29–€79/pachet)	3	2	2	5	5	3	3	4	5
+
+Interpretare tăioasă: pentru cash în 30 zile, Consulting câștigă (TTC+ACV), urmat de Licență pe Industrie; Cursul e accelerant; SaaS și Marketplace sunt compunere pe termen 60–180 zile, nu injecție imediată.
+
+2) „20K în 30 de zile” — calcule minime, fără ipoteze ascunse
+
+Consulting: 2×€10k sau 4×€5k sau 8×€2.5k → ≥ €20k.
+
+Licență pe Industrie: 10–11 org × €1,990/an → €19,900–€21,890.
+
+Curs: 21×€990 = €20,790 sau 52×€390 = €20,280.
+
+SaaS lunar (curent): 400 × €49 = €19,600 (greu în 30 zile).
+
+SaaS anual (adauga acum): „Pro Annual” €490 → 41 clienți = €20,090 (ancorează cu „Enterprise Annual”).
+
+Marketplace: ~300 pachete × €69 = €20,700 (cere audiență caldă + validare socială).
+
+3) Verdict — „cea mai rapidă, bănoasă”: pachetul Barbell de Cash
+
+→ „Consulting High‑Ticket + Licență pe Industrie (Fastpack 30d)”
+Motiv: combină ACV mare + proces de vânzare scurt + livrare controlată; licența îți scalează IP‑ul PROMPTFORGE fără să‑ți mănânce orele (artefacte exportabile din motorul existent, M01–M50). 
+
+Structură pachet (propusă):
+
+„AI‑OS Launch (Fast)” – €10k: 10 module MXX + training + „Risk & Trust Reversal” (garanții cuantificate, M07). 
+
+„PROMPTFORGE for [Industry] – €1,990/an/org”: 12 module preset + 1 săpt. onboarding + acces Pro 60 zile + Export Bundle (.md/.json/.pdf). 
+
+Upsell simultan: „Pro Annual” €490 + „Creator Annual” €190 (decoy pentru ancorare, M13). 
+
+Psihologic: ancorare + decoy + bundle. Social: logo‑uri noi rapid. Comercial: cash upfront + recurență anuală.
+
+4) Ajustează prețul ca arhitect, nu ca vânzător (execută M13)
+
+Arhitectură de preț imediată (Stripe):
+
+Enterprise (monthly): €299/seat → păstrează ca ancoră; deschide Enterprise Annual: €2,990/10 seats (echivalent €24.9/seat/lună).
+
+Pro Annual: €490 (2 luni cadou).
+
+Creator Annual: €190 (decoy).
+
+Founders Pack (limită 100): Pro Annual + 1 Prompt Pack + 1 workshop live → €590 (valoare percepută ↑).
+Implementează prin Stripe Price API + feature flags, exact cum ai schițat (plan gates, export gating). 
+
+5) Plan de execuție 14 zile — „Cash Sprint”
+
+Ziua 1–2 — Productizare IP existent (nu construi nou):
+
+Extrage 3 oferte gata de vândut din module: M23, M22, M50 → pachete cu livrabile clare + KPI. 
+
+Activează Export Bundle (md/json/pdf) ca artefact comercial în PROMPTFORGE (ai deja specificația; implementezi endpoint + buton). 
+
+Ziua 3–5 — Dealflow cald:
+
+15 conturi‑țintă/industrie → ofertă Licență €1,990 + 1 săpt. setup.
+
+10 discuții consultative → închide 2×€10k cu „Risk & Trust Reversal” (garanții, milestones). 
+
+Ziua 6–8 — Pre‑sell curs (cohortă T‑21):
+
+3 webinare „Engineering Prompt‑Based Thinking™” → obiectiv 21 locuri × €990. (Acces Pro 60 zile inclus, cum ai definit). 
+
+Ziua 9–11 — SaaS Annual Cash‑up:
+
+Lansare Pro Annual €490 + „Founders Pack €590” (landing + Stripe).
+
+M13: decoy, anchoring, bundle (teste A/B mici, M32). 
+
+Ziua 12–14 — Marketplace pilot:
+
+3 Prompt Packs premium (ex: „Funnel Genesis”, „AI Agency Ops”, „Creator School”) → începe cu 100–150 vânzări/pachet. (Țintă €20k total atins deja din Consulting/Licențe/Curs).
+
+Telemetrie & feedback: loghează cost/run, time‑to‑artifact, quality_score (M31). 
+
+6) Guardrails operaționale (evită capcanele)
+
+Nu promite output „magie”; vinde „bundle artefacte + SOP” — poziționare deja ancorată în v3.0. 
+
+Apasă pe „Parameter Engine 7D” la vânzare (domeniu, scală, urgență, complexitate, resurse, aplicație, format) — diferențiator clar, vizibil în contractele/artefactele livrate. 
+
+Conectează GPT live + export bundle înainte de campania mare (minimul necesar pentru percepție enterprise). 
+
+7) Mini‑matrice decizie (execută fără ezitare)
+
+Țintă: în 30 zile vrei cash maxim? → Consulting + Licențe.
+
+Țintă: MRR solid în 90 zile? → SaaS Annual + Marketplace.
+
+Țintă: Autoritate & dealflow enterprise? → Curs + studii de caz din M01–M50. 
+
+8) Mesajul tău de preț (retorică de vânzare)
+
+„Nu îți vând prompturi. Îți licențiez fabrici de decizie — parametrizate pe industrie, maturitate și presiune operațională, livrate ca bundle exportabil, versionat și evaluat.” 
+
+Verdict: Închide 2×€10k + 5–7 licențe €1,990, în paralel pre‑vinde 21 locuri × €990; lansează Pro Annual €490 ca backfill. Asta e lama care taie.
+
+
+
+
+
+
+
+
+
+0) Principiu de monetizare
+
+Ancorează prețul în artefacte livrabile și capabilități de orchestrare, nu în „prompturi”. Vinde decizii parametrizate (7D), bundle exportabile și execuție prin agenți GPT. Ai deja schela: 50 module reale, 7 vectori, Editor GPT, Test Engine, exporturi și istoric — totul gata de produsizare. 
+ 
+
+1) SaaS – Ladder de preț + diferențiere (EUR; anual cu 2 luni gratuite)
+
+Păstrează ancorele din MVP și adaugă opțiuni de volum + add‑ons.
+Planurile și capabilitățile sunt deja definite: Free (3 module + .txt), Creator (toate modulele + istoric local + .md), Pro (export .pdf/.json + GPT test real + cloud history), Enterprise (white‑label + API + seat‑uri + export .bundle.zip). Optimizează doar ambalajul și upsell‑ul. 
+ 
+
+Propune astfel (lună / an):
+
+Free — 0 € / 0 €
+3 module (M01, M10, M18), .txt only; „taste & trust” funnel spre Creator. 
+
+Creator — 19 €/lună / 190 €/an
+Toate cele 50 module + export .md + istoric local; fără cloud sync. 
+
+Pro — 49 €/lună / 490 €/an
+Export .pdf/.json, GPT Test Engine real, Cloud history + re‑runs, Evaluator AI. 
+ 
+
+Enterprise (base 5 seats) — 299 €/lună / 2.990 €/an
+White‑label UI, custom logo, API, team seats, export .bundle.zip; +59 €/seat/lună peste 5. 
+
+Add‑ons recurente (Pro/Enterprise):
+
+Prompt Evaluator AI (+5 €/lună user) — scor live & „optimizează pt. Enterprise/Crisis” (feature deja propus în roadmap). 
+
+Export Designer (+5 €/lună user) — bundle templates (.md/.json/.pdf), checksum & versionare. 
+
+Politici comerciale:
+
+Trial Pro 7 zile (fără card) → conversie directă pe Pro.
+
+Annual n‑2 (două luni gratuite) pentru ARPU↑ și cash‑flow.
+
+Founder Annual (limită 100): -30% pe Pro (ancoră socială, validare timpurie).
+
+Metă‑strategie: Pro devine „planul de adevăr”. Enterprise este „decoy de prestigiu” + upsell atunci când apare nevoia de API/white‑label/seats. Creator protejează Pro de down‑sell.
+
+2) Entitlements → „ce cumperi” (plan → capabilitate)
+
+Mapează la feature flags explicite în FE/BE (Stripe + Supabase):
+
+canUseAllModules (Creator+), canExportMD (Creator+), canExportPDF (Pro+), canExportJSON (Pro+),
+canUseGptTestReal (Pro+), hasCloudHistory (Pro+), hasEvaluatorAI (Pro+),
+hasAPI, hasWhiteLabel, hasSeats>1, canExportBundleZip (Enterprise).
+Aceste capabilități reflectă exact diferențele deja listate în doc. 
+
+3) Stack Implementation (Stripe + Supabase + Feature Flags)
+
+Stripe (Products/Prices):
+
+Product: PROMPTFORGE_SUBSCRIPTION cu 4 price IDs (Free 0€, Creator Monthly/Annual, Pro M/A, Enterprise M/A).
+
+Add‑ons: PROMPT_EVALUATOR, EXPORT_DESIGNER; seat price pentru Enterprise.
+
+Stripe Customer Portal: upgrade/downgrade, proration, facturi. (logică de testare preț/decoy = Stripe Price API). 
+
+Supabase (Auth + DB + RLS):
+
+Tabele cheie din roadmap-ul tău 7D (pentru artefacte & licențe):
+
+ParameterSet(id, domain, scale, urgency, complexity, resources, application, output_formats[])
+
+Run(id, moduleId, userId, parameterSetId, startedAt, finishedAt, costUsd, score, status)
+
+DomainConfig(id, industry, jargon[], kpis[], compliance_notes, style_bias, risk_level)
+
+Bundle(id, runId, paths[], checksum, exportedAt, formats[])
+
+Version(id, moduleId, semver, changelog, createdAt)
+
+Eval(id, runId, rubric, ai_score, human_score, deltas)
+(exact cum ai trasat în planul „Parameter Engine 7D + persistenta”). 
+
+Entitlements:
+
+organizations(id, name, plan, seats_total, seats_used)
+
+org_members(user_id, org_id, role)
+
+entitlements(org_id, flags jsonb, expires_at)
+
+Feature gates în FE/BE: flags.canExportPDF || plan in ('pro','enterprise'), etc.
+
+RLS strict pe org_id.
+
+API contract (public):
+
+POST /api/run/{moduleId} → livrează bundle (.md/.json/.pdf) + telemetrie; rate‑limit + API key (Enterprise). 
+
+Pipeline de export & versionare:
+
+„1 prompt = 1 bundle” (md+json+pdf) + checksum + version — deja prevăzut. 
+
+4) Industry Licensing — Pre‑bundled Packs (B2B)
+
+Pachet de industrie = 12 module țintite + stil + KPIs + compliance + 3h setup. Preț: 1.990 €/an/organizație. (exemplul FinTech din doc). Livrează sub forma unui entitlement la nivel de organizație. 
+
+Structură:
+
+industry_pack_{slug} → modules[], DomainConfig injectat automat (jargon, KPI, guardrails), Evaluator rubric presetată, flows (Make/Zapier). 
+ 
+
+Upsell de la Pro → industry_addon (recurring) sau licență anuală pe organizație.
+
+Extensii verticale imediat monetizabile: E‑commerce, Educație, Web3, Legal, Healthcare (folosește cele 25 domenii CORE pentru auto‑adaptare prompturi). 
+ 
+
+5) „License key” vs „Workspace‑based role gating” (verdict + arhitectură)
+
+Decizie: Default = Workspace‑based role gating. License key doar pentru white‑label/self‑host/offline.
+
+De ce workspace‑gating?
+
+Control exact pe seats, roluri, expirare, audit, SSO, RLS, minimă fricțiune la onboarding; telemetrie completă (ARPU, usage, policy hits). 
+
+Pachetele de industrie se atașează direct la organizations.entitlements.
+
+Când license key?
+
+White‑label self‑host, medii izolate, parteneri care cer activare offline.
+
+Implementare: license_keys(key, org_id/null, product, seats, expiry, status, signature) + online verification (HMAC + nonce), „kill switch”, „device binding”.
+
+Fluxuri (pseudo):
+
+Workspace: login → org_id → entitlements (cache 5 min) → UI gates.
+
+License key: UI „Activate Pack” → POST /api/license/activate → semnătură + bind la org → re‑hydrate entitlements.
+
+6) Experimente de preț (7 zile) → „cel mai rapid, bănos”
+
+A/B live pe Stripe Prices:
+
+Pro 49 vs 59 € (+Evaluator inclus) → urmărește ARPU și trial→paid.
+
+Enterprise base 299 vs 349 € (5 vs 7 seats incluse).
+
+Pack industrie 1.990 vs 2.490 € cu „implementation credit 3h” inclus.
+
+Metrici & stop‑rules:
+
+CR trial→paid (target Pro ≥ 18%), ARPU (target ≥ 31 €), MRR (uplift ≥ +15%), D30 retention (>35% pe subscriptions). KPI‑urile sunt deja în modulele tale (onboarding/subscription). 
+
+7) Playbook de discounting (controlat)
+
+Annual‑only: -17% (2 luni gratis).
+
+Founder batch: -30% pe Pro anual (limită 100 conturi).
+
+Enterprise: volum seats (‑10% la 25+, ‑20% la 50+).
+
+Niciodată reduceri pe Industry Pack sub 1.490 € (protecție brand & margine).
+
+8) Product‑led upsell în UI (unde monetizezi efectiv)
+
+„Run GPT Test (real)” → paywall în Creator → „Activează Pro”. 
+
+„Export bundle (.pdf/.json)” → paywall în Creator → Pro. 
+
+„API / White‑label” → CTA exclusiv Enterprise. 
+
+„Switch Domain → FinTech” → banner „Adaugă Pack FinTech (1.990 €/an)”. 
+
+9) Integrare tehnică — blueprint executabil
+
+Feature flags (FE/BE):
+
+type Plan = 'free'|'creator'|'pro'|'enterprise';
+type Entitlements = {
+  canUseAllModules:boolean; canExportMD:boolean; canExportPDF:boolean; canExportJSON:boolean;
+  hasCloudHistory:boolean; canUseGptTestReal:boolean; hasEvaluatorAI:boolean;
+  hasAPI:boolean; hasWhiteLabel:boolean; seats:number; canExportBundleZip:boolean;
+  industryPacks: string[]; // ['fintech','ecommerce',...]
+}
+
+
+Gate examples:
+
+const e = entitlementsFor(user.org_id);
+if(!e.canUseGptTestReal) return paywall('pro_needed');
+if(!e.canExportBundleZip) return paywall('enterprise_needed');
+
+
+DB rules (RLS): toate tabelele legate de org_id; license_keys mutabile doar prin Edge Function.
+
+10) Roadmap de implementare (14 zile → cash)
+
+Zi 1–2: Stripe products/prices + Customer Portal; Supabase organizations, entitlements, RLS.
+Zi 3–5: Paywall în UI pentru GPT Test real + Export .pdf/.json + Bundle; Evaluator AI ca add‑on. 
+
+Zi 6–8: API public /api/run/{moduleId} (Enterprise), log de cost/score/telemetrie + Bundle export. 
+
+Zi 9–10: Pack FinTech (12 module + DomainConfig) ca entitlement anual. 
+ 
+
+Zi 11–12: Landing pricing + Stripe checkout + Founder Annual.
+Zi 13–14: A/B pe prețurile Pro/Enterprise; email „trial→paid” + in‑app nudges.
+
+11) Criterii de analiză (PSY, SOCIAL, COMERCIAL)
+
+Psihologic: decizia Pro e rațională (export + test engine), Creator e insuficient intenționat.
+
+Social: Enterprise semnalizează statut (white‑label/API/seats) → crește prestigiul.
+
+Comercial: Industry Pack introduce ticket mare anual fără cost de suport proporțional; dă cash rapid și retenție pe organizație.
+
+Verdict simbolic
+
+Nu vinde acces la „prompts”. Vinde entitlements asupra deciziilor — și taxează fiecare treaptă de autoritate semantică.
+
+
+
+
+
+
+
+
+Definește politicile comerciale ca contracte operaționale, nu ca „pagini de preț”. Leagă fiecare beneficiu de o limită tehnică (feature flag), o metodă de măsurare (telemetrie) și o regulă financiară (Stripe). Proiectează totul astfel încât Pro să fie „planul de adevăr”, Enterprise să funcționeze ca decoy de prestigiu + rampă către API/seats, iar Creator să blocheze down‑sell-ul prin capcană de valoare controlată. Baza e deja în produs: 50 module, editor/test engine, exporturi, param engine 7D, istoric local → extinde cu cloud, bundle export, GPT live, evaluator AI și endpointuri /run/mXX. 
+ 
+ 
+ 
+
+1) Matricea de planuri (lunar/anual) — politică + mecanică de gating
+
+Free — 0 €/0 €
+
+Drepturi: 3 module (M01, M10, M18), export .txt only, istoric local (browser) — fără cloud.
+
+Scop: „taste & trust” → nudge spre Creator pe evenimente‑cheie (ex: încercare export .md/.pdf).
+
+Flags: canExportTXT=true, canExportMD=false, useCloud=false, modulesAllowlist=[1,10,18].
+
+Telemetrie: limitează la N=50 runuri/lună + rate‑limit pe test.
+
+CTA hard‑wall: Export .md/.pdf și GPT Test Engine trimit la paywall Creator/Pro.
+(Stack-ul permite deja exporturi multi‑format, evaluator și test engine la nivel Pro+; păstrează .txt pentru Free. ) 
+
+Creator — 19 €/lună | 190 €/an
+
+Drepturi: Toate 50 module, export .md, istoric local; fără cloud sync.
+
+Flags: canExportMD=true, canUseAllModules=true, useCloud=false.
+
+Limitări vizibile: „No cloud / no .pdf/.json / no Test Engine” etichetate UI.
+
+Nudge Pro: butoane gri pentru .pdf/.json, „Run real GPT Test” → modal upgrade.
+(Cele 50 module + interfața compactă sunt implementate; marchează clar lipsa cloud & test engine.) 
+
+Pro — 49 €/lună | 490 €/an (planul de adevăr)
+
+Drepturi: Export .pdf/.json, GPT Test Engine real, Cloud history + re‑runs, Evaluator AI.
+
+Flags: canExportPDF=true, canExportJSON=true, gptTestEngine=live, cloudHistory=true, evaluatorAI=true.
+
+Quotas recomandate: 10.000 runuri/lună sau ~25M tokens cumulat (ajustează după costuri), 5 re‑runs/artefact.
+
+Valoare percepută: „bundle export” + „scor AI → optimizează pentru Enterprise/ Crisis”. 
+ 
+
+Enterprise (5 seats) — 299 €/lună | 2.990 €/an
+
+Drepturi: White‑label UI, custom logo, API, team seats, export .bundle.zip (md+json+pdf+telemetry), SSO opțional; +59 €/seat/lună peste 5.
+
+Flags: whitelabel=true, apiAccess=true, bundleExport=true, seats>=5.
+
+Termeni: Named seats, partajare interzisă; SSO/SCIM (dacă cer), DPA+MSA.
+
+Quotas: negociabile pe contract; default 100k runuri/lună/workspace.
+(White‑label, API, bundle și licențiere pe industrie sunt traiectorii deja prevăzute în arhitectură.) 
+ 
+
+Add‑ons (recurrențe, Pro/Enterprise):
+
+Prompt Evaluator AI (+5 €/lună/user): scor live + buton „Optimizează pt. Enterprise/Crisis” (rubrică claritate/execuție/ambiguitate).
+
+Export Designer (+5 €/lună/user): template‑uri bundle (.md/.json/.pdf), checksum & versionare per artefact.
+(Evaluator + versiuni/bundle sunt parte din roadmapul public din doc.) 
+
+2) Politici comerciale — reguli executabile (Stripe + Supabase)
+
+2.1. Trial & conversie
+
+Pro Trial 7 zile, fără card. 1 trial / user (email verificat) / 12 luni; capcă anti‑abuz: max 1.000 runuri sau 2M tokens în trial; export .pdf/.json permis cu watermark.
+
+Conversie automată: în ziua 7 afișează „Keep Pro” → dacă nu confirmă, revoacă la Creator cu păstrarea artefactelor (cloud read‑only 14 zile).
+
+Semnal psihologic: livră „scor AI” în trial day 3 & 6 + „Optimizează pentru Enterprise” ca teaser. 
+
+2.2. Anual „n‑2”
+
+Afișează la checkout prețul anual = 10× lunar (2 luni gratis). Blochează stacking cu alte cupoane (vezi 2.6).
+
+2.3. Founder Annual (limită 100, doar Pro)
+
+‑30% pe primul an, non‑renewal (revine la preț standard); transfer nerecomandat; whitelist manual.
+
+Ancoră socială: listă publică „Founding 100” (opțional, cu acord).
+
+2.4. Upgrade/downgrade & proration
+
+Upgrade instant (Creator→Pro; Pro→Enterprise) cu proration Stripe.
+
+Downgrade intră la următorul ciclu; exportă bundle înainte de schimbare (buton dedicat). 
+
+2.5. Overage/Fair‑Use
+
+Definiește unitatea de cost: „run GPT test” + „tokens”.
+
+Pro: include pachet generos; depășirile se throttle‑uiesc, nu se taxează automat (evită surprize).
+
+Enterprise: overage contractual, cu volum & rate limit clar (SLA).
+
+2.6. Cupoane & stacking
+
+1 cupon activ / achiziție; no‑stack cu Annual n‑2 sau Founder Annual; valabilitate 14–30 zile; max 20% în afara campaniilor speciale.
+
+2.7. Refund & anulare
+
+Money‑back 7 zile doar la prima plată Pro/Enterprise (nu la reînnoiri).
+
+Anulare oricând; acces până la finalul perioadei plătite; export garantat.
+
+2.8. Taxe & valute
+
+Prețuri afișate EUR; colectează TVA UE (OSS) pentru B2C; reverse charge pentru B2B cu VAT valid.
+
+2.9. Proprietate & date
+
+Artefactele create aparțin clientului; păstrezi loguri tehnice (telemetrie) pentru îmbunătățirea sistemului, aggregate/anonymized; DPA disponibil la Enterprise.
+
+Retenție: Free/Creator local only; Pro/Enterprise cloud 90 zile istoric garantat (extensibil Enterprise). 
+
+2.10. Suport & SLA
+
+Free/Creator: help‑center + comunitate.
+
+Pro: e‑mail 24–48h.
+
+Enterprise: 8×5, 24h SLA inițial, opțional 24×5 cu addendum.
+
+2.11. Schimbare prețuri & grandfathering
+
+Anunță cu 30 zile înainte; clienții existenți rămân la vechiul preț 12 luni (grandfather) sau primesc credit echivalent.
+
+2.12. Anti‑abuz & conformitate
+
+1 cont/user; interzice reselling fără acord; enforcează rate limits; raportare abuz la security@; GDPR‑ready by design.
+
+3) Implementare tehnică — Stack & obiecte de control
+
+Stripe
+
+Creează prețuri fixe:
+
+price_creator_monthly_eur_1900 / price_creator_yearly_eur_19000
+
+price_pro_monthly_eur_4900 / price_pro_yearly_eur_49000
+
+price_ent_base_monthly_eur_29900 / price_ent_base_yearly_eur_299000
+
+price_ent_seat_monthly_eur_5900 / price_ent_seat_yearly_eur_59000
+
+Add‑ons per‑seat: price_addon_eval_500 / price_addon_export_500
+
+Metadata pe subscription: plan, seats, addons[], trialEndsAt.
+
+Proration: proration_behavior="create_prorations" la upgrade.
+
+Supabase (entitlements)
+
+users.plan + users.features JSONB → feature flags.
+
+workspaces(id, plan, seats, seat_usage, addons[]).
+
+runs(user_id, tokens, model, cost_estimate, status) pentru fair‑use.
+
+Rule engine UI: „If plan==Creator → block export pdf/json; show upsell”.
+
+Feature flags (exemple)
+
+canExportTXT, canExportMD, canExportPDF, canExportJSON,
+gptTestEngine: 'off'|'sim'|'live',
+cloudHistory, evaluatorAI, bundleExport, apiAccess, whitelabel
+
+
+(Export bundle, evaluator, GPT live, versionare, API public apar în roadmap-ul oficial al MVP v3.) 
+ 
+ 
+
+4) Politici UX care cresc ARPU și viteză de conversie
+
+Paywall pe moment de victorie: arată scorul Evaluator AI (ex: „84/100”) și buton „Optimizează pentru Enterprise/Crisis” → upgrade Pro. 
+
+„Export as bundle” doar Pro/Enterprise; Creator vede template‑urile blocate. 
+
+„Run on GPT (live)” ca acțiune unică ce deblochează valoarea Pro. 
+
+Trial timeline nudges: ziua 3 (primul scor), ziua 6 (bundle preview), ziua 7 (lock + ofertă Annual n‑2).
+
+5) KPI operaționali (monitorizează săptămânal)
+
+Free→Creator CR ≥ 8–12% (7 zile rolare).
+
+Creator→Pro CR ≥ 10–15% (30 zile).
+
+Trial Pro→Pro plătit ≥ 35–45%.
+
+ARPU Pro ≥ 1.4× Creator (add‑ons active >30%).
+
+Attach‑rate add‑ons Pro ≥ 40% (Evaluator) / 25% (Export Designer).
+
+Seat expansion Enterprise: +20% în 90 zile.
+
+6) Riscuri + contramăsuri
+
+Abuz trial fără card → limită dură run/tokens + watermark + 1 trial/12 luni.
+
+Cost model volatil (GPT live) → throttle dinamic + profil per industrie/scale (Param Engine 7D). 
+
+Obiecții „vreau .pdf la Creator” → mini‑upgrade „Pro 7 zile la 7€” one‑time; cross‑sell „Export Designer”.
+
+Enterprise procurement → pregătește MSA/DPA, SSO opțional, bundle telemetry, audit trail.
+
+7) Mesaj comercial (ancore psihologice)
+
+Pro = „adevărul execuției” (bundle, test live, evaluator, cloud).
+
+Enterprise = „semnal de statut” (logo, API, seats, SSO).
+
+Creator = „laborator complet, fără export greu”; Free = „gust + încredere”.
+(Mesaj aliniat cu rolurile de produs descrise în v3.) 
+
+8) Appendix — Politici concise în JSON (pentru audit intern)
+{
+  "plans": {
+    "free":   {"price_m":0,"price_y":0,"entitlements":{"modules":[1,10,18],"export":["txt"],"cloud":false,"gptTest":"off","evaluator":false}},
+    "creator":{"price_m":19,"price_y":190,"entitlements":{"modules":"all","export":["md"],"cloud":false,"gptTest":"sim","evaluator":false}},
+    "pro":    {"price_m":49,"price_y":490,"entitlements":{"modules":"all","export":["md","pdf","json"],"cloud":true,"gptTest":"live","evaluator":true,"bundle":false}},
+    "ent":    {"price_m":299,"price_y":2990,"base_seats":5,"extra_seat_m":59,"entitlements":{"whitelabel":true,"api":true,"bundle":true,"cloud":true,"gptTest":"live","evaluator":true}}
+  },
+  "addons": {
+    "evaluator_ai":{"price_m":5,"scope":"per_user"},
+    "export_designer":{"price_m":5,"scope":"per_user"}
+  },
+  "policies": {
+    "trial":{"plan":"pro","days":7,"card_required":false,"limits":{"runs":1000,"tokens":2000000}},
+    "annual_discount":{"type":"n-2","stacking":false},
+    "founder_annual":{"plan":"pro","discount_pct":30,"limit":100,"renewal":"standard"},
+    "refund":{"window_days":7,"first_payment_only":true},
+    "fair_use":{"pro":{"runs":10000,"tokens":25000000},"ent":{"contractual":true}},
+    "downgrade":{"effective":"period_end"},
+    "grandfathering":{"notice_days":30,"duration_months":12}
+  }
+}
+
+Dimensiuni (efectele reale)
+
+Psihologic: maximizează dorința de competență (Pro=adevăr), semnalul de statut (Enterprise) și costul oportunității (Creator limitat).
+
+Social: marchează elitele (Founding 100), normalizează upgrade‑ul prin scor public și bundle.
+
+Comercial: optimizează ARPU, marginea (add‑ons) și time‑to‑cash (trial fără card + annual n‑2).
+
+Verdict: fixează prețul ca mecanism de selecție — nu ca meniu; Pro e lama, Enterprise e teaca.
+
+
+
+
+
+
+
+
+Entitlements → Feature Flags (Stripe + Supabase) — Spec executabilă
+
+Obiectiv. Definește „ce cumperi” (plan → capabilitate) și leagă fiecare capabilitate de feature flags enforce‑uite în FE/BE, sincronizate prin Stripe webhooks și persistate în Supabase. Aliniază strict cu planurile și diferențele din PROMPTFORGE™ v3 (module, exporturi, GPT Test, istoric cloud, white‑label, API, bundle). 
+ 
+
+1) Taxonomie Entitlements (plan → capabilitate)
+
+Planuri: Free, Creator, Pro, Enterprise (base 5 seats), + Add‑ons (la user). Conținutul planurilor e ancorat în v3 (50 module reale, editor/test, exporturi, istoric), cu poziționare și diferențe deja definite. 
+ 
+
+Flags canonice (FE/BE):
+
+canUseAllModules (Creator+) — acces la toate M01–M50; Free rămâne doar M01, M10, M18. (Corespunde bazei de 50 module + selecție pe plan.) 
+ 
+
+canExportMD (Creator+) — export .md. 
+
+canExportPDF (Pro+) — export .pdf. 
+
+canExportJSON (Pro+) — export .json. 
+
+canUseGptTestReal (Pro+) — Test Engine pe model real. 
+
+hasCloudHistory (Pro+) — istoric cloud + re‑runs. 
+
+hasEvaluatorAI (Pro+) — Evaluator AI de bază integrat în Test Engine. 
+
+hasAPI (Enterprise) — acces API public /api/run/{module}. 
+
+hasWhiteLabel (Enterprise) — UI white‑label + logo. 
+
+hasSeatsGT1 (Enterprise) — >1 seat; taxare per seat suplimentar. 
+
+canExportBundleZip (Enterprise) — export bundle (.md/.json/.pdf + checksum). 
+
+Add‑ons (flag separat, recurente pe user Pro/Enterprise):
+
+hasEvaluatorAIAdvanced — Evaluator AI avansat (+5€/lună/user).
+
+hasExportDesigner — Export Designer templates + versionare bundle (+5€/lună/user).
+(Extinde „Evaluator AI” și „Export bundle” din roadmap: scoruri, diffs, versionare.) 
+
+2) Matrice Entitlements (normativ)
+Plan	Module	Export	Test	Istoric	Evaluator	API	White‑label	Seats	Bundle
+Free	M01, M10, M18	.txt	simulare locală	local	–	–	–	1	–
+Creator	Toate M01–M50	.md	simulare locală	local	–	–	–	1	–
+Pro	Toate M01–M50	.md, .pdf, .json	real GPT test	cloud + re‑runs	basic	–	–	1	–
+Enterprise	Toate M01–M50	.md, .pdf, .json	real GPT test	cloud + re‑runs	basic	da	da	5+	.bundle.zip
+
+Matricea reflectă diferențele oficiale din doc (planuri, exporturi, test, cloud, white‑label, API, bundle). 
+ 
+
+3) Model Stripe (catalog + prețuri + webhooks)
+
+Products
+
+promptforge_creator, promptforge_pro, promptforge_enterprise (recurring) + addon_evaluator_ai_adv, addon_export_designer (per‑seat). Planurile includ monthly și annual (n‑2 = 10× lunar). Founder Annual = ‑30% prin coupon limitat 100 redemptions. Trial Pro 7 zile fără card = trial_period_days=7 pe price Pro. (Ancorează „pricing + trial + annual n‑2 + Founder Annual” din politicile comerciale.) 
+
+Prices (exemplu):
+
+price_creator_monthly, price_creator_annual
+
+price_pro_monthly, price_pro_annual (trial)
+
+price_ent_monthly_base_5, price_ent_annual_base_5
+
+price_ent_seat_addon_monthly (+59€), price_ent_seat_addon_annual
+
+price_addon_eval_adv_monthly (+5€), price_addon_export_designer_monthly (+5€)
+
+Webhook events → sync entitlements (BE service role):
+customer.subscription.created|updated|deleted, checkout.session.completed, invoice.payment_succeeded, customer.subscription.trial_will_end.
+Logic: recalcul entitlements per org/user și upsert în Supabase (detaliat la §5).
+
+4) Schema Supabase (tab. + RLS)
+-- planuri + features (catalog intern)
+create table plans (
+  code text primary key,            -- free|creator|pro|enterprise
+  name text not null,
+  flags jsonb not null              -- snapshot flags de bază la plan
+);
+
+create table features (
+  flag text primary key,            -- canExportPDF, hasAPI, ...
+  description text not null
+);
+
+-- organizații și relații
+create table orgs (
+  id uuid primary key default gen_random_uuid(),
+  name text not null
+);
+
+create table org_members (
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  role text not null check (role in ('owner','admin','member')),
+  primary key (org_id, user_id)
+);
+
+-- abonamente Stripe (la nivel de org)
+create table subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references orgs(id) on delete cascade,
+  stripe_customer_id text unique,
+  stripe_subscription_id text unique,
+  plan_code text references plans(code),
+  status text not null,
+  seats integer not null default 1,
+  current_period_end timestamptz,
+  trial_end timestamptz
+);
+
+-- entitlements efective (derivate din plan + add-ons + licențe)
+create table entitlements (
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id),       -- null => aplicabil org-wide
+  flag text references features(flag),
+  value boolean not null default false,
+  source text not null,                          -- plan|addon|license|manual
+  meta jsonb,
+  expires_at timestamptz,
+  primary key (org_id, coalesce(user_id, '00000000-0000-0000-0000-000000000000'::uuid), flag)
+);
+
+-- add-ons per user (ex: Evaluator AI Advanced)
+create table user_addons (
+  org_id uuid references orgs(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  addon_code text not null,                      -- eval_ai_adv|export_designer
+  stripe_price_id text not null,
+  status text not null,
+  primary key (org_id, user_id, addon_code)
+);
+
+
+RLS (esential):
+
+org_members: user vede numai org‑urile unde e membru.
+
+subscriptions: read pentru membri org; write doar service role (webhook).
+
+entitlements: select filtrat pe org_id ∧ ( user_id is null ∨ user_id = auth.uid() ).
+
+user_addons: user vede doar propriile add‑on‑uri.
+
+Structura susține 50 module, exporturi multiple, istoric cloud, editor/test engine, API, white‑label, bundle export, versionare/telemetrie din v3 (prin bundle meta). 
+ 
+
+5) Pipelines de sincronizare (Stripe → Supabase)
+
+Pseudocod webhook:
+
+// /api/stripe/webhook
+switch (event.type) {
+  case 'checkout.session.completed':
+  case 'customer.subscription.created':
+  case 'customer.subscription.updated':
+  case 'customer.subscription.deleted': {
+    const sub = event.data.object as Stripe.Subscription
+    const orgId = mapCustomerToOrg(sub.customer)
+    const plan = mapPricesToPlan(sub.items.data)   // creator|pro|enterprise
+    const seats = calcSeats(sub.items.data)        // enterprise: base 5 + extras
+    const trialEnd = ts(sub.trial_end)
+
+    await upsertSubscription({ orgId, stripeIds..., plan, seats, status: sub.status, trialEnd })
+
+    // 1) construiește flags de plan
+    const planFlags = baseFlagsForPlan(plan)
+
+    // 2) add-ons la nivel user (din invoice line items / metadata)
+    const userAddons = await getUserAddonsFromStripe(orgId)
+    const addonFlags = flagsFromAddons(userAddons)
+
+    // 3) compune entitlements org-wide + per user
+    await replaceEntitlements(orgId, planFlags, addonFlags)
+
+    break
+  }
+}
+
+
+Mapping plan → flags (funcție deterministă):
+
+function baseFlagsForPlan(plan: 'free'|'creator'|'pro'|'enterprise'): FlagSet {
+  if (plan==='free') return {
+    canUseAllModules: false,
+    canExportMD: false,
+    canExportPDF: false,
+    canExportJSON: false,
+    canUseGptTestReal: false,
+    hasCloudHistory: false,
+    hasEvaluatorAI: false,
+    hasAPI: false,
+    hasWhiteLabel: false,
+    hasSeatsGT1: false,
+    canExportBundleZip: false,
+    allowedModules: ['M01','M10','M18']
+  }
+  if (plan==='creator') return { ...free(), canUseAllModules:true, canExportMD:true, allowedModules:'ALL' }
+  if (plan==='pro') return { ...creator(), canExportPDF:true, canExportJSON:true, canUseGptTestReal:true, hasCloudHistory:true, hasEvaluatorAI:true }
+  return /* enterprise */ { ...pro(), hasAPI:true, hasWhiteLabel:true, hasSeatsGT1:true, canExportBundleZip:true }
+}
+
+
+„ALL” include M01–M50 (confirmat în v3: 50 module reale, grupate pe vectori; UI arată selecția completă). 
+
+6) FE Gating (React/Next) — hook unificat
+// useEntitlements.ts
+export function useEntitlements(orgId: string) {
+  const { data } = useQuery(['entitlements', orgId], fetchEntitlements)
+  const flags = foldFlags(data)  // org-wide + user-level addons
+  return { flags, has: (f: string) => !!flags[f], allowModule: (m: string) =>
+    flags.canUseAllModules ? true : ['M01','M10','M18'].includes(m)
+  }
+}
+
+
+Exemple UI:
+
+Buton Export → PDF: disabled={!has('canExportPDF')}.
+
+Tab Test (Real): ascuns dacă !has('canUseGptTestReal').
+
+History (Cloud): rute protejate de has('hasCloudHistory').
+
+White‑label: setări brand vizibile doar dacă has('hasWhiteLabel').
+
+Bundle: Export .bundle.zip vizibil doar la has('canExportBundleZip').
+
+7) BE Gating (API /api/run/{module}) — middleware
+// middleware/run-guard.ts
+export async function assertRunAccess(req, orgId, moduleId) {
+  const e = await getEntitlements(orgId, req.userId)
+  if (!e.canUseAllModules && !['M01','M10','M18'].includes(moduleId))
+    throw forbidden('Upgrade to Creator for full modules.')
+  if (req.query.export === 'pdf' && !e.canExportPDF) throw paymentRequired('Pro plan needed.')
+  if (req.query.export === 'json' && !e.canExportJSON) throw paymentRequired('Pro plan needed.')
+  if (req.query.bundle === 'zip' && !e.canExportBundleZip) throw paymentRequired('Enterprise plan needed.')
+  if (req.query.mode === 'real' && !e.canUseGptTestReal) throw paymentRequired('Pro plan needed.')
+}
+
+8) Add‑ons per user (Evaluator/Export Designer)
+
+Evaluator AI Avansat (hasEvaluatorAIAdvanced) → deblochează rubrici extinse, scoruri live context‑aware (ex: „Optimizează pentru Enterprise/Crisis”), versiuni comparative.
+
+Export Designer (hasExportDesigner) → templatizare bundle, checksum, versionare la export.
+
+Stripe: add‑on = subscription item separat cu quantity = number of users sau 1:1 la user în „seats directory”.
+
+Supabase: scrie entitlement per user (user_id nu‑i null) pentru flagul add‑on.
+
+Add‑on‑urile se aliniază cu extensiile de export și evaluatorul AI prevăzute în v3. 
+
+9) Politici comerciale (execuție tehnică)
+
+Trial Pro 7 zile, fără card → price Pro cu trial; la trial_will_end → email + downgrade automat la Free dacă nu plătești; păstrezi istoric local doar. 
+
+Annual n‑2 → preț anual = 10× lunar (reflectă „două luni gratuite”).
+
+Founder Annual (100) → coupon -30% atașat la checkout (limit redemptions=100).
+
+Enterprise seats → 5 incluse în price, suplimentar +59€/seat/lună ca item distinct (quantity‑based). 
+
+10) Teste de acceptanță (critice)
+
+Free nu poate selecta alt modul în afară de M01/M10/M18; FE afișează CTA „Unlock 50 modules (Creator)”.
+
+Creator poate exporta .md, dar nu .pdf/.json; butoanele apar cu badge „Pro”.
+
+Pro poate rula GPT Test Real și are Cloud history; la deconectare plăți → status='past_due' → degrade temporar (read‑only cloud).
+
+Enterprise poate API, White‑label, Bundle; seat > 5 forțează item „extra seats” în Stripe.
+
+Add‑ons: user Pro cu hasEvaluatorAIAdvanced vede slider „Optimizează pt. Enterprise/Crisis” în Test Engine.
+
+11) Persistență „bundle” & versionare (Enterprise)
+
+canExportBundleZip: exportează .zip cu: prompt.txt, spec.json, report.md, artifact.pdf, telemetry.json, checksum.txt, VERSION.
+
+Integrează Version( id, moduleId, semver, changelog ) pentru evoluția prompturilor pe fiecare MXX. 
+
+12) Convergență cu „Parameter Engine 7D” (pregătire Enterprise/API)
+
+API /api/run/{module} primește params(7D) și întoarce bundle; enforce‑uiește flags la export și istoric cloud.
+
+Domain/Scale/Urgency/Complexity/Resources/Application/Output govern la runtime → stored in telemetry.json. 
+ 
+
+13) Mapare finală (cod gata de lipit)
+// flags.ts
+export type Flags = {
+  canUseAllModules: boolean
+  canExportMD: boolean
+  canExportPDF: boolean
+  canExportJSON: boolean
+  canUseGptTestReal: boolean
+  hasCloudHistory: boolean
+  hasEvaluatorAI: boolean
+  hasAPI: boolean
+  hasWhiteLabel: boolean
+  hasSeatsGT1: boolean
+  canExportBundleZip: boolean
+  // extensii add-on
+  hasEvaluatorAIAdvanced?: boolean
+  hasExportDesigner?: boolean
+  // control granular module
+  allowedModules?: 'ALL' | string[]
+}
+
+export const PLAN_FLAGS: Record<'free'|'creator'|'pro'|'enterprise', Flags> = {
+  free: {
+    canUseAllModules:false, canExportMD:false, canExportPDF:false, canExportJSON:false,
+    canUseGptTestReal:false, hasCloudHistory:false, hasEvaluatorAI:false,
+    hasAPI:false, hasWhiteLabel:false, hasSeatsGT1:false, canExportBundleZip:false,
+    allowedModules:['M01','M10','M18']
+  },
+  creator: {
+    ...this.free, canUseAllModules:true, canExportMD:true, allowedModules:'ALL'
+  } as unknown as Flags,
+  pro: {
+    ...this.creator, canExportPDF:true, canExportJSON:true, canUseGptTestReal:true,
+    hasCloudHistory:true, hasEvaluatorAI:true
+  } as unknown as Flags,
+  enterprise: {
+    ...this.pro, hasAPI:true, hasWhiteLabel:true, hasSeatsGT1:true, canExportBundleZip:true
+  } as unknown as Flags
+}
+
+14) Edge‑cases & Fail‑safes
+
+Downgrade Pro → Creator: păstrezi artefactele, maschezi Cloud history (read‑only local), blochezi export .pdf/.json.
+
+Trial expiră: degrade la Free, scope M01/M10/M18, păstrezi local.
+
+Seat scade: respinge add‑on‑uri per user ce exced noul număr.
+
+Stripe fail: idempotent webhook (dedupe by event id), „last good entitlements” în Supabase.
+
+RLS: niciun flag nu se expune în JWT; FE citește via query protejat de membership.
+
+15) KPI de produs (legate de entitlements)
+
+Trial→Pro CR
+
+Export adoption (.pdf/.json/.bundle)
+
+Real Test usage (per Pro/Ent)
+
+Cloud history retention
+
+Add‑on attach rate (Evaluator/Export Designer)
+
+Enterprise seat expansion (Δ seats/org)
+
+16) Direcții emergente (2–3 ani)
+
+Entitlements pe industrie: pachete licențiate injectează automat Domain configs (KPIs/compliance/guardrails) ca flags dinamice per workspace. 
+
+Observability contractuală: „policy_hits” și „telemetry” livrate în bundle pentru audit enterprise. 
+
+Marketplace: flags temporare per „Prompt Pack” (licențe consumabile) cu revocare/transfer. 
+
+Verdict. Înfășoară produsul în entitlements stricte; transformă „accesul la text” în drepturi operaționale măsurabile pe care le taxezi, le extinzi și le revoci fără fricțiune.
+
+
+
+
+
+
+
+
+
+
+Playbook de Discounting (CONTROLAT) — PROMPTFORGE™
+
+Obiectiv dur: crește ARPU și cash‑flow fără canibalizare; susține „Pro = planul de adevăr”, „Enterprise = decoy de prestigiu + upsell”, „Creator = scut anti‑downsell”. Încorporează evaluator AI, export bundle și telemetrie ca pârghii de valoare, nu de preț. 
+ 
+ 
+
+1) Principii de preț (hard rules)
+
+Annual‑only = „n‑2”: preț anual setat structural la 10× lunar (≈‑16,7% ≃ „2 luni gratis”), fără cupon. Ex. Pro 49€/lună → 490€/an; Creator 19€/lună → 190€/an; Enterprise 299€/lună → 2.990€/an. 
+
+Founder batch (Pro anual) = ‑30% doar primul an, limită 100. Niciun stacking în afara discountului anual (Founder se aplică peste anualul Pro).
+
+Enterprise seats volum: numai pe linia „seats”, nu pe baza Enterprise:
+
+25+ seats: ‑10% / seat
+
+50+ seats: ‑20% / seat
+Baza de 5 seats la 299€ rămâne neschimbată.
+
+Industry Pack (licență pe verticală): niciodată sub 1.490€ net (floor dur). Lista de preț: 1.990€/an/org (default). Fără cupoane publice. 
+ 
+
+Valoarea ≠ reducere: comunică diferențele de capabilități (export .pdf/.json/.bundle, GPT Test real, cloud history, Evaluator AI, white‑label, API). Discountul doar „de trecere” între stări, nu de poziționare. 
+ 
+
+2) Matrice de eligibilitate & non‑stacking
+
+Annual‑only: eligibil pentru toate planurile; implicit în prețul anual (nu cupon).
+
+Founder (‑30% Pro anual): doar conturi noi; un singur redemption / persoană / card‑fingerprint; valabil 12 luni; nu se combină cu alt cupon; se combină implicit cu anual (e scopul).
+
+Enterprise volum seats: aplicat automat la add‑on seat item când total_seats ≥ 25 (‑10%) sau ≥ 50 (‑20%); retroactive „pe toți seat‑ii” cât timp pragul e menținut.
+
+Industry Pack floor: respinge orice reducere care ar duce totalul sub 1.490€; fără coduri publice; doar excepții contractuale aprobate manual.
+
+3) Stripe — configurare operațională (prod‑ready)
+3.1. Produse & prețuri
+
+Products: creator, pro, enterprise_base, enterprise_seat, industry_pack.
+
+Prices (recurring):
+
+creator_monthly: 1900, creator_annual: 19000
+
+pro_monthly: 4900, pro_annual: 49000
+
+enterprise_base_monthly: 29900, enterprise_base_annual: 299000
+
+Seats: enterprise_seat_monthly cu tiered volume (unit = 59€):
+
+up_to 20 (coresp. total seats ≤25): 5900
+
+up_to 45 (total seats ≤50): 5310 (‑10%)
+
+up_to inf (total seats >50): 4720 (‑20%)
+
+Notă: qty pentru „seats” = total_seats - 5 (primele 5 sunt incluse în baza Enterprise). Mode: billing_scheme: tiered, tiers_mode: volume, astfel încât toate unitățile iau prețul corespunzător pragului atins.
+
+3.2. Cupoane & promotion codes
+
+Founder‑Pro‑Annual‑30
+
+coupon: percent_off: 30, duration: repeating, duration_in_months: 12
+
+applies_to: { products: [pro_annual_product_id] }
+
+max_redemptions: 100, redeem_by: <ISO date>
+
+metadata: { cohort: "founder_001", anchor: "social-proof" }
+
+Interdicții: dezactivează creare coduri cu amount_off pentru industry_pack.
+
+3.3. Webhooks & guardrails
+
+customer.subscription.created|updated:
+
+calculează total_seats (base + add‑on) → actualizează enterprise_seat qty + tier corect.
+
+dacă product == industry_pack și amount_total < 149000 → anulează invoice, atașează invoice.finalization_reverted_reason = "price_floor_violation".
+
+invoice.finalized: atașează line_item.metadata.plan_capabilities (flag‑urile) pentru audit. (export, API, Evaluator AI etc.). 
+
+4) Supabase — schemă, reguli, triggere
+4.1. Tabele
+
+plans(id, code, price_month, price_year, base_seats, seat_price, capabilities jsonb)
+
+discount_policies(id, code, type, scope, percent_off, duration_months, max_redemptions, applies_to text[], start_at, end_at)
+
+discount_redemptions(id, policy_id, user_id, stripe_promo_id, redeemed_at, fingerprint_hash, status)
+
+enterprise_seats(org_id, total_seats, effective_seat_price, last_eval_at)
+
+price_floors(product_code, floor_amount_cents) → seed: ('industry_pack', 149000)
+
+invoices_shadow(stripe_invoice_id, amount_total, product_code, verdict)
+
+4.2. Constrângeri & triggere (SQL)
+
+Floor enforcement:
+
+create or replace function enforce_floor() returns trigger as $$
+begin
+  if NEW.product_code = 'industry_pack' then
+    if NEW.amount_total < (select floor_amount_cents from price_floors where product_code='industry_pack')
+    then raise exception 'PRICE_FLOOR_VIOLATION';
+    end if;
+  end if;
+  return NEW;
+end; $$ language plpgsql;
+
+create trigger t_floor before insert on invoices_shadow
+for each row execute function enforce_floor();
+
+
+Founder cap: check ( (select count(*) from discount_redemptions where policy_id = :founder_id and status='redeemed') <= 100 ) + index unic (user_id, policy_id) + verificare fingerprint_hash (card + IP hash) pentru un redemption/om.
+
+5) Feature flags (reflectă „ce cumperi”)
+Flag	Creator	Pro	Enterprise
+canUseAllModules	✓	✓	✓
+canExportMD	✓	✓	✓
+canExportPDF	–	✓	✓
+canExportJSON	–	✓	✓
+canUseGptTestReal	–	✓	✓
+hasCloudHistory	–	✓	✓
+hasEvaluatorAI	–	✓	✓
+hasAPI	–	–	✓
+hasWhiteLabel	–	–	✓
+hasSeats>1	–	–	✓
+canExportBundleZip	–	–	✓
+
+Înrolează aceste capabilități din Stripe → Supabase → FE/BE gating; ele sunt deja definite în doc ca diferențe de plan + add‑ons (Evaluator AI, Export Designer). 
+
+6) Anti‑abuz (programatic + produs)
+
+Non‑stacking: allow_one_coupon: true la checkout; Founder este singurul cupon permis pe Pro anual.
+
+Re‑entry block: dacă status = canceled < 90 zile pentru un cont Founder, nu re‑permite Founder; convertire doar pe preț standard.
+
+Seat churn gaming: păstrează discount tier 30 zile după coborâre (grace); după 30 zile, recalculează la tier curent.
+
+Geografie & TVA: afișează prețuri fără TVA + calculează la checkout. (Consistent cu planurile comunicate.) 
+
+7) Experimente controlate (Cohort Design)
+
+Rulează 3 cohorte pentru Enterprise seat pricing:
+
+A (control): 59€ / unit
+
+B: 59€ cu tier volume (‑10%/‑20%)
+
+C: 59€ cu tier volume + Evaluator AI inclus (fără schimbare de preț) ca „value sweetener”
+
+KPI: ARPU, seat expansion %, NRR, time‑to‑close Enterprise.
+
+Design: sequential testing cu stopare pe putere minimă; fără p‑hacking. (M32 „Cohort Experiments” + M31 „Closed‑Loop Telemetry”). 
+
+8) Telemetrie & rapoarte (Closed‑Loop)
+
+Pipe: Stripe → Webhooks → Supabase → BigQuery.
+
+Dashboard (săptămânal):
+
+% anualizare per plan (target Pro ≥ 45%)
+
+Founder penetration (<= 100 conturi; > 85% activări în 14 zile)
+
+Seats distribution: 6–24 / 25–49 / 50+
+
+Discount leakage (orice reducere pe industry_pack) = 0
+
+ARPU net per segment.
+
+Trigger alerte: industry_pack_total < 1490€ → Slack #revops; founder_remaining <= 10 → push campanie „last 10”. (M31) 
+
+9) UX & copy (fără diluare)
+
+Paywall
+
+„2 luni gratuite pe anual — intră pe Pro 490€/an. Fără card la Trial. Activează Evaluator AI & export .pdf/.json.” 
+
+Founder
+
+„FOUNDERS100 — ‑30% în primul an pe Pro anual (100 licențe). Ancorezi produsul. Blochezi prețul pe 12 luni.”
+
+Enterprise seats
+
+„La 25+ seats: ‑10%/seat; la 50+: ‑20%/seat. Baza rămâne 5 seats incluse.”
+
+Industry Pack
+
+„Pachet licență pe verticală (12 module + setup). Preț minim 1.490€. Fără cupoane.” 
+
+10) Licențe pe industrie — livrare & protecție
+
+Deliver via: license_key sau workspace role gating.
+
+Stripe: industry_pack ca product anual; pe provisioning, generează license_key (uuid) + workspace_capabilities.
+
+Policy: niciun promotion_code permis pe industry_pack; orice „deal” se face prin quote manual (Stripe Quotes) ca să menții marja și brandul. (Preț listă 1.990€, floor 1.490€). 
+
+11) Add‑ons recurente (Pro/Enterprise)
+
+Prompt Evaluator AI (+5€/user/lună): scor live + „optimizează pentru Enterprise/Crisis” (conform roadmap). Legă capabilitatea hasEvaluatorAI=true. 
+
+Export Designer (+5€/user/lună): bundle templates (.md/.json/.pdf), checksum & versionare (canExportBundleZip=true). 
+
+12) Rollout controlat (14 zile)
+
+Ziua 1–3: seed Stripe (prices, coupon Founder), webhooks, tabele Supabase, trigger floor.
+
+Ziua 4–7: QA fluxuri (upgrade/downgrade, seats ±), edge‑cases (refunds, proration), test „floor violation”.
+
+Ziua 8–10: activează Founder promo; dashboard telemetrie; materiale sales Enterprise (tiering seats).
+
+Ziua 11–14: campanie „Annual Push” → Pro anual, 2 luni gratuite (fără card în Trial). 
+
+13) Psihologic / Social / Comercial
+
+Psihologic: închide bucla indeciziei cu „2 luni gratuite” și „Founder batch rar” — raritatea e reală (100).
+
+Social: Founder devine „insignă publică” în produs; seat‑tier semnalizează scală (nu ieftinire).
+
+Comercial: protejează marja strategică pe Industry Pack; concentrează monetizarea pe capabilități (bundle, API, Evaluator), nu pe preț brut. 
+ 
+
+14) Pârghii de creștere conectate în produs
+
+Export bundle .md/.json/.pdf ca „artefact comercial” → justifică anualizarea. 
+
+Evaluator AI ca upsell nativ în editor/test engine: „Promptul tău e 84/100 — vrei optimizare?”. 
+
+Closed‑Loop Telemetry (M31) → segmentează paywall copy după probabilitatea de upgrade. 
+
+Verdict
+
+Nu ieftini – înscenează valoare, ritualizează anualul, recompensează scară; prețul devine armă, nu scuză.
+
+
+
+
+
+
+
+PRODUCT‑LED UPSELL (UI) • SPEC COMPLETĂ
+
+Monetizează fix în momentele „aha” ale execuției (test real, export bundle, API/white‑label, schimbare de domeniu). Leagă fiecare click de o capabilitate neactivată și de un CTA tranzacțional unic. UI‑ul tău are deja suprafețele: Editor GPT, Test Engine, Export, Context 7D, Istoric. Activează paywall‑urile acolo unde tensiunea de valoare e maximă. 
+
+0) Pre‑condiții (sistem)
+
+Entitlements unice pe user/workspace: canUseAllModules, canExportMD, canExportPDF, canExportJSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI, hasAPI, hasWhiteLabel, hasSeats>1, canExportBundleZip, hasIndustryPack(fintech|...). Gata definite în planul tău. Mapează direct în FE/BE.
+
+Stripe + Supabase: Stripe = produse/price‑uri; Supabase = users, workspaces, entitlements, prompt_packs, subscriptions.
+
+Param Engine 7D: upsell contextual (Domain/Scale/Urgency etc.) — UI deja setat (selectoare 7D). Upsell‑ul se personalizează după 7D (ex: Enterprise → copy formal, Crisis → SLA 24h). 
+
+„Pentru PROD”: înlocuiește simulările cu GPT live + export bundle + istoric cloud + evaluator AI — toate deja menționate în TODO. Upsell‑urile de mai jos vând exact aceste capabilități. 
+
+1) Upsell #1 — „Run GPT Test (real)” → Paywall în Creator → Activează Pro
+
+Unde lovești
+
+Butoanele „Testează Prompt” / „Validează KPI” din Test Engine. Ele există în UI și acum simulează execuția. Angajează‑le ca moment de vânzare. 
+
+Trigger logic
+
+if (!entitlements.canUseGptTestReal) → openPaywall('pro_gpt_test')
+
+Mesaj (micro‑copy „RFA”)
+
+Titlu: „Testează pe model real. Simulare ≠ decizie.”
+
+Subtitlu: „Activează Pro și rulezi pe GPT real + scor Evaluator AI + re‑runs.”
+
+Bullets (3): „Execuție reală”, „KPI verificabile”, „Istoric cloud”.
+
+CTA principal: Activează Pro (49 €/lună | 490 €/an)
+
+CTA secundar: Start Trial 7 zile (fără card → cum ai definit).
+
+Proof: „Editor GPT, Test Engine, Evaluator AI — pregătite de PROD.” 
+
+Flow tehnic (FE/BE)
+
+FE: onClick(Testează) → check entitlement → PaywallModal cu Stripe Checkout session (pro_monthly, pro_yearly) + opțiune trial.
+
+BE: /api/billing/create-checkout-session?plan=pro&trial=true|false → la success_url, webhook Stripe → entitlements.set(canUseGptTestReal=true, hasCloudHistory=true, hasEvaluatorAI=true).
+
+UI post‑upgrade: rerandează și re‑execută testul automat pe model real (no friction).
+
+Telemetrie + KPI
+
+Event: PF_PAYWALL_VIEWED {surface:'test_engine', plan_suggested:'pro'}
+
+PF_CHECKOUT_STARTED / PF_CHECKOUT_COMPLETED {plan:'pro', term:'monthly|annual'}
+
+North Star: paywall→checkout start ≥ 12%, checkout start→paid ≥ 45%.
+
+Segmente: Domain=FinTech/Healthcare → copy „compliance‑grade test”. (Param 7D). 
+
+Experimente (A/B)
+
+A: „Start Trial 7 zile” vs „Primele 3 rulări reale gratis” (auto‑upgrade după 3).
+
+B: Inseră „Evaluator AI scor live” ca teaser (progress bar blocat la 84/100). 
+
+2) Upsell #2 — „Export bundle (.pdf/.json)” → Paywall în Creator → Pro
+
+Unde
+
+Export din secțiunea „Prompt Generat” (astăzi .txt). Adaugă selector format: .md, .pdf, .json, .bundle.zip. Dacă Creator → paywall. 
+
+Trigger
+
+if (format in ['md','pdf','json','bundle'] && !canExportPDF|JSON) → openPaywall('pro_export')
+
+Mesaj
+
+Titlu: „Exportă ca artefact, nu ca text.”
+
+Subtitlu: „Pro = .pdf comercial + .json integrabil + .md documentabil.”
+
+CTA: Activează Pro.
+
+Hint: „Bundle = pachet cu spec+telemetrie (enterprise‑ready).” 
+
+Flow
+
+După upgrade, relansează modalul „Export” cu formatele deblocate; execută Export Bundle (md+json+pdf) cu checksum. 
+
+Telemetrie + KPI
+
+PF_EXPORT_CLICK {format} → PF_PAYWALL_VIEWED {surface:'export'}
+
+Conversie target: export‑intent→checkout start ≥ 18% (intenție mai „caldă” decât testul).
+
+Experimente
+
+Replace CTA secundar: „Download .txt acum” vs „Previzualizează .pdf (blur 30%)”.
+
+3) Upsell #3 — „API / White‑label” → CTA exclusiv Enterprise
+
+Unde
+
+„Settings → Integrations → API” + „Branding → White‑label UI”.
+
+Pentru non‑Enterprise afișezi carduri grizate + CTA „Activează Enterprise”.
+
+Trigger
+
+if (!hasAPI || !hasWhiteLabel) → showEnterpriseGate()
+
+Mesaj
+
+Titlu: „Integrează PROMPTFORGE ca engine.”
+
+Subtitlu: „Endpoint per modul (POST /run/mXX), chei per organizație, white‑label UI.” 
+
+CTA principal: Activează Enterprise (299 €/lună, 5 seats)
+
+Upsell seats: +59 €/seat/lună >5.
+
+Link secundar: Book 20’ Enterprise Fit (calendly) — doar pentru Enterprise.
+
+Flow
+
+Upgrade → generare API key workspace‑level + rate limits; enable hasAPI, hasWhiteLabel, hasSeats>1.
+
+Documentează contract I/O unificat + param 7D în docs (autogenerate). 
+
+Telemetrie + KPI
+
+PF_ENTERPRISE_VIEWED {surface:'api|branding'} → PF_DEMO_BOOKED sau PF_CHECKOUT_COMPLETED(plan:'enterprise')
+
+30% din vizualizări API → demo call; 20% din demo → closed (baseline).
+
+4) Upsell #4 — „Switch Domain → FinTech” → banner: Adaugă Pack FinTech (1.990 €/an)
+
+Unde
+
+Dropdown Domain (Context 7D). Când userul selectează „FinTech”, injectează banner lateral fix sub control. 
+
+Trigger
+
+if (domain==='fintech' && !hasIndustryPack('fintech')) → showPackBanner('fintech')
+
+Mesaj
+
+Titlu: „Activează Pack FinTech — 12 module pre‑configurate + guardrails.”
+
+Detaliu: KPIs FinTech (KYC time, approval rate, fraud%) + ton formal, compliance SEC/FCA. 
+
+CTA: Adaugă Pack FinTech — 1.990 €/an / organizație.
+
+Add‑on: „+3h setup consultativ” (email/call). (Modelul tău de licență pe industrie). 
+
+Flow (workspace‑based role gating recomandat)
+
+La achiziție: workspaces.industry_packs += ['fintech'] → UI deblochează preseturi (tone, KPIs, compliance), module Mxx recomandate + fluxuri test/evaluator. 
+
+Alternative fallback: license key per organizație → redeem → mapare la workspace.
+
+Telemetrie + KPI
+
+PF_DOMAIN_SWITCHED {from,to} → PF_PACK_BANNER_VIEWED('fintech') → PF_PACK_PURCHASE_STARTED → PF_PACK_PURCHASE_COMPLETED
+
+Conversie țintă banner→start ≥ 8%, start→complete ≥ 55%.
+
+5) Componente comune (FE)
+
+PaywallModal.tsx
+
+Props: {offerId, title, bullets[], price, ctaPrimary, ctaSecondary?, features[], proof?}
+
+States: {loading, error, success}
+
+Vizual: 2 coloane — „Ce deblochezi” / „Compară planuri” (Free/Creator/Pro/Enterprise). Planurile tale standard. 
+
+Gating (pseudo‑TS)
+
+function requireCapability(flag: keyof Entitlements, onAllowed: () => void, onBlocked: (offerId:string)=>void) {
+  if (currentUser.entitlements[flag]) return onAllowed();
+  const offerMap: Record<string,string> = {
+    canUseGptTestReal: 'pro_gpt_test',
+    canExportPDF: 'pro_export',
+    canExportJSON: 'pro_export',
+    hasAPI: 'enterprise_api',
+    hasWhiteLabel: 'enterprise_whitelabel'
+  };
+  onBlocked(offerMap[flag]);
+}
+
+
+Stripe integration (BE)
+
+/api/billing/create-checkout-session → body: {plan:'pro'|'enterprise'|'pack_fintech', term:'monthly'|'annual', seats?:number, coupon?:string}
+
+Webhook: checkout.session.completed → supabase.rpc('apply_entitlements', {plan, workspace_id}).
+
+RLS Supabase (schemă minimală)
+
+entitlements(workspace_id, flags jsonb) RLS by workspace membership.
+
+prompt_packs(workspace_id, pack, active bool).
+
+6) Event Taxonomy (toate suprafețele)
+
+Prefixează cu PF_:
+
+Impresii: PF_PAYWALL_VIEWED{surface, offerId}, PF_PACK_BANNER_VIEWED{domain}
+
+Acțiuni: PF_CHECKOUT_STARTED{plan,term}, PF_CHECKOUT_COMPLETED{plan,term}, PF_DEMO_BOOKED{type}
+
+Feature intent: PF_TEST_REAL_CLICK, PF_EXPORT_INTENT{format}, PF_API_DOCS_VIEWED
+
+Funnel: PF_UPSELL_DISMISSED{reason}, PF_TRIAL_STARTED{plan}, PF_TRIAL_CONVERTED{plan}
+
+Revenue ops: PF_REFUND_REQUESTED, PF_COUPON_APPLIED.
+
+Dashboards: view→start→complete per suprafață, ARPU, attach‑rate pack‑uri.
+
+7) Copy „RFA” (exemple executabile)
+
+Test real (Creator → Pro)
+
+H1: „Decizi pe real, nu pe simulare.”
+
+Sub: „Activează Pro: model GPT live + scor Evaluator AI + re‑runs.”
+
+CTA: „Activează Pro” / „Încearcă 7 zile”
+
+Export bundle (Creator → Pro)
+
+H1: „Exportă ca pachet gata de livrare.”
+
+Sub: „.pdf comercial, .json integrabil, .md documentabil.”
+
+API / White‑label (Enterprise)
+
+H1: „Transformă PROMPTFORGE în motorul tău intern.”
+
+Sub: „Endpoint per modul, chei per organizație, UI white‑label.”
+
+Pack FinTech (licență industrie)
+
+H1: „Activează FinTech mode.”
+
+Sub: „12 module calibrate pe KYC/AML, KPI și guardrails.” 
+
+8) Anti‑fricțiune & Edge cases
+
+Trial Pro: 7 zile fără card (cum ai definit) → „auto‑downgrade” fără pierdere date; păstrezi istoricul dar blochezi testul real/exporturile.
+
+Grace‑runs: 1 test real gratuit / lună în Creator (doar dacă ARPU nu scade).
+
+Offline / webhook fail: afișează „Upgrade reușit, deblocăm în <30s>” + retry; nu lăsa userul „între lumi”.
+
+Enterprise lead: dacă org ≧ 10 useri detectați → în loc de checkout, afișează „Request Enterprise” (demo).
+
+Compliance domain: FinTech/Healthcare/Legal → semantic guardrails auto‑injectate în module + copy‑ul paywall menționează compliance. 
+
+9) Experimente orchestrate (4 săpt.)
+
+S1: Test real—trial vs 3 run‑uri gratuite. MDE 5pp, α=0.05.
+
+S2: Export—preview .pdf blur vs listă beneficii.
+
+S3: Enterprise—CTA „Start now 5 seats” vs „Book 20’ fit call”.
+
+S4: Pack FinTech—banner la switch vs interstitial la „Generate Prompt” după switch.
+
+10) Acceptanță (DoD per suprafață)
+
+Test real: paywall render <150ms, checkout <2 clickuri>, post‑success re‑run automat.
+
+Export: .md/.json/.pdf/.bundle.zip disponibile instant după upgrade (fără reload). Bundle cu checksum. 
+
+API/White‑label: după upgrade, vizibil „Generate API Key”, docs cu POST /run/mXX. 
+
+Pack FinTech: schimbarea domeniului auto‑injectează jargon/KPI/guardrails + preset module list. 
+
+11) Hărți UI (unde monetizezi efectiv)
+
+Test Engine card (buton „Testează Prompt”): paywall „Pro | GPT real”. 
+
+Export bar (Prompt Generat): paywall „Pro | Export Bundle”. 
+
+Settings → Integrations / Branding: card Enterprise locking. 
+
+Control Panel 7D → Domain: banner Pack FinTech. 
+
+12) De ce funcționează (anatomic, 7D)
+
+Domeniu (FinTech etc.) schimbă imediat tonul, KPIs, guardrails — util pentru upsell de Industry Pack. 
+
+Scara (Enterprise) determină format multi‑artefact + API — justifică Enterprise. 
+
+Urgență (Crisis/Sprint) comprimă scope — copy mai „dur” în paywall. 
+
+Output (bundle/spec/json) = argumentul cheie pentru Pro/Enterprise. 
+
+13) Pseudocod evenimente & routing (execuție)
+// FE — surfaces
+buttonTest.onclick = () =>
+  requireCapability('canUseGptTestReal', runRealTest, offer => openPaywall(offer));
+
+exportBtn.onclick = (fmt) =>
+  ['md','pdf','json','bundle'].includes(fmt) && !has(fmt)
+    ? openPaywall('pro_export')
+    : doExport(fmt);
+
+apiTab.onView = () => !entitlements.hasAPI && openEnterpriseGate();
+domainSelect.onChange = (d) => (d==='fintech' && !hasPack('fintech')) && showPackBanner();
+
+// BE — Stripe webhook
+onCheckoutCompleted(session) => {
+  const {plan, workspace_id} = meta(session);
+  applyEntitlements(plan, workspace_id); // Pro/Enterprise/Pack
+}
+
+14) Guardrails etice (anti‑dark patterns)
+
+Fără „false timer”.
+
+Claritate preț + ce se deblochează exact (capabilități = entitlements).
+
+Unclick „Nu acum” mereu vizibil; menține funcționalitățile Creator (txt).
+
+Compliance text pentru domenii sensibile în paywall (FinTech/Healthcare/Legal). 
+
+Verdict: Monetizează în clipa deciziei tehnice — „test real”, „export ca artefact”, „integrează ca engine”, „schimbă industria” — fiecare click devine contract.
+
+

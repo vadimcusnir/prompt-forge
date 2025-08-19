@@ -1,0 +1,108 @@
+{
+  "plans": [
+    {
+      "code": "free",
+      "name": "Free",
+      "entitlements": {
+        "canUseAllModules": false,
+        "canExportMD": false,
+        "canExportPDF": false,
+        "canExportJSON": false,
+        "canUseGptTestReal": false,
+        "hasCloudHistory": false,
+        "hasEvaluatorAI": false,
+        "hasAPI": false,
+        "hasWhiteLabel": false,
+        "canExportBundleZip": false,
+        "hasSeatsGT1": false
+      },
+      "module_allowlist": [
+        "M01",
+        "M10",
+        "M18"
+      ],
+      "exports_allowed": [
+        "txt"
+      ],
+      "retention_days": 7,
+      "notes": "Acces demo; fără cloud history; doar copy/preview."
+    },
+    {
+      "code": "creator",
+      "name": "Creator",
+      "entitlements": {
+        "canUseAllModules": true,
+        "canExportMD": true,
+        "canExportPDF": false,
+        "canExportJSON": false,
+        "canUseGptTestReal": false,
+        "hasCloudHistory": false,
+        "hasEvaluatorAI": false,
+        "hasAPI": false,
+        "hasWhiteLabel": false,
+        "canExportBundleZip": false,
+        "hasSeatsGT1": false
+      },
+      "module_allowlist": "ALL",
+      "exports_allowed": [
+        "txt",
+        "md"
+      ],
+      "retention_days": 30,
+      "notes": "Export .md; fără JSON/PDF; fără GPT live; local history."
+    },
+    {
+      "code": "pro",
+      "name": "Pro",
+      "entitlements": {
+        "canUseAllModules": true,
+        "canExportMD": true,
+        "canExportPDF": true,
+        "canExportJSON": true,
+        "canUseGptTestReal": true,
+        "hasCloudHistory": true,
+        "hasEvaluatorAI": true,
+        "hasAPI": false,
+        "hasWhiteLabel": false,
+        "canExportBundleZip": false,
+        "hasSeatsGT1": false
+      },
+      "module_allowlist": "ALL",
+      "exports_allowed": [
+        "txt",
+        "md",
+        "json",
+        "pdf"
+      ],
+      "retention_days": 90,
+      "notes": "Include Test Engine pe GPT live + Evaluator AI + Cloud History."
+    },
+    {
+      "code": "enterprise",
+      "name": "Enterprise",
+      "entitlements": {
+        "canUseAllModules": true,
+        "canExportMD": true,
+        "canExportPDF": true,
+        "canExportJSON": true,
+        "canUseGptTestReal": true,
+        "hasCloudHistory": true,
+        "hasEvaluatorAI": true,
+        "hasAPI": true,
+        "hasWhiteLabel": true,
+        "canExportBundleZip": true,
+        "hasSeatsGT1": true
+      },
+      "module_allowlist": "ALL",
+      "exports_allowed": [
+        "txt",
+        "md",
+        "json",
+        "pdf",
+        "bundle"
+      ],
+      "retention_days": -1,
+      "notes": "API + WhiteLabel + Bundle ZIP + multi-seat; retenție nelimitată."
+    }
+  ]
+}

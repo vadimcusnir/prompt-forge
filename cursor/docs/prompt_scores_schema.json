@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PROMPTFORGE Prompt Scores",
+  "type": "object",
+  "required": [
+    "run_id",
+    "criteria",
+    "verdict",
+    "version"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Semver of rubric"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "module_id": {
+      "type": "string"
+    },
+    "parameter_set_7d": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "string"
+        },
+        "urgency": {
+          "type": "string"
+        },
+        "complexity": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "string"
+        },
+        "application": {
+          "type": "string"
+        },
+        "output_format": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "criteria": {
+      "type": "object",
+      "required": [
+        "clarity",
+        "execution",
+        "ambiguity",
+        "business_fit"
+      ],
+      "properties": {
+        "clarity": {
+          "type": "object",
+          "required": [
+            "score",
+            "notes"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "execution": {
+          "type": "object",
+          "required": [
+            "score",
+            "notes"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "ambiguity": {
+          "type": "object",
+          "required": [
+            "score",
+            "notes"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "notes": {
+              "type": "string"
+            },
+            "inverted": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "business_fit": {
+          "type": "object",
+          "required": [
+            "score",
+            "notes"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "weights": {
+      "type": "object",
+      "properties": {
+        "clarity": {
+          "type": "number"
+        },
+        "execution": {
+          "type": "number"
+        },
+        "ambiguity_inv": {
+          "type": "number"
+        },
+        "business_fit": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "properties": {
+        "clarity_min": {
+          "type": "integer",
+          "default": 80
+        },
+        "execution_min": {
+          "type": "integer",
+          "default": 80
+        },
+        "ambiguity_max": {
+          "type": "integer",
+          "default": 20
+        },
+        "business_fit_min": {
+          "type": "integer",
+          "default": 75
+        }
+      },
+      "additionalProperties": false
+    },
+    "composite": {
+      "type": "object",
+      "required": [
+        "score"
+      ],
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "formula": {
+          "type": "string",
+          "description": "normalized weighted formula applied"
+        }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "partial_pass",
+        "fail"
+      ]
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Follow-up actions like 'tighten', 'optimize_enterprise', 'crisis_mode'"
+    },
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "tokens_used": {
+          "type": "integer"
+        },
+        "duration_ms": {
+          "type": "integer"
+        },
+        "policy_hits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

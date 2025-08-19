@@ -1,0 +1,58 @@
+{
+  "products": [
+    {
+      "code": "free",
+      "stripe_product_id": "prod_FREE",
+      "prices": [
+        {
+          "interval": "month",
+          "amount_eur": 0
+        }
+      ]
+    },
+    {
+      "code": "creator",
+      "stripe_product_id": "prod_CREATOR",
+      "prices": [
+        {
+          "interval": "month",
+          "amount_eur": 29
+        },
+        {
+          "interval": "year",
+          "amount_eur": 290
+        }
+      ]
+    },
+    {
+      "code": "pro",
+      "stripe_product_id": "prod_PRO",
+      "prices": [
+        {
+          "interval": "month",
+          "amount_eur": 79
+        },
+        {
+          "interval": "year",
+          "amount_eur": 790
+        }
+      ]
+    },
+    {
+      "code": "enterprise",
+      "stripe_product_id": "prod_ENTERPRISE",
+      "prices": [
+        {
+          "interval": "month",
+          "amount_eur": 0,
+          "note": "custom"
+        },
+        {
+          "interval": "year",
+          "amount_eur": 0,
+          "note": "custom"
+        }
+      ]
+    }
+  ]
+}

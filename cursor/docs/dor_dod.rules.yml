@@ -1,0 +1,38 @@
+ruleset: PROMPTFORGE_v3
+semver: 0.1.0
+DoR:
+  description: Definition of Ready
+  conditions:
+  - id: 7d_valid
+    desc: 7D complet, valori ∈ enum, signature calculată
+    required: true
+  - id: entitlement_valid
+    desc: Planul și domain entitlement sunt valide
+    required: true
+  - id: output_spec_loaded
+    desc: Output spec prezent și complet în module.spec.json
+    required: true
+  - id: tests_defined
+    desc: Cel puțin un testcase definit în modul
+    required: true
+  - id: input_minimum
+    desc: Inputs.custom conțin toate câmpurile required
+    required: true
+DoD:
+  description: Definition of Done
+  conditions:
+  - id: score_threshold
+    desc: Scor total ≥ 80
+    required: true
+  - id: output_complete
+    desc: Toate câmpurile required din outputs.fields sunt populate
+    required: true
+  - id: checksum_valid
+    desc: Fișierele exportate au hash sha256 valid și verificat
+    required: true
+  - id: manifest_written
+    desc: Manifest export.manifest.json există și e complet
+    required: true
+  - id: telemetry_saved
+    desc: Telemetria pentru run este persistată în DB (fără content brut)
+    required: true

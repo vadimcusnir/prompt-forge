@@ -1,0 +1,852 @@
+
+
+
+# PROMPTFORGE™ CI/CD Workflows
+
+Acest pachet conține 11 workflow-uri GitHub Actions, optimizate pentru monorepo Node/TypeScript + Prisma/Supabase și deploy pe Vercel/Netlify/Cloudflare/AWS (prin OIDC).
+
+## Lista workflow-urilor
+- `cache.yml` — cache & optimizare (încălzire)
+- `security.yml` — securitate & compliance (Gitleaks, audit, dependency review, CodeQL)
+- `performance.yml` — Lighthouse CI local (build + start + audit)
+- `database.yml` — validare scheme & migrații Prisma (dry-run pe PR, deploy pe `main`)
+- `release.yml` — Changesets: versionare, changelog, release, publish npm
+- `cleanup.yml` — curățare cache & preview environments
+- `testing.yml` — lint, typecheck, unit/integration, E2E (Playwright), coverage
+- `build-deploy.yml` — build + deploy preview/prod (Vercel/Netlify/Cloudflare Pages/AWS)
+- `monitoring.yml` — health checks + k6 synthetic tests
+- `backup.yml` — backup Postgres (pg_dump) către S3 prin OIDC
+- `dependencies.yml` — actualizare automată deps + PR săptămânal
+
+## Variabile/Secrete recomandate
+Setează în **Repository Variables** sau **Environment Secrets** (după caz):
+
+- `NODE_VERSION` (ex. `lts/*`), `PNPM_VERSION` (ex. `9`)
+- `DATABASE_URL`, `SHADOW_DATABASE_URL`
+- `DEPLOY_TARGET` (`vercel|netlify|cloudflare|aws`), `PRODUCTION_URL`
+- Vercel: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- Netlify: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`
+- Cloudflare: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`
+- AWS: `AWS_REGION`, `AWS_ROLE_TO_ASSUME`, `S3_BUCKET`, `S3_PREFIX`
+- Opțional: `CODECOV_TOKEN`, `NPM_TOKEN`, `SNYK_TOKEN`, `LHCI_GITHUB_APP_TOKEN`
+
+## Ordine minimă
+`dependencies` → `testing` → `security` → `performance` → `database` → `build-deploy` → `monitoring` → `release` → `backup` → `cleanup`
+
+---
+
+**Notă**: Workflow-urile sunt configurate conservator, cu _placeholders_ marcate prin comentarii (TODO). Adaptează comenzile de build/start pentru proiectul tău.
+
+
+
+
+
+
+
+# This script creates a CI/CD workflows bundle for GitHub Actions,
+# including 11 specialized workflows and a README, then zips them
+# for download from /mnt/data.
+
+import os, json, zipfile, textwrap, pathlib, datetime
+
+root = "/mnt/data/promptforge_ci_workflows"
+workflows_dir = os.path.join(root, ".github", "workflows")
+os.makedirs(workflows_dir, exist_ok=True)
+
+now = datetime.datetime.utcnow().isoformat() + "Z"
+
+files = {}
+
+files["README.md"] = f"""# PROMPTFORGE™ CI/CD Workflows
+
+> Generated: {now}
+
+Acest pachet conține 11 workflow-uri GitHub Actions, optimizate pentru monorepo Node/TypeScript + Prisma/Supabase și deploy pe Vercel/Netlify/Cloudflare/AWS (prin OIDC).
+
+## Lista workflow-urilor
+- `cache.yml` — cache & optimizare (încălzire)
+- `security.yml` — securitate & compliance (Gitleaks, audit, dependency review, CodeQL)
+- `performance.yml` — Lighthouse CI local (build + start + audit)
+- `database.yml` — validare scheme & migrații Prisma (dry-run pe PR, deploy pe `main`)
+- `release.yml` — Changesets: versionare, changelog, release, publish npm
+- `cleanup.yml` — curățare cache & preview environments
+- `testing.yml` — lint, typecheck, unit/integration, E2E (Playwright), coverage
+- `build-deploy.yml` — build + deploy preview/prod (Vercel/Netlify/Cloudflare Pages/AWS)
+- `monitoring.yml` — health checks + k6 synthetic tests
+- `backup.yml` — backup Postgres (pg_dump) către S3 prin OIDC
+- `dependencies.yml` — actualizare automată deps + PR săptămânal
+
+## Variabile/Secrete recomandate
+Setează în **Repository Variables** sau **Environment Secrets** (după caz):
+
+- `NODE_VERSION` (ex. `lts/*`), `PNPM_VERSION` (ex. `9`)
+- `DATABASE_URL`, `SHADOW_DATABASE_URL`
+- `DEPLOY_TARGET` (`vercel|netlify|cloudflare|aws`), `PRODUCTION_URL`
+- Vercel: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- Netlify: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`
+- Cloudflare: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`
+- AWS: `AWS_REGION`, `AWS_ROLE_TO_ASSUME`, `S3_BUCKET`, `S3_PREFIX`
+- Opțional: `CODECOV_TOKEN`, `NPM_TOKEN`, `SNYK_TOKEN`, `LHCI_GITHUB_APP_TOKEN`
+
+## Ordine minimă
+`dependencies` → `testing` → `security` → `performance` → `database` → `build-deploy` → `monitoring` → `release` → `backup` → `cleanup`
+
+---
+
+**Notă**: Workflow-urile sunt configurate conservator, cu _placeholders_ marcate prin comentarii (TODO). Adaptează comenzile de build/start pentru proiectul tău.
+"""
+
+files[".github/workflows/cache.yml"] = textwrap.dedent("""
+name: Cache & Optimization
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *" # daily at 04:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cache-warm-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  warm-pnpm-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+
+      - name: Install dependencies (warm cache)
+        run: pnpm install --frozen-lockfile
+""")
+
+files[".github/workflows/security.yml"] = textwrap.dedent("""
+name: Security & Compliance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * *" # daily at 02:00 UTC
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  gitleaks:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          config-path: ""
+          redact: "true"
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    name: Dependency Review (GitHub)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+
+  audit-and-snyk:
+    name: Package Audit (pnpm) + Snyk (optional)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: pnpm audit (prod, high severity)
+        run: pnpm audit --prod --audit-level=high || true
+      - name: Snyk Monitor (optional)
+        if: env.SNYK_TOKEN != ''
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          pnpm dlx snyk auth "$SNYK_TOKEN"
+          pnpm dlx snyk monitor || true
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript-typescript' ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - run: pnpm install --frozen-lockfile
+      - uses: github/codeql-action/analyze@v3
+""")
+
+files[".github/workflows/performance.yml"] = textwrap.dedent("""
+name: Performance & Lighthouse
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BUILD_COMMAND: ${{ vars.LHCI_BUILD_COMMAND || 'pnpm -s build' }}
+      START_COMMAND: ${{ vars.LHCI_START_COMMAND || 'pnpm -s start' }}
+      LHCI_TEST_URL: ${{ vars.PRODUCTION_URL || 'http://localhost:3000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        run: $BUILD_COMMAND
+
+      - name: Start app (background)
+        run: |
+          nohup sh -c "$START_COMMAND" >/dev/null 2>&1 &
+          echo $! > .server_pid
+
+      - name: Wait for app
+        run: npx wait-on $LHCI_TEST_URL
+
+      - name: Lighthouse CI (temporary storage)
+        run: |
+          pnpm dlx @lhci/cli autorun \
+            --collect.url="$LHCI_TEST_URL" \
+            --upload.target=temporary-public-storage
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f .server_pid ]; then kill $(cat .server_pid) || true; fi
+""")
+
+files[".github/workflows/database.yml"] = textwrap.dedent("""
+name: Database & Migrations (Prisma)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  prisma-dry-run:
+    if: github.event_name == 'pull_request'
+    name: Validate Schema & Migrations (PR)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - run: pnpm install --frozen-lockfile
+
+      - name: Prisma format & validate
+        run: |
+          pnpm prisma format
+          pnpm prisma validate --schema=prisma/schema.prisma
+
+      - name: Check migrations are in sync (no DB access)
+        run: |
+          pnpm prisma migrate diff \
+            --from-migrations=prisma/migrations \
+            --to-schema-datamodel=prisma/schema.prisma \
+            --exit-code
+
+  prisma-deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    name: Migrate Deploy (main)
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - run: pnpm install --frozen-lockfile
+      - name: Prisma migrate deploy
+        run: pnpm prisma migrate deploy --schema=prisma/schema.prisma
+      - name: (Optional) Seed
+        if: env.RUN_DB_SEED == 'true'
+        env:
+          RUN_DB_SEED: ${{ vars.RUN_DB_SEED || '' }}
+        run: pnpm prisma db seed
+""")
+
+files[".github/workflows/release.yml"] = textwrap.dedent("""
+name: Release Management (Changesets)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Create Release PR / Publish
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm -r publish --access public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+""")
+
+files[".github/workflows/cleanup.yml"] = textwrap.dedent("""
+name: Cleanup & Maintenance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 0" # weekly, Sunday 03:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup-caches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install gh extension for actions-cache
+        run: |
+          type -p gh >/dev/null || sudo apt-get update && sudo apt-get install -y gh
+          gh extension install actions/gh-actions-cache
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete old caches (> 14 days)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          now=$(date -u +%s)
+          # List caches (json)
+          gh actions-cache list --limit 1000 --json id,key,ref,last_accessed_at > caches.json
+          python3 - << 'PY'
+import json, os, sys, datetime
+from dateutil import parser
+# Fallback parser if dateutil missing
+def parse(dt):
+    try:
+        from dateutil import parser as p
+        return p.isoparse(dt)
+    except Exception:
+        return datetime.datetime.fromisoformat(dt.replace('Z','+00:00'))
+with open('caches.json') as f:
+    data = json.load(f)
+cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=14)
+to_del = [c['id'] for c in data if parse(c['last_accessed_at']) < cutoff]
+open('delete.txt','w').write("\\n".join(str(i) for i in to_del))
+print(f"Found {len(to_del)} caches to delete")
+PY
+          while read -r id; do
+            if [ -n "$id" ]; then
+              echo "Deleting cache id=$id"
+              gh actions-cache delete --confirm --cache-id "$id"
+            fi
+          done < delete.txt
+
+  cleanup-previews-vercel:
+    if: env.VERCEL_TOKEN != ''
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+      - name: Delete old preview deployments (last 20 kept)
+        run: |
+          vercel ls --token "$VERCEL_TOKEN" --confirm --scope "$VERCEL_ORG_ID" > vercel.txt || true
+          # TODO: Adaugă logica ta de filtrare/ștergere în funcție de naming-ul proiectului.
+""")
+
+files[".github/workflows/testing.yml"] = textwrap.dedent("""
+name: Testing & Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint --if-present
+      - name: Typecheck
+        run: pnpm typecheck --if-present
+      - name: Unit & Integration tests
+        run: pnpm test -- --coverage
+      - name: Upload coverage to Codecov
+        if: env.CODECOV_TOKEN != ''
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  e2e-playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        uses: microsoft/playwright-github-action@v1
+      - name: Build app
+        run: pnpm -s build --if-present
+      - name: Start app (background)
+        run: |
+          nohup pnpm -s start >/dev/null 2>&1 &
+          echo $! > .server_pid
+      - name: Wait for app
+        run: npx wait-on ${{ vars.E2E_BASE_URL || 'http://localhost:3000' }}
+      - name: Run Playwright E2E
+        run: pnpm -s e2e --if-present
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f .server_pid ]; then kill $(cat .server_pid) || true; fi
+""")
+
+files[".github/workflows/build-deploy.yml"] = textwrap.dedent("""
+name: Build & Deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  deployments: write
+  id-token: write
+
+env:
+  DEPLOY_TARGET: ${{ vars.DEPLOY_TARGET || 'vercel' }}
+  BUILD_DIR: ${{ vars.BUILD_DIR || 'dist' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      build-dir: ${{ steps.set-output.outputs.build-dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm -s build --if-present
+      - id: set-output
+        run: echo "build-dir=${{ env.BUILD_DIR }}" >> "$GITHUB_OUTPUT"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: ${{ env.BUILD_DIR }}
+          if-no-files-found: ignore
+
+  deploy-preview:
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: ./dist
+
+      - name: Deploy Preview (Vercel)
+        if: env.DEPLOY_TARGET == 'vercel'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          alias-domains: ""
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          github-comment: true
+          vercel-args: "--prebuilt"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Preview (Netlify)
+        if: env.DEPLOY_TARGET == 'netlify'
+        uses: netlify/actions/cli@v2
+        with:
+          args: deploy --dir=./dist --message="Preview from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Deploy Preview (Cloudflare Pages)
+        if: env.DEPLOY_TARGET == 'cloudflare'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ secrets.CF_PAGES_PROJECT }}
+          directory: ./dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-production:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: ./dist
+
+      - name: Deploy Production (Vercel)
+        if: env.DEPLOY_TARGET == 'vercel'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          alias-domains: ""
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          github-comment: true
+          vercel-args: "--prebuilt --prod"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Production (Netlify)
+        if: env.DEPLOY_TARGET == 'netlify'
+        uses: netlify/actions/cli@v2
+        with:
+          args: deploy --dir=./dist --prod --message="Prod from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Deploy Production (Cloudflare Pages)
+        if: env.DEPLOY_TARGET == 'cloudflare'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ secrets.CF_PAGES_PROJECT }}
+          directory: ./dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to AWS S3/CloudFront (optional)
+        if: env.DEPLOY_TARGET == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Sync to S3
+        if: env.DEPLOY_TARGET == 'aws'
+        run: |
+          aws s3 sync ./dist s3://${{ secrets.S3_BUCKET }}/${{ secrets.S3_PREFIX || '' }} --delete
+""")
+
+files[".github/workflows/monitoring.yml"] = textwrap.dedent("""
+name: Monitoring & Alerting
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *" # every 30 minutes
+
+permissions:
+  contents: read
+
+jobs:
+  healthchecks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health
+        run: |
+          set -e
+          URL="${{ vars.HEALTHCHECK_URL || vars.PRODUCTION_URL || '' }}"
+          if [ -z "$URL" ]; then
+            echo "HEALTHCHECK_URL/PRODUCTION_URL not set. Skipping."
+            exit 0
+          fi
+          curl -fsS "$URL/health" || curl -fsS "$URL" || exit 1
+
+  k6-synthetics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create k6 script
+        run: |
+          cat > test.js <<'K6'
+          import http from 'k6/http';
+          import { sleep, check } from 'k6';
+          export const options = {
+            vus: 2,
+            duration: '30s',
+            thresholds: {
+              http_req_duration: ['p(95)<800'], // 95% sub 800ms
+            },
+          };
+          export default function () {
+            const url = `${__ENV.BASE_URL || 'https://example.com'}`;
+            const res = http.get(url);
+            check(res, {
+              'status is 2xx/3xx': (r) => r.status >= 200 && r.status < 400,
+            });
+            sleep(1);
+          }
+K6
+      - name: Run k6
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: test.js
+        env:
+          BASE_URL: ${{ vars.PRODUCTION_URL || '' }}
+""")
+
+files[".github/workflows/backup.yml"] = textwrap.dedent("""
+name: Backup & Disaster Recovery (Postgres → S3)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *" # daily at 01:00 UTC
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  pg-dump-to-s3:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client & gzip
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Dump & Upload
+        run: |
+          set -e
+          TS=$(date -u +'%Y%m%d-%H%M%S')
+          FILE="pgdump-$TS.sql.gz"
+          pg_dump "$DATABASE_URL" | gzip > "$FILE"
+          aws s3 cp "$FILE" "s3://${{ secrets.S3_BUCKET }}/${{ secrets.S3_PREFIX || '' }}$FILE"
+""")
+
+files[".github/workflows/dependencies.yml"] = textwrap.dedent("""
+name: Dependency Management
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 1" # weekly Monday 05:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || 'lts/*' }}
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ vars.PNPM_VERSION || '9' }}
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Generate outdated report
+        run: |
+          mkdir -p .gh-artifacts
+          pnpm outdated || true | tee .gh-artifacts/outdated.txt
+      - name: Update minor/patch deps
+        run: |
+          pnpm up -r --latest --filter='...[HEAD]' || true
+      - name: Build to validate
+        run: pnpm -s build --if-present || true
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(deps): weekly update"
+          title: "chore(deps): weekly update"
+          body: |
+            This PR updates dependencies to their latest versions.
+            Please review changes and ensure compatibility.
+          branch: chore/weekly-deps
+          labels: dependencies
+      - name: Upload outdated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-report
+          path: .gh-artifacts/outdated.txt
+
+
+
+
+
+
+.github/workflows/cache.yml — Cache & Optimization (încălzire pnpm, programat)
+.github/workflows/security.yml — Gitleaks + Dependency Review + pnpm audit + CodeQL
+.github/workflows/performance.yml — Lighthouse CI local (build → start → audit)
+.github/workflows/database.yml — Prisma: validate/diff pe PR, migrate deploy pe main
+.github/workflows/release.yml — Changesets (versionare, changelog, release, publish)
+.github/workflows/cleanup.yml — Curățare cache vechi + hook pentru preview cleanup
+.github/workflows/testing.yml — Lint, typecheck, unit/integration, Playwright E2E, coverage
+.github/workflows/build-deploy.yml — Build + deploy (Preview/Prod) pentru Vercel/Netlify/Cloudflare, opțional AWS S3/CF
+.github/workflows/monitoring.yml — Health check + k6 synthetic (cron/manuel)
+.github/workflows/backup.yml — Backup Postgres către S3 via OIDC (pg_dump + gzip)
+.github/workflows/dependencies.yml — Update deps săptămânal + PR automat
+README.md — instrucțiuni, secrete/variabile, ordine recomandată
+
+
+Copiază conținutul în repo (rădăcină; respectă structura de foldere).
+
+Setează variabile/secrete minime:
+NODE_VERSION=lts/*, PNPM_VERSION=9
+DATABASE_URL, SHADOW_DATABASE_URL
+DEPLOY_TARGET=vercel|netlify|cloudflare|aws, PRODUCTION_URL
+
+Cheile providerului ales (ex: VERCEL_* sau NETLIFY_* sau CF_* ori AWS_*)
+Activează branch protection pe main cu checks obligatorii: testing, security, performance, database.
+Rulează manual Security & Compliance, Dependency Management și Cache & Optimization pentru baseline.
+Deschide un PR mic pentru a testa preview + LHCI + diff migrații + suite de teste.
+

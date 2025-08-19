@@ -1,0 +1,112 @@
+{
+  "module_id": "MXX",
+  "name": "",
+  "vectors": [
+    2,
+    6
+  ],
+  "purpose": "",
+  "inputs": {
+    "parameter_set_7d": {
+      "domain": "",
+      "scale": "",
+      "urgency": "",
+      "complexity": "",
+      "resources": "",
+      "application": "",
+      "output_format": ""
+    },
+    "module_params": {},
+    "context_assets": []
+  },
+  "process": {
+    "steps": [
+      "collect",
+      "analyze",
+      "generate",
+      "validate",
+      "adapt",
+      "format"
+    ],
+    "eval_hooks": [
+      "clarity>=80",
+      "execution>=80",
+      "policy_ok"
+    ],
+    "post_ops": [
+      "structure_output",
+      "attach_metrics",
+      "bundle_export"
+    ]
+  },
+  "outputs": {
+    "primary": {
+      "type": "spec",
+      "schema": {
+        "sections": []
+      }
+    },
+    "secondary": [
+      {
+        "type": "checklist",
+        "path": "checklist.md"
+      }
+    ]
+  },
+  "kpi": {
+    "definition": [
+      {
+        "name": "clarity",
+        "calc": "prompt_scores.clarity"
+      },
+      {
+        "name": "execution",
+        "calc": "prompt_scores.execution"
+      }
+    ],
+    "targets": {
+      "clarity": 85,
+      "execution": 85
+    },
+    "measurement": "scores from Evaluator AI + task-specific metrics"
+  },
+  "guardrails": {
+    "policy": [
+      "gdpr",
+      "ip/copyright",
+      "domain_compliance"
+    ],
+    "style": {
+      "tone": "audit-like",
+      "bias": "data-first"
+    },
+    "constraints": {
+      "max_tokens": 6000,
+      "temperature": 0.4
+    },
+    "fallbacks": [
+      "reduce_scope",
+      "ask_for_missing_inputs",
+      "switch_format"
+    ]
+  },
+  "dependencies": {
+    "internal": [
+      "domain_configs",
+      "evaluator_ai",
+      "export_templates"
+    ],
+    "external": []
+  },
+  "telemetry": {
+    "enabled": true
+  },
+  "export": {
+    "formats": [
+      "md",
+      "json",
+      "pdf"
+    ],
+    "structure": "by-domain/module"
+  }
+}

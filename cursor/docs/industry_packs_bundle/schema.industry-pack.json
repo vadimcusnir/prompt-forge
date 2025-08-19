@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IndustryPack",
+  "type": "object",
+  "required": [
+    "slug",
+    "title",
+    "price_eur_per_year",
+    "min_plan",
+    "modules",
+    "domain_preset",
+    "export_requirements"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "price_eur_per_year": {
+      "type": "integer"
+    },
+    "min_plan": {
+      "type": "string",
+      "enum": [
+        "creator",
+        "pro",
+        "enterprise"
+      ]
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^M\\d{2}$"
+      }
+    },
+    "domain_preset": {
+      "type": "object",
+      "required": [
+        "jargon",
+        "kpis",
+        "compliance_notes",
+        "style_bias",
+        "default_output_format",
+        "risk_level"
+      ],
+      "properties": {
+        "jargon": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kpis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "compliance_notes": {
+          "type": "string"
+        },
+        "style_bias": {
+          "type": "string"
+        },
+        "default_output_format": {
+          "type": "string"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    },
+    "defaults_7d": {
+      "type": "object",
+      "properties": {
+        "scale": {
+          "type": "string"
+        },
+        "urgency": {
+          "type": "string"
+        },
+        "complexity": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "string"
+        },
+        "application": {
+          "type": "string"
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "export_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evaluator_lints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "upsell_banner_copy": {
+          "type": "string"
+        },
+        "paywall_feature": {
+          "type": "string"
+        }
+      }
+    },
+    "stripe": {
+      "type": "object",
+      "properties": {
+        "floor_eur": {
+          "type": "integer"
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "price_id_monthly": {
+          "type": "string"
+        },
+        "price_id_annual": {
+          "type": "string"
+        }
+      }
+    },
+    "supabase": {
+      "type": "object",
+      "properties": {
+        "gating_sql_note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,272 @@
+{
+  "$id": "https://promptforge.v3/schemas/prompt.run.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PROMPTFORGE v3 — prompt.json (Run Config)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project",
+    "run_id",
+    "module",
+    "sevenD",
+    "entitlements",
+    "telemetry"
+  ],
+  "properties": {
+    "project": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_\\-\\.]{3,64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "org_id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "admin",
+            "editor",
+            "viewer"
+          ]
+        }
+      }
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^M\\d{2}$"
+        },
+        "semver": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "pin_semver": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "sevenD": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "output"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "string"
+        },
+        "urgency": {
+          "type": "string"
+        },
+        "complexity": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "string"
+        },
+        "application": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "diversity_budget": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.2
+        },
+        "requested": {
+          "type": "object"
+        },
+        "final": {
+          "type": "object"
+        },
+        "signature": {
+          "type": "string",
+          "minLength": 4
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Params custom pentru modul; validarea se face cu module.spec.schema.json > inputs.schema."
+    },
+    "deps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_run_id",
+          "module_code",
+          "signature_7d"
+        ],
+        "properties": {
+          "from_run_id": {
+            "type": "string"
+          },
+          "module_code": {
+            "type": "string",
+            "pattern": "^M\\d{2}$"
+          },
+          "artifact_ref": {
+            "type": "string",
+            "description": "Ex: path relativ în bundle sau cheie logică"
+          },
+          "signature_7d": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entitlements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan"
+      ],
+      "properties": {
+        "plan": {
+          "type": "string",
+          "enum": [
+            "Pilot",
+            "Pro",
+            "Enterprise"
+          ]
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "industry_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "export": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requested_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "txt",
+              "md",
+              "pdf",
+              "json"
+            ]
+          }
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "public"
+          ],
+          "default": "internal"
+        }
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "no_promises": {
+          "type": "boolean",
+          "default": true
+        },
+        "no_unfounded_claims": {
+          "type": "boolean",
+          "default": true
+        },
+        "confidentiality": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tta_seconds",
+        "score"
+      ],
+      "properties": {
+        "tta_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "tokens_in": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tokens_out": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "policy_hits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

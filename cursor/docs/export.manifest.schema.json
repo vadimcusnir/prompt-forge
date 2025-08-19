@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExportManifest",
+  "type": "object",
+  "required": [
+    "project",
+    "module",
+    "run_id",
+    "sevenD",
+    "files",
+    "score",
+    "kpi",
+    "license_notice",
+    "created_at"
+  ],
+  "properties": {
+    "project": {
+      "type": "string"
+    },
+    "module": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "sevenD": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "string"
+        },
+        "urgency": {
+          "type": "string"
+        },
+        "complexity": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "string"
+        },
+        "application": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "scale",
+        "urgency",
+        "complexity",
+        "resources",
+        "application",
+        "output"
+      ]
+    },
+    "files": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "type": "string"
+        }
+      }
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "kpi": {
+      "type": "object"
+    },
+    "license_notice": {
+      "type": "string"
+    },
+    "bundle_checksum": {
+      "type": "string"
+    },
+    "path_prefix": {
+      "type": "string"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "public"
+      ]
+    },
+    "dlp_summary": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

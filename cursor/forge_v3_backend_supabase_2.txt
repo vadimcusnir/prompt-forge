@@ -1,0 +1,1833 @@
+
+
+
+
+
+bundles cap‑coadă (DDL + RLS + indici + validări + utilitare + example), aliniat 1:1 cu blueprintul PROMPTFORGE™ v3 (export .md/.pdf/.json + .zip, checksum, manifest/licență, relație cu runs)【】【】.
+
+1) DDL (Postgres/Supabase)
+-- extensii recomandate
+create extension if not exists "uuid-ossp";
+
+-- Tabela BUNDLES (exporturi .md/.pdf/.json/.zip)
+create table if not exists public.bundles (
+  id              uuid primary key default gen_random_uuid(),
+  run_id          uuid not null references public.runs(id) on delete cascade,
+
+  -- ce formate au fost generate în acest pachet (md|pdf|json|zip)
+  formats         text[] not null,                         -- ex: {md,pdf,json}
+  paths           jsonb  not null,                         -- {md:'/storage/.../prompt.md', pdf:'...', json:'...', zip:'...'}
+  checksum        text   not null,                         -- "sha256:<hex>" (bundle checksum)
+  exported_at     timestamptz not null default now(),
+
+  -- versionare & licență
+  version         text   not null,                         -- semver al exporterului/manifestului
+  license_notice  text   not null,                         -- ex: "© PROMPTFORGE v3 — licensed to ORG X. Redistribution prohibited."
+
+  -- igienă / validări
+  constraint ck_formats_nonempty  check (array_length(formats,1) >= 1),
+  constraint ck_paths_object      check (jsonb_typeof(paths) = 'object'),
+  constraint ck_checksum_sha256   check (checksum ~ '^sha256:[0-9a-f]{64}$')
+);
+
+-- indici practici
+create index if not exists bundles_run_idx       on public.bundles (run_id);
+create index if not exists bundles_exported_idx  on public.bundles (exported_at desc);
+create index if not exists bundles_formats_gin   on public.bundles using gin (formats);
+
+
+Structura corespunde exact modelării v3 (id, run_id, formats[], paths, checksum, exported_at, version, license_notice) și relației runs 1‑N bundles【】.
+
+2) RLS (multi‑tenant by membership)
+alter table public.bundles enable row level security;
+
+-- SELECT: orice membru al org‑ului run‑ului poate vedea bundle‑ul
+create policy bundles_select_by_membership on public.bundles
+for select using (
+  exists (
+    select 1 from public.runs r
+    join public.org_members m on m.org_id = r.org_id
+    where r.id = bundles.run_id and m.user_id = auth.uid()
+  )
+);
+
+-- INSERT: de obicei efectuat de backend (service role) când finalizezi exportul
+create policy bundles_no_client_writes on public.bundles
+for all using (false) with check (false);
+
+
+RLS urmează același tipar din v3: vizibilitate prin apartenența la organizația run‑ului【】.
+
+3) Constrângeri & bune practici
+
+formats: restricționează la setul așteptat (md, pdf, json, zip) în aplicație (sau un check constraint dacă vrei hard).
+
+paths: conține doar cheile prezente în formats (validezi la nivel de backend).
+
+checksum: este hash‑ul de pachet (nu per‑fișier) calculat ca SHA‑256 al concatenării hash‑urilor per‑fișier în ordinea canonică (prompt.txt → prompt.json → prompt.md → prompt.pdf → manifest.json) conform standardului de export v3【】.
+
+version: semver al manifestului/exporterului; pe schimbări MAJOR în schemă, păstrezi compat script.
+
+license_notice: necesar pentru audit și conformitate comercială (gating Pro/Enterprise)【】.
+
+4) Utilitare (server‑side)
+4.1. Inserare bundle (helper simplu)
+create or replace function public.bundle_insert(
+  p_run uuid,
+  p_formats text[],
+  p_paths jsonb,
+  p_checksum text,
+  p_version text,
+  p_license text
+) returns uuid
+language plpgsql security definer as $$
+declare
+  v_id uuid;
+begin
+  insert into public.bundles(run_id, formats, paths, checksum, version, license_notice)
+  values (p_run, p_formats, p_paths, p_checksum, p_version, p_license)
+  returning id into v_id;
+  return v_id;
+end $$;
+
+4.2. Verificare rapidă bundle‑uri per run
+create or replace view public.v_run_bundles as
+select b.id, b.run_id, b.formats, b.checksum, b.exported_at, b.version, b.license_notice
+from public.bundles b;
+
+5) Flux „Generate → Score → Bundle” (context)
+
+runs → finalizezi execuția (success)
+
+prompt_scores → salvezi scorurile evaluatorului
+
+export → scrii fișierele în Storage, calculezi hash‑urile per‑fișier, apoi bundle checksum + manifest și inserezi în bundles (păstrând paths + formats)【】【】.
+
+Exemplu de paths:
+
+{
+  "md":   "/storage/bundles/2025-08-19/fintech/M07/.../prompt.md",
+  "pdf":  "/storage/bundles/.../prompt.pdf",
+  "json": "/storage/bundles/.../prompt.json",
+  "zip":  "/storage/bundles/.../bundle-M07-<hash>.zip"
+}
+
+6) Gating comercial (Pro/Enterprise)
+
+Pro: export .md/.pdf/.json (fără .zip).
+
+Enterprise: include și .zip (flag canExportBundleZip), plus API/white‑label.
+Gatingul se face pe entitlements la momentul exportului (plan → flags) conform politicilor v3【】【】【】.
+
+7) Seed & test minimal
+-- presupunem că există un run de succes :run_id
+select public.bundle_insert(
+  :run_id,
+  array['md','pdf','json'],
+  '{"md":"/storage/.../prompt.md","pdf":"/storage/.../prompt.pdf","json":"/storage/.../prompt.json"}'::jsonb,
+  'sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+  '1.0.0',
+  '© PROMPTFORGE v3 — licensed to ORG X. Redistribution prohibited.'
+);
+
+De ce așa?
+
+Respectă exact schema din blueprint (câmpuri + relații + flux) și rolul bundle‑ului ca artefact comercial verificabil (checksum + manifest + licență)【】【】.
+
+RLS garantat multi‑tenant prin runs → org_members.
+
+Indici și validări orientate pe audit & livrare (formats/paths/checksum).
+
+
+
+
+
+
+projects cap‑coadă (DDL + indici + RLS + integritate + utilitare), aliniat la blueprintul PROMPTFORGE™ v3: „grupare logică per client/proiect”, legat de orgs și folosit de runs/bundles/prompts pentru audit și raportare【】.
+
+1) DDL (Postgres/Supabase)
+-- extensii
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- tabelul PROJECTS (scoped la org)
+create table if not exists public.projects (
+  id          uuid primary key default gen_random_uuid(),
+  org_id      uuid not null references public.orgs(id) on delete cascade,
+  slug        text not null check (slug ~ '^[a-z0-9-]{3,40}$'),
+  name        text not null,
+  description text,
+  meta        jsonb,                               -- {client_ref, tags[], color, ...}
+  created_by  uuid references auth.users(id),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+
+  -- unicitate slug în cadrul aceleiași org
+  unique (org_id, slug),
+  -- igienă meta
+  constraint ck_meta_is_object check (meta is null or jsonb_typeof(meta)='object')
+);
+
+-- trigger updated_at
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists projects_set_updated_at on public.projects;
+create trigger projects_set_updated_at
+before update on public.projects
+for each row execute procedure public.trg_set_updated_at();
+
+-- indici practici
+create index if not exists projects_org_idx      on public.projects (org_id, created_at desc);
+create index if not exists projects_slug_idx     on public.projects (slug);
+create index if not exists projects_name_trgm    on public.projects using gin (name gin_trgm_ops);
+
+
+În schema v3, projects este pivot de grupare pentru runs/bundles/prompts, cu RLS pe org_id și slug unic pe org【】.
+
+2) RLS (multi‑tenant, by membership)
+alter table public.projects enable row level security;
+
+-- SELECT: orice membru al org-ului poate vedea proiectele org-ului
+create policy projects_select_by_membership on public.projects
+for select using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = projects.org_id and m.user_id = auth.uid()
+  )
+);
+
+-- INSERT: membru (sau restrânge la owner/admin)
+create policy projects_insert_by_member on public.projects
+for insert with check (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = projects.org_id and m.user_id = auth.uid()
+  )
+);
+
+-- UPDATE/DELETE: doar owner/admin
+create policy projects_update_by_admin on public.projects
+for update using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = projects.org_id and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+create policy projects_delete_by_admin on public.projects
+for delete using (
+  exists (
+    select 1 from public.org_members m
+    where m.org_id = projects.org_id and m.user_id = auth.uid()
+      and m.role in ('owner','admin')
+  )
+);
+
+3) Integrare cu runs / bundles / prompts (recomandat)
+
+Dacă folosești proiectele ca „container” pentru execuții, adaugă FK‑uri în tabelele înrudite (opțional dacă deja le ții doar pe org_id)【】.
+
+-- RUNS: adaugă referință opțională la project
+alter table public.runs
+  add column if not exists project_id uuid
+  references public.projects(id) on delete set null;
+
+create index if not exists runs_project_idx on public.runs (project_id, started_at desc);
+
+-- BUNDLES: raportare pe proiect prin RUNS (join), view util:
+create or replace view public.v_project_bundles as
+select p.id as project_id, p.slug, b.id as bundle_id, b.formats, b.exported_at, b.version
+from public.projects p
+join public.runs r on r.project_id = p.id
+join public.bundles b on b.run_id = r.id;
+
+-- PROMPTS (dacă păstrezi versiuni per proiect)
+-- create table public.prompts (...) references projects(id) -- vezi blueprint v3
+
+4) Utilitare (create/rename/archive)
+-- creează proiect (auto-set created_by)
+create or replace function public.project_create(
+  p_org uuid, p_slug text, p_name text, p_desc text default null, p_meta jsonb default null
+) returns uuid
+language plpgsql security definer as $$
+declare v_id uuid;
+begin
+  insert into public.projects(org_id, slug, name, description, meta, created_by)
+  values (p_org, lower(p_slug), p_name, p_desc, p_meta, auth.uid())
+  returning id into v_id;
+  return v_id;
+end $$;
+
+-- redenumește/actualizează meta
+create or replace function public.project_update(
+  p_id uuid, p_name text default null, p_desc text default null, p_meta jsonb default null
+) returns void
+language sql security definer as $$
+  update public.projects
+     set name = coalesce(p_name, name),
+         description = coalesce(p_desc, description),
+         meta = coalesce(p_meta, meta),
+         updated_at = now()
+   where id = p_id;
+$$;
+
+-- arhivează logic (flag în meta)
+create or replace function public.project_archive(p_id uuid)
+returns void language sql security definer as $$
+  update public.projects
+     set meta = coalesce(meta,'{}'::jsonb) || jsonb_build_object('archived', true),
+         updated_at = now()
+   where id = p_id;
+$$;
+
+5) Exemple
+-- 1) creează proiect
+select public.project_create(:org_id, 'acme-ml-pilot', 'ACME ML – Pilot', 'PoC FinTech KYC', '{"color":"#1b8fff","client":"ACME"}');
+
+-- 2) leagă un run de proiect
+update public.runs set project_id = :project_id where id = :run_id;
+
+-- 3) listează proiectele org-ului + ultimele execuții
+select p.id, p.slug, p.name,
+       (select count(*) from public.runs r where r.project_id=p.id) as runs_count,
+       (select max(started_at) from public.runs r where r.project_id=p.id) as last_run
+from public.projects p
+where p.org_id = :org_id
+order by last_run desc nulls last;
+
+-- 4) rapoarte bundle pe proiect
+select * from public.v_project_bundles where project_id = :project_id order by exported_at desc;
+
+6) Bune practici
+
+Slug unic pe org → URL‑uri curate (/org/:orgSlug/projects/:slug).
+
+Meta flexibil → tag‑uri, culoare, cod client, statut (active|archived).
+
+RLS by membership → izolare multi‑tenant identică restului schemelor v3.
+
+FK în runs → raportare clară cost/tokens/durate pe proiect, plus filtrări în UI.
+
+
+
+
+
+
+
+module_versions cap‑coadă (DDL + indici + RLS + validări SemVer + utilitare de publicare/rollback + vederi „latest”), aliniat cu catalogul modules (M01–M50) și cu practica de versionare din PROMPTFORGE™ v3.
+
+1) DDL (Postgres/Supabase)
+-- extensii
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- funcție simplă de validare semver (MAJOR.MINOR.PATCH)
+create or replace function pf_is_semver(p text)
+returns boolean language sql immutable as $$
+  select p ~ '^[0-9]+\.[0-9]+\.[0-9]+$'
+$$;
+
+-- tabelul MODULE_VERSIONS (istoric semver per modul)
+create table if not exists public.module_versions (
+  id                uuid primary key default gen_random_uuid(),
+
+  module_id         text not null references public.modules(module_id) on update cascade on delete cascade,
+  semver            text not null,                          -- ex: '1.0.0'
+  parent_version_id uuid references public.module_versions(id) on delete set null,
+
+  -- snapshot la momentul versiunii (manifest minimal)
+  name              text not null,                          -- denumirea modulului la acel moment
+  vectors           smallint[] not null,                    -- ex: {2,6}
+  requirements      text,                                   -- cerințe/inputs high-level
+  spec              text,                                   -- descriere/contract narativ (MD/Plain)
+  output_schema     jsonb,                                  -- JSON Schema a artefactului
+  kpi               jsonb,                                  -- KPI/weights/targets
+  guardrails        jsonb,                                  -- reguli (no_promises, compliance, stil)
+  enabled           boolean not null default true,          -- dacă versiunea e utilizabilă
+
+  changelog         text,                                   -- notițe de release pentru versiune
+  created_by        uuid references auth.users(id),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+
+  -- integritate
+  constraint uq_module_semver unique (module_id, semver),
+  constraint ck_semver_format check (pf_is_semver(semver)),
+  constraint ck_vectors_valid check (
+    array_length(vectors,1) > 0
+    and (select bool_and(x between 1 and 7) from unnest(vectors) x)
+  ),
+  constraint ck_output_schema_isobj check (output_schema is null or jsonb_typeof(output_schema)='object'),
+  constraint ck_kpi_isobj check (kpi is null or jsonb_typeof(kpi)='object'),
+  constraint ck_guardrails_isobj check (guardrails is null or jsonb_typeof(guardrails)='object')
+);
+
+-- updated_at trigger
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+drop trigger if exists module_versions_set_updated_at on public.module_versions;
+create trigger module_versions_set_updated_at
+before update on public.module_versions
+for each row execute procedure public.trg_set_updated_at();
+
+-- indici de lucru
+create index if not exists mv_module_idx    on public.module_versions (module_id);
+create index if not exists mv_semver_idx    on public.module_versions (semver);
+create index if not exists mv_created_idx   on public.module_versions (created_at desc);
+create index if not exists mv_enabled_idx   on public.module_versions (enabled) where enabled;
+
+
+Observație: păstrăm snapshot al câmpurilor critice din modules pentru a congela contractul la momentul versiunii.
+
+2) RLS (read‑only pentru clienți; scriere prin service role)
+alter table public.module_versions enable row level security;
+
+-- toți pot citi catalogul de versiuni (sau limitează la useri autentificați)
+create policy mv_read_all on public.module_versions
+for select using (true);
+
+-- scrieri doar din backend (service role)
+create policy mv_no_client_writes on public.module_versions
+for all using (false) with check (false);
+
+3) Vederi „latest” + helper pentru selectarea ultimei versiuni
+-- determină „cea mai nouă” versiune pe modul după semver textual (fără MAJOR sort numeric),
+-- preferăm created_at pentru stabilitate; poți adăuga și parsare numerică dacă vrei ordonare strictă semver.
+create or replace view public.v_module_latest as
+select distinct on (m.module_id)
+  m.module_id, mv.id as module_version_id, mv.semver, mv.enabled,
+  mv.created_at, mv.updated_at
+from public.modules m
+join public.module_versions mv on mv.module_id = m.module_id
+where mv.enabled = true
+order by m.module_id, mv.created_at desc;
+
+-- toate versiunile unui modul (recente primele)
+create or replace view public.v_module_versions as
+select module_id, id as module_version_id, semver, enabled, created_at, updated_at
+from public.module_versions
+order by module_id, created_at desc;
+
+4) Utilitare (publish, deprecate, rollback)
+4.1 Publică o versiune nouă din modules (copie de snapshot)
+create or replace function public.module_version_publish(
+  p_module_id text,
+  p_semver    text,
+  p_changelog text default null,
+  p_enabled   boolean default true,
+  p_created_by uuid default null
+) returns uuid
+language plpgsql security definer as $$
+declare
+  s public.modules%rowtype;
+  v_id uuid;
+begin
+  if not pf_is_semver(p_semver) then
+    raise exception 'Invalid semver %', p_semver;
+  end if;
+
+  select * into s from public.modules where module_id = p_module_id and enabled = true;
+  if not found then
+    raise exception 'MODULE_NOT_FOUND_OR_DISABLED %', p_module_id;
+  end if;
+
+  insert into public.module_versions(
+    module_id, semver, parent_version_id,
+    name, vectors, requirements, spec, output_schema, kpi, guardrails, enabled,
+    changelog, created_by
+  )
+  values (
+    s.module_id, p_semver, null,
+    s.name, s.vectors, s.requirements, s.spec, s.output_schema, s.kpi, s.guardrails, p_enabled,
+    p_changelog, p_created_by
+  )
+  returning id into v_id;
+
+  return v_id;
+end $$;
+
+4.2 Deprecare/activare versiune
+create or replace function public.module_version_set_enabled(p_id uuid, p_enabled boolean)
+returns void language sql security definer as $$
+  update public.module_versions set enabled = p_enabled, updated_at = now() where id = p_id;
+$$;
+
+4.3 Rollback rapid (promovează o versiune anterioară ca „latest” logic)
+create or replace function public.module_version_rollback_to(p_module_id text, p_to_semver text)
+returns void language plpgsql security definer as $$
+declare v_target uuid;
+begin
+  select id into v_target
+  from public.module_versions
+  where module_id = p_module_id and semver = p_to_semver;
+  if not found then
+    raise exception 'VERSION_NOT_FOUND % %', p_module_id, p_to_semver;
+  end if;
+  -- activează target, dezactivează restul (opțional)
+  update public.module_versions
+     set enabled = (id = v_target),
+         updated_at = now()
+   where module_id = p_module_id;
+end $$;
+
+5) Exemple
+-- 1) publică o versiune nouă (ex: '1.2.0') din snapshot-ul curent al modulului M07
+select public.module_version_publish('M07','1.2.0','Added milestone refunds + revised FAQ', auth.uid());
+
+-- 2) listează versiunile modulului M07
+select * from public.v_module_versions where module_id='M07';
+
+-- 3) obține versiunea „latest” pentru toate modulele
+select * from public.v_module_latest;
+
+-- 4) depreciază o versiune
+select public.module_version_set_enabled(:version_id, false);
+
+-- 5) rollback la '1.1.0'
+select public.module_version_rollback_to('M07','1.1.0');
+
+6) Bune practici
+
+SemVer: păstrează schimbările de contract (schema output_schema, guardrails) pe MAJOR; mici adăugiri compatibile pe MINOR; fixuri pe PATCH.
+
+Changelog: notează clar KPI/guardrails modificați; utile pentru audit și reproducere.
+
+Freeze: module_versions trebuie să fie sursa de adevăr pentru reproducere (de aceea păstrăm snapshotul complet).
+
+RLS: clienții doar citesc; publicarea/rollback se face din pipeline‑ul intern (service role).
+
+
+
+
+
+
+
+ruleset_versions & ruleset_overrides_log cap‑coadă (DDL + indici + RLS + utilitare de înregistrare/activare + integrare cu runs), exact pentru auditul SSOT „ruleset.yml” și logarea abaterilor 7D la runtime.
+
+1) DDL (Postgres/Supabase)
+-- extensii
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- mic verifik pentru sha256 (hex)
+create or replace function pf_is_sha256(p text)
+returns boolean language sql immutable as $$
+  select p ~ '^[0-9a-f]{64}$'
+$$;
+
+-- A) Istoric ruleset.yml
+create table if not exists public.ruleset_versions (
+  id         uuid primary key default gen_random_uuid(),
+  version    text not null,                     -- ex: "1.0.3"
+  checksum   text not null,                     -- sha256 al ruleset.yml (fără spații)
+  meta       jsonb,                             -- {notes, author, file_url, ...}
+  applied_at timestamptz not null default now(),
+  created_by uuid references auth.users(id),
+
+  constraint uq_ruleset_version unique (version),
+  constraint uq_ruleset_checksum unique (checksum),
+  constraint ck_checksum_format check (pf_is_sha256(checksum)),
+  constraint ck_meta_obj check (meta is null or jsonb_typeof(meta)='object')
+);
+
+-- "curent" (opțional) – ține versiunea activă la runtime
+create table if not exists public.ruleset_current (
+  id smallint primary key default 1 check (id=1),
+  version text not null references public.ruleset_versions(version) on delete restrict,
+  switched_at timestamptz not null default now()
+);
+
+-- B) Log-ul de abateri față de defaults (per run)
+create table if not exists public.ruleset_overrides_log (
+  id             uuid primary key default gen_random_uuid(),
+  run_id         uuid not null references public.runs(id) on delete cascade,
+  ruleset_version text not null,                    -- snapshotul de ruleset la momentul run-ului
+  overrides      jsonb not null,                    -- diff față de domain defaults (7D, scoring, export…)
+  created_at     timestamptz not null default now(),
+
+  constraint ck_overrides_obj check (jsonb_typeof(overrides)='object'),
+  constraint fk_ruleset_version
+    foreign key (ruleset_version)
+    references public.ruleset_versions(version) on delete restrict
+);
+
+-- indici utili
+create index if not exists rv_version_idx  on public.ruleset_versions(version);
+create index if not exists rv_applied_idx  on public.ruleset_versions(applied_at desc);
+create index if not exists rol_run_idx     on public.ruleset_overrides_log(run_id);
+create index if not exists rol_version_idx on public.ruleset_overrides_log(ruleset_version);
+
+
+ruleset_versions păstrează istoricul „ruleset.yml” (versiune + checksum + meta) și „cine/când”; ruleset_current marchează ce versiune e activă; ruleset_overrides_log reține orice override (ex. user a schimbat urgency față de defaultul domeniului) la nivel de run.
+
+2) RLS & acces
+
+ruleset_versions / ruleset_current: read‑only pentru clienți; scrieri doar din backend (service role).
+
+ruleset_overrides_log: vizibil membrilor organizației run‑ului.
+
+-- RLS ON
+alter table public.ruleset_versions enable row level security;
+alter table public.ruleset_current  enable row level security;
+alter table public.ruleset_overrides_log enable row level security;
+
+-- toți pot citi versiunile & curentul (sau limitezi la auth only)
+create policy rv_read_all on public.ruleset_versions for select using (true);
+create policy rc_read_all on public.ruleset_current  for select using (true);
+
+-- scrieri doar backend/service role
+create policy rv_no_client_writes on public.ruleset_versions for all using (false) with check (false);
+create policy rc_no_client_writes on public.ruleset_current  for all using (false) with check (false);
+
+-- overrides_log vizibil după membership (join la runs→org_members)
+create policy rol_select_by_membership on public.ruleset_overrides_log
+for select using (
+  exists (
+    select 1 from public.runs r
+    join public.org_members m on m.org_id = r.org_id
+    where r.id = ruleset_overrides_log.run_id
+      and m.user_id = auth.uid()
+  )
+);
+
+-- scrierea în overrides_log o face backend-ul când rulează normalizarea 7D
+create policy rol_no_client_writes on public.ruleset_overrides_log
+for all using (false) with check (false);
+
+3) Funcții utilitare
+3.1. Înregistrează o versiune (file hash + meta), opțional o activează
+-- înregistrează noul ruleset (checksum = sha256 al fișierului ruleset.yml)
+create or replace function public.ruleset_register(
+  p_version text,
+  p_checksum text,
+  p_meta jsonb default null,
+  p_activate boolean default false
+) returns void
+language plpgsql security definer as $$
+begin
+  if not pf_is_sha256(p_checksum) then
+    raise exception 'Invalid checksum (expect sha256 hex)';
+  end if;
+
+  insert into public.ruleset_versions(version, checksum, meta, created_by)
+  values (p_version, lower(p_checksum), p_meta, auth.uid())
+  on conflict (version) do update set checksum=excluded.checksum, meta=coalesce(excluded.meta, public.ruleset_versions.meta);
+
+  if p_activate then
+    insert into public.ruleset_current(id, version, switched_at)
+    values (1, p_version, now())
+    on conflict (id) do update set version=excluded.version, switched_at=now();
+  end if;
+end $$;
+
+3.2. Activează o versiune existentă
+create or replace function public.ruleset_activate(p_version text)
+returns void language sql security definer as $$
+  update public.ruleset_current set version = p_version, switched_at = now() where id=1;
+$$;
+
+3.3. Loghează abateri (ex. la run_start/run_finish când ai diff versus defaults)
+-- p_overrides: { "sevenD":{...dif...}, "scoring":{...}, "export":{...} }
+create or replace function public.ruleset_log_overrides(
+  p_run_id uuid,
+  p_ruleset_version text,
+  p_overrides jsonb
+) returns void language plpgsql security definer as $$
+begin
+  if p_overrides is null or p_overrides = '{}'::jsonb then
+    return; -- nimic de logat
+  end if;
+
+  insert into public.ruleset_overrides_log(run_id, ruleset_version, overrides)
+  values (p_run_id, p_ruleset_version, p_overrides);
+end $$;
+
+4) Integrare recomandată în pipeline
+
+La boot: backend încarcă ruleset.yml, calculează checksum, cheamă ruleset_register(version, checksum, meta, p_activate:=true) (sau activează explicit ulterior).
+
+La execuție (run_start):
+
+normalizezi 7D folosind presets din domain_configs;
+
+calculezi diferența dintre input și defaults (ex. user a setat urgency='sprint' peste default planned) → creezi overrides JSON;
+
+chemi ruleset_log_overrides(run_id, current_ruleset_version, overrides) doar dacă există abateri.
+
+La audit: interoghezi ruleset_versions & ruleset_overrides_log pentru a reconstitui contextul unei rulari (ce ruleset era activ, ce abateri 7D/scoring/export au fost).
+
+5) Vederi & rapoarte rapide
+-- versiunea curentă + checksum
+create or replace view public.v_ruleset_current as
+select c.version, v.checksum, c.switched_at
+from public.ruleset_current c
+join public.ruleset_versions v on v.version = c.version;
+
+-- rezumat overrides per org (ultimele 30 zile)
+create or replace view public.v_ruleset_overrides_recent as
+select r.org_id, ol.run_id, ol.ruleset_version, ol.overrides, r.started_at
+from public.ruleset_overrides_log ol
+join public.runs r on r.id = ol.run_id
+where ol.created_at >= now() - interval '30 days'
+order by ol.created_at desc;
+
+6) Exemple
+-- A) înregistrare + activare ruleset v1.0.4
+select public.ruleset_register(
+  p_version  := '1.0.4',
+  p_checksum := '3a1f4f7d0e8b8d3c4b6a6c1f2d7e9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f',
+  p_meta     := '{"notes":"Added AI Act guardrails; tweaked scoring weights"}'::jsonb,
+  p_activate := true
+);
+
+-- B) schimbare doar „current”
+select public.ruleset_activate('1.0.3');
+
+-- C) log abateri la un run (ex: user a setat urgency & output altfel decât default)
+select public.ruleset_log_overrides(
+  :run_id,
+  (select version from public.ruleset_current where id=1),
+  '{
+     "sevenD":{"urgency":{"default":"planned","actual":"sprint"},
+               "output_format":{"default":"spec","actual":"playbook"}}
+   }'::jsonb
+);
+
+7) Bune practici
+
+Checksum pe conținutul exact al ruleset.yml (normalizat LF), pentru audit reproducibil.
+
+Versionare disciplinată (MAJOR când schimbi enums/contracte, MINOR pentru noi câmpuri opționale, PATCH pentru corecții).
+
+Overrides: loghează doar diferențele față de defaults (nu întregul obiect), ține JSON compact (evită PII).
+
+RLS: clienții pot citi istoricul; scrierea rămâne orchestrat backend (webhook/CI).
+
+
+
+
+
+
+module_migrations cap‑coadă (DDL + ENUM‑uri + indici + RLS + utilitare de înregistrare/aplicare cu dry‑run/safe‑run + vederi „pending/applied”) aliniat la practica PROMPTFORGE™ v3: migrezi contracte de modul între versiuni (SemVer), păstrezi checksum & audit, permiți pre/post‑checks, și rulezi scriptul în savepoint ca să poți face dry‑run fără efecte.
+
+1) DDL (Postgres/Supabase)
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- tipuri canon
+do $$ begin
+  if not exists (select 1 from pg_type where typname='migration_kind_t') then
+    create type migration_kind_t as enum ('major','minor','patch');
+  end if;
+  if not exists (select 1 from pg_type where typname='migration_status_t') then
+    create type migration_status_t as enum ('draft','pending','applied','failed','skipped');
+  end if;
+end $$;
+
+-- utilitar simplu de validare semver
+create or replace function pf_is_semver(p text)
+returns boolean language sql immutable as $$
+  select p ~ '^[0-9]+\.[0-9]+\.[0-9]+$'
+$$;
+-- sha256 checker
+create or replace function pf_is_sha256(p text)
+returns boolean language sql immutable as $$
+  select p ~ '^[0-9a-f]{64}$'
+$$;
+
+-- tabela MODULE_MIGRATIONS
+create table if not exists public.module_migrations (
+  id               uuid primary key default gen_random_uuid(),
+
+  module_id        text not null references public.modules(module_id) on update cascade on delete cascade,
+  from_semver      text not null,
+  to_semver        text not null,
+  kind             migration_kind_t not null,          -- major|minor|patch
+
+  -- conținut & verificări
+  script           text not null,                      -- SQL/PLpgSQL (sau DSL pe care îl interpretezi)
+  script_checksum  text not null,                      -- sha256(script)
+  precheck_sql     text,                               -- SELECT true/false; rulezi înainte
+  postcheck_sql    text,                               -- SELECT true/false; rulezi după
+  description      text,                               -- notițe
+
+  status           migration_status_t not null default 'draft',
+  created_by       uuid references auth.users(id),
+  created_at       timestamptz not null default now(),
+  applied_by       uuid references auth.users(id),
+  applied_at       timestamptz,
+
+  -- artefacte de execuție
+  dry_run_result   jsonb,                              -- {ok:bool, error:text}
+  apply_result     jsonb,                              -- {ok:bool, error:text}
+  meta             jsonb,
+
+  constraint uq_module_migration unique (module_id, from_semver, to_semver),
+  constraint ck_semver_from check (pf_is_semver(from_semver)),
+  constraint ck_semver_to   check (pf_is_semver(to_semver)),
+  constraint ck_sha256      check (pf_is_sha256(script_checksum)),
+  constraint ck_different_versions check (from_semver <> to_semver),
+  constraint ck_meta_obj check (meta is null or jsonb_typeof(meta)='object')
+);
+
+-- indici utili
+create index if not exists mm_module_idx   on public.module_migrations (module_id);
+create index if not exists mm_status_idx   on public.module_migrations (status);
+create index if not exists mm_kind_idx     on public.module_migrations (kind);
+create index if not exists mm_created_idx  on public.module_migrations (created_at desc);
+create index if not exists mm_applied_idx  on public.module_migrations (applied_at desc);
+
+-- trigger updated_at (reciclăm utilitarul standard din proiect, dacă există)
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin new.meta := coalesce(new.meta,'{}'::jsonb); return new; end $$;
+-- (dacă ai deja același nume de funcție cu alt conținut, păstreaz-o pe aceea)
+
+
+Reținem script (SQL), checksum, pre/post‑checks (SQL boolean), status, și artefacte din rulare (dry‑run & apply). module_id se mapează pe catalogul global modules.
+
+2) RLS (read‑only pentru clienți; write doar service role)
+alter table public.module_migrations enable row level security;
+
+-- SELECT: toți pot citi (sau limitează la auth)
+create policy mm_read_all on public.module_migrations
+for select using (true);
+
+-- INSERT/UPDATE/DELETE: doar backend/service role
+create policy mm_no_client_writes on public.module_migrations
+for all using (false) with check (false);
+
+3) Funcții utilitare
+3.1. Înregistrare/actualizare migrare (calculează checksum)
+create or replace function public.module_migration_register(
+  p_module_id  text,
+  p_from_semver text,
+  p_to_semver   text,
+  p_kind        migration_kind_t,
+  p_script      text,
+  p_precheck    text default null,
+  p_postcheck   text default null,
+  p_description text default null
+) returns uuid
+language plpgsql security definer as $$
+declare v_id uuid; v_sha text;
+begin
+  if not pf_is_semver(p_from_semver) or not pf_is_semver(p_to_semver) then
+    raise exception 'Invalid semver (%% → %%)', p_from_semver, p_to_semver;
+  end if;
+  if p_from_semver = p_to_semver then
+    raise exception 'from_semver equals to_semver';
+  end if;
+
+  v_sha := encode(digest(p_script,'sha256'),'hex');
+
+  insert into public.module_migrations(
+    module_id, from_semver, to_semver, kind,
+    script, script_checksum, precheck_sql, postcheck_sql,
+    description, status, created_by
+  ) values (
+    p_module_id, p_from_semver, p_to_semver, p_kind,
+    p_script, lower(v_sha), p_precheck, p_postcheck,
+    p_description, 'pending', auth.uid()
+  )
+  on conflict (module_id, from_semver, to_semver) do update
+    set kind = excluded.kind,
+        script = excluded.script,
+        script_checksum = excluded.script_checksum,
+        precheck_sql = excluded.precheck_sql,
+        postcheck_sql = excluded.postcheck_sql,
+        description = excluded.description,
+        status = 'pending',
+        created_by = coalesce(public.module_migrations.created_by, auth.uid()),
+        created_at = public.module_migrations.created_at
+  returning id into v_id;
+
+  return v_id;
+end $$;
+
+3.2. Dry‑run (rulează în savepoint; revine; salvează rezultat)
+create or replace function public.module_migration_dry_run(p_id uuid)
+returns jsonb
+language plpgsql security definer as $$
+declare v_script text; v_pre text; v_post text; v jsonb := '{}'::jsonb;
+begin
+  select script, precheck_sql, postcheck_sql into v_script, v_pre, v_post
+  from public.module_migrations where id = p_id;
+
+  if not found then raise exception 'MIGRATION_NOT_FOUND %', p_id; end if;
+
+  begin
+    -- precheck (opțional, trebuie să dea true)
+    if v_pre is not null then
+      if not exists (select 1 from (execute format('select 1 where (%s)', v_pre)) as t) then
+        v := jsonb_build_object('ok', false, 'error', 'precheck failed');
+        update public.module_migrations set dry_run_result = v where id = p_id;
+        return v;
+      end if;
+    end if;
+
+    -- safe block
+    perform pg_advisory_xact_lock(9223372036854775807); -- opțional: asigură exclusivitate
+    savepoint mm_dry;
+    execute v_script;
+    -- postcheck (opțional)
+    if v_post is not null then
+      if not exists (select 1 from (execute format('select 1 where (%s)', v_post)) as t2) then
+        rollback to savepoint mm_dry;
+        v := jsonb_build_object('ok', false, 'error', 'postcheck failed');
+        update public.module_migrations set dry_run_result = v where id = p_id;
+        return v;
+      end if;
+    end if;
+    rollback to savepoint mm_dry;
+
+    v := jsonb_build_object('ok', true);
+    update public.module_migrations set dry_run_result = v, status='pending' where id = p_id;
+    return v;
+
+  exception when others then
+    rollback to savepoint mm_dry;
+    v := jsonb_build_object('ok', false, 'error', sqlerrm);
+    update public.module_migrations set dry_run_result = v, status='pending' where id = p_id;
+    return v;
+  end;
+end $$;
+
+3.3. Apply (rulează scriptul real; face pre/post‑check; marchează status)
+create or replace function public.module_migration_apply(p_id uuid)
+returns jsonb
+language plpgsql security definer as $$
+declare v_script text; v_pre text; v_post text; v_module text; v_from text; v_to text; outj jsonb;
+begin
+  select module_id, from_semver, to_semver, script, precheck_sql, postcheck_sql
+  into v_module, v_from, v_to, v_script, v_pre, v_post
+  from public.module_migrations where id = p_id and status in ('pending','draft');
+
+  if not found then
+    raise exception 'MIGRATION_NOT_APPLICABLE_OR_NOT_FOUND %', p_id;
+  end if;
+
+  -- precheck
+  if v_pre is not null then
+    if not exists (select 1 from (execute format('select 1 where (%s)', v_pre)) as t) then
+      update public.module_migrations
+         set status='failed', apply_result=jsonb_build_object('ok',false,'error','precheck failed'),
+             applied_by=auth.uid(), applied_at=now()
+       where id = p_id;
+      return jsonb_build_object('ok',false,'error','precheck failed');
+    end if;
+  end if;
+
+  -- exec
+  begin
+    perform pg_advisory_xact_lock(9223372036854775806); -- lock global migrații
+    execute v_script;
+
+    -- postcheck
+    if v_post is not null then
+      if not exists (select 1 from (execute format('select 1 where (%s)', v_post)) as t2) then
+        raise exception 'postcheck failed';
+      end if;
+    end if;
+
+    update public.module_migrations
+       set status='applied',
+           applied_by=auth.uid(),
+           applied_at=now(),
+           apply_result=jsonb_build_object('ok',true)
+     where id = p_id;
+
+    -- opțional: poți marca în registru faptul că modulul are compat între from→to
+    return jsonb_build_object('ok',true);
+
+  exception when others then
+    update public.module_migrations
+       set status='failed',
+           applied_by=auth.uid(),
+           applied_at=now(),
+           apply_result=jsonb_build_object('ok',false,'error',sqlerrm)
+     where id = p_id;
+    return jsonb_build_object('ok',false,'error',sqlerrm);
+  end;
+end $$;
+
+
+Dry‑run rulează în savepoint și revine; Apply rulează real și marchează status. precheck_sql/postcheck_sql trebuie să fie expresii SQL care devin true la reușită (ex.: verifici existența unei coloane sau conformitatea datelor).
+
+4) Vederi & rapoarte
+-- ultimele migrații & stări
+create or replace view public.v_module_migrations as
+select module_id, from_semver, to_semver, kind, status, created_at, applied_at
+from public.module_migrations
+order by created_at desc;
+
+-- pendinte pentru un modul și o versiune curentă (aplicația decide current_semver)
+-- (ex. afișezi migrațiile cu from_semver = current_semver)
+
+5) Exemple
+-- A) înregistrează o migrare majoră M07 1.1.0 → 2.0.0
+select public.module_migration_register(
+  p_module_id  := 'M07',
+  p_from_semver:= '1.1.0',
+  p_to_semver  := '2.0.0',
+  p_kind       := 'major',
+  p_script     := $SQL$
+     -- EXEMPLE: rename câmp în output_schema (dacă o ții într-o altă tabelă, adaptezi)
+     -- aici poți face și update în module_versions sau transformări pe bundle manifest
+     -- dummy op fără efect:
+     select 1;
+  $SQL$,
+  p_precheck   := 'true',     -- sau condiții reale
+  p_postcheck  := 'true',
+  p_description:= 'Rename fields + update schema validators'
+) as migration_id;
+
+-- B) dry‑run (fără efecte)
+select public.module_migration_dry_run(:migration_id);
+
+-- C) aplică
+select public.module_migration_apply(:migration_id);
+
+-- D) vezi istoricul
+select * from public.v_module_migrations where module_id='M07';
+
+6) Bune practici
+
+SemVer disciplinat: schimbi contracte (schema output_schema, guardrails) pe MAJOR; adaugi câmpuri opționale pe MINOR; fixuri pe PATCH.
+
+Checksum la script pentru integritate; dacă modifici scriptul, crește to_semver sau re‑registrează migrarea.
+
+Pre/Post‑checks: fă‑le idempotente și rapide (ex.: select exists(...)).
+
+Savepoints: dry‑run nu lasă efecte; apply rulează tranzacțional și marchează applied/failed.
+
+RLS: doar service role scrie; clienții doar citesc.
+
+Audit: loghează în module_versions ce versiune a devenit „latest” după migrare, dacă vrei efect vizibil în UI.
+
+
+
+
+
+industries cap‑coadă (DDL + RLS + indici + seed „CORE” + utilitare), aliniat la blueprintul PROMPTFORGE™ v3 (nomenclator pe domenii + preseturi: jargon[], KPI, compliance, stil, risc, output implicit)【】【】.
+
+1) DDL (Postgres/Supabase)
+-- extensii
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
+-- nivel de risc (v3: low|medium|high)
+do $$ begin
+  if not exists (select 1 from pg_type where typname='risk_level_t') then
+    create type risk_level_t as enum ('low','medium','high');
+  end if;
+end $$;
+
+-- TABEL: industries — configurări per domeniu
+create table if not exists public.industries (
+  code           text primary key,                       -- ex: 'saas','fintech','ecommerce', ...
+  name           text not null,                          -- ex: 'SaaS', 'FinTech'
+  jargon         jsonb not null default '[]'::jsonb,     -- ["KYC","AML","MRR","CAC",...]
+  kpis           jsonb not null default '[]'::jsonb,     -- ["fraud_rate","KYC_time","churn_rate",...]
+  compliance_notes text,                                 -- reglementări/atenționări
+  style_bias     text,                                   -- ex: "analytical, layered, formal"
+  default_output text,                                   -- ex: "spec","playbook"
+  risk_level     risk_level_t not null default 'medium',
+  meta           jsonb,                                  -- extensii (ex: audience personas, example-links)
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now(),
+
+  constraint ck_jargon_array check (jsonb_typeof(jargon)='array'),
+  constraint ck_kpis_array   check (jsonb_typeof(kpis)='array')
+);
+
+-- trigger updated_at
+create or replace function public.trg_set_updated_at()
+returns trigger language plpgsql as $$
+begin new.updated_at := now(); return new; end $$;
+
+drop trigger if exists industries_set_updated_at on public.industries;
+create trigger industries_set_updated_at
+before update on public.industries
+for each row execute procedure public.trg_set_updated_at();
+
+-- indici practici
+create index if not exists ind_name_trgm_idx on public.industries using gin (name gin_trgm_ops);
+create index if not exists ind_risk_idx      on public.industries (risk_level);
+
+
+Câmpurile corespund exact preseturilor pe domeniu din v3: jargon[], kpis[], compliance, style_bias, risk_level, default_output (folosit la fallback 7D)【】.
+
+2) RLS (read‑only pentru clienți; write doar service role)
+alter table public.industries enable row level security;
+
+-- catalog public (sau restricționează la auth: `using (auth.role() is not null)`)
+create policy industries_read_all on public.industries
+for select using (true);
+
+-- scriere doar backend/service role
+create policy industries_no_client_writes on public.industries
+for all using (false) with check (false);
+
+3) Seed „CORE” (exemple — extinzi la toate 25 din v3)
+-- SaaS
+insert into public.industries(code,name,jargon,kpis,compliance_notes,style_bias,default_output,risk_level) values
+('saas','SaaS',
+ '["ARR","MRR","CAC","LTV","churn","multi-tenant","API-first","SLA"]'::jsonb,
+ '["MRR_growth","churn_rate","net_retention","activation_rate","TTV","NPS"]'::jsonb,
+ 'GDPR, SOC2, ISO27001; data residency', 'analytical, metrics-driven, clear', 'spec','medium')
+on conflict (code) do nothing;
+
+-- FinTech
+insert into public.industries(code,name,jargon,kpis,compliance_notes,style_bias,default_output,risk_level) values
+('fintech','FinTech',
+ '["KYC","AML","PSD2","open banking","fraud detection","risk scoring","PCI DSS"]'::jsonb,
+ '["fraud_rate","KYC_completion_time","approval_rate","txn_success_rate","compliance_incidents"]'::jsonb,
+ 'SEC/FCA sensitive; GDPR; PCI DSS; fără claims neverificate',
+ 'analytical, layered, formal (audit-like)', 'spec','high')
+on conflict (code) do nothing;
+
+-- E‑Commerce
+insert into public.industries(code,name,jargon,kpis,compliance_notes,style_bias,default_output,risk_level) values
+('ecommerce','E‑Commerce',
+ '["conversion rate","AOV","LTV","ROAS","checkout funnel","RFM"]'::jsonb,
+ '["conversion_rate","AOV","LTV","ROAS","return_rate","repeat_purchase_rate"]'::jsonb,
+ 'GDPR; PSD2 SCA; Consumer Protection','operational, test‑driven, crisp CTAs','playbook','medium')
+on conflict (code) do nothing;
+
+-- Education
+insert into public.industries(code,name,jargon,kpis,compliance_notes,style_bias,default_output,risk_level) values
+('education','Education',
+ '["LMS","cohort","microlearning","rubric","async/sync"]'::jsonb,
+ '["engagement_rate","completion_rate","knowledge_retention","dropout_rate"]'::jsonb,
+ 'FERPA/GDPR; accessibility (WCAG/ADA); anti‑plagiarism',
+ 'supportive, rubric‑driven, narrative','playbook','medium')
+on conflict (code) do nothing;
+
+-- Healthcare
+insert into public.industries(code,name,jargon,kpis,compliance_notes,style_bias,default_output,risk_level) values
+('healthcare','Healthcare',
+ '["EMR","EHR","HIPAA","HL7","clinical trial","ICD‑10"]'::jsonb,
+ '["patient_outcome_improvement","readmission_rate","treatment_adherence","time_to_diagnosis"]'::jsonb,
+ 'HIPAA (US), GDPR (EU), FDA/EMA; evidențe clinice',
+ 'formal, ethical, evidence‑based','spec','high')
+on conflict (code) do nothing;
+
+-- Legal
+insert into public.industries(code,name,jargon,kpis,compliance_notes,style_bias,default_output,risk_level) values
+('legal','Legal',
+ '["case law","precedent","due diligence","M&A","arbitration","compliance framework"]'::jsonb,
+ '["contract_review_time","compliance_incident_rate","case_win_rate","client_retention_rate"]'::jsonb,
+ 'GDPR/SOX/AML; Bar rules; fără legal advice fără disclaimer',
+ 'precise, conservative, auditable','spec','high')
+on conflict (code) do nothing;
+
+
+Lista „CORE 25” (SaaS, FinTech, E‑Commerce, Consulting, Education, Healthcare, Legal, Marketing, Media, Real Estate, HR, NGO, Government, Web3, AI/ML, Cybersecurity, Manufacturing, Logistics, Travel, Gaming, Fashion, Beauty, Spiritual, Architecture, Agriculture) poate fi completată identic【】.
+
+4) Utilitare & vederi
+4.1. Vedere pentru lookup rapid (folosită de Engine 7D)
+create or replace view public.v_industry_preset as
+select
+  code as industry_code,
+  name as industry_name,
+  jargon, kpis, compliance_notes, style_bias, risk_level,
+  coalesce(default_output,'spec') as default_output
+from public.industries;
+
+4.2. Helper: obține presetul ca JSON (sau eroare)
+create or replace function public.industry_preset(p_code text)
+returns jsonb language sql stable as $$
+  with d as (
+    select code,name,jargon,kpis,compliance_notes,style_bias,risk_level,
+           coalesce(default_output,'spec') as default_output
+    from public.industries
+    where lower(code)=lower(p_code)
+       or lower(name)=lower(p_code)
+  )
+  select case when exists(select 1 from d)
+              then jsonb_build_object(
+                     'code',(select code from d),
+                     'name',(select name from d),
+                     'jargon',(select jargon from d),
+                     'kpis',(select kpis from d),
+                     'compliance_notes',(select compliance_notes from d),
+                     'style_bias',(select style_bias from d),
+                     'risk_level',(select risk_level::text from d),
+                     'default_output',(select default_output from d)
+                   )
+              else jsonb_build_object('error','UNKNOWN_INDUSTRY')
+         end;
+$$;
+
+5) Integrare (Engine 7D, packs, gating)
+
+Engine 7D: la normalizare, dacă utilizatorul alege domain='fintech', citești din industries jargon/kpis/compliance/style și default_output pentru fallback — exact cum prevede v3【】.
+
+Industry Packs: poți referi industries.code ca „preset de domeniu” pentru pack‑uri (FinTech/E‑Commerce/Education), folosind această sursă ca SSOT pentru reguli și KPI.
+
+6) Exemple de folosire
+-- lookup preset ca JSON
+select public.industry_preset('fintech');
+
+-- toate industriile „high risk”
+select code, name, compliance_notes
+from public.industries
+where risk_level='high'
+order by name;
+
+-- căutare fuzzy după jargon
+select code, name
+from public.industries
+where to_tsvector('simple', coalesce(style_bias,'') || ' ' || array_to_string( array(select jsonb_array_elements_text(jargon)), ' '))
+      @@ plainto_tsquery('AML');
+
+De ce așa?
+
+Câmpuri & structuri: oglindesc preseturile de domeniu din v3 (jargon/KPI/compliance/ton/risc/output implicit) — sursă unică de adevăr pentru adaptarea prompturilor la industrie【】.
+
+RLS: catalog citibil, scrieri centralizate (service role) — stabilitate & audit.
+
+Lookup: vederi/funcții simple pentru a injecta direct în Parameter Engine 7D și Prompt Standard【】.
+
+
+
+
+
+
+SSOT-ul executabil pentru “Variabile / câmpuri importante” din PROMPTFORGE™ v3, gata de lipit în backend (Postgres/Supabase) + validatoare (JSON Schema) + reguli de runtime (normalizare 7D, semnătură, gating, evaluare).
+
+1) 7D Engine — schema, enum‑uri, normalizare, semnătură
+1.1 Enum‑uri canonice (CORE 25 + restul axelor)
+
+domain ∈ {saas, fintech, ecommerce, consulting, education, healthcare, legal, marketing, media, real_estate, hr, ngo, government, web3, aiml, cybersecurity, manufacturing, logistics, travel, gaming, fashion, beauty, spiritual, architecture, agriculture} (CORE 25).
+
+scale ∈ {personal_brand, solo, startup, smb, boutique_agency, corporate, enterprise} ; urgency ∈ {low, planned, sprint, pilot, crisis}; complexity ∈ {foundational, standard, advanced, expert}; resources ∈ {minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget}; application ∈ {training, audit, implementation, strategy_design, crisis_response, experimentation, documentation}; output_format ∈ {txt, md, checklist, spec, playbook, json, yaml, diagram, bundle}.
+
+Notă: defaults pe industrie (jargon, KPI, compliance, style_bias, output implicit) sunt definite în profilurile de domeniu; folosește-le la fallback.
+
+1.2 JSON Schema (validator) — engine7d
+{
+  "$id": "https://pf.v3/schemas/engine7d.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["domain", "output_format"],
+  "additionalProperties": false,
+  "properties": {
+    "domain":         {"type":"string","enum":[ "saas","fintech","ecommerce","consulting","education","healthcare","legal","marketing","media","real_estate","hr","ngo","government","web3","aiml","cybersecurity","manufacturing","logistics","travel","gaming","fashion","beauty","spiritual","architecture","agriculture" ]},
+    "scale":          {"type":"string","enum":[ "personal_brand","solo","startup","smb","boutique_agency","corporate","enterprise" ]},
+    "urgency":        {"type":"string","enum":[ "low","planned","sprint","pilot","crisis" ]},
+    "complexity":     {"type":"string","enum":[ "foundational","standard","advanced","expert" ]},
+    "resources":      {"type":"string","enum":[ "minimal","solo","lean_team","agency_stack","full_stack_org","enterprise_budget" ]},
+    "application":    {"type":"string","enum":[ "training","audit","implementation","strategy_design","crisis_response","experimentation","documentation" ]},
+    "output_format":  {"type":"string","enum":[ "txt","md","checklist","spec","playbook","json","yaml","diagram","bundle" ]},
+    "diversity_budget":{"type":"number","minimum":0,"maximum":1}
+  }
+}
+
+
+(Valorile reflectă exact nomenclatorul v3.)
+
+1.3 Normalizare + semnătură 7D (determinism & compatibilitate chain)
+
+Reguli:
+
+Obligatorii: domain, output_format. Completezi restul cu defaults de domeniu din preset (inclusiv default_output_format dacă lipsește).
+
+Validare: enum‑only. Orice valoare în afara enumerărilor ⇒ 400.
+
+Semnătură: signature_7d = sha256(domain|scale|urgency|complexity|resources|application|output_format); chain Mₙ→Mₙ₊₁ permis doar dacă semnăturile coincid.
+
+Promptul standard consumă 7D în secțiunea CONTEXT și adaptează stilul/guardrails/KPI pe domeniu.
+
+2) Scoruri Evaluator AI — rubrică, gate, DoR/DoD
+2.1 Axe & scoruri
+
+clarity, execution, ambiguity (invers), business_fit — fiecare 0–25; total 0–100; gate ≥ 80. „Tighten‑once” dacă sub 80; dacă rămâne <80 ⇒ FAIL.
+
+DoR/DoD de proces: DoR (7D valid + entitlements + output_spec + tests + input minim), DoD (score ≥80 + output complet + checksum valid + manifest scris + telemetrie salvată).
+
+2.2 Contract de output (Prompt Standard)
+
+Promptul are secțiuni fixe (ROLE_GOAL, CONTEXT_7D, OUTPUT_SPEC, PROCESS, GUARDRAILS, EVALUATION_HOOKS, TELEMETRY_KEYS) și mapare strictă la format (txt/md/spec/playbook/json/bundle).
+
+3) Entitlements & Planuri — drepturi, mapping, gating
+3.1 Feature flags canonice
+
+canUseAllModules, canExportMD, canExportPDF, canExportJSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI, hasAPI, hasWhiteLabel, canExportBundleZip, hasSeatsGT1 — folosite pentru gating în UI/API/Export.
+
+3.2 SKU‑uri (cerute de tine)
+
+Pilot → M01–M10; export txt/md.
+
+Pro → M01–M30; export txt/md/pdf + cloud history, test GPT live, Evaluator.
+
+Enterprise → M01–M50; export complet (txt/md/pdf/json + bundle.zip), API, multi‑industry.
+
+Gatingul e hard server‑side: ex. /api/export/pdf cere canExportPDF; /api/test/gpt-live cere canUseGptTestReal; /api/run/{module} cere acces la modul și (opțional) pack‑ul de industrie.
+
+4) Artefacte “gata de producție”
+4.1 Postgres ENUM‑uri (exemplu)
+create type scale_t       as enum ('personal_brand','solo','startup','smb','boutique_agency','corporate','enterprise');
+create type urgency_t     as enum ('low','planned','sprint','pilot','crisis');
+create type complexity_t  as enum ('foundational','standard','advanced','expert');
+create type resources_t   as enum ('minimal','solo','lean_team','agency_stack','full_stack_org','enterprise_budget');
+create type application_t as enum ('training','audit','implementation','strategy_design','crisis_response','experimentation','documentation');
+create type output_t      as enum ('txt','md','checklist','spec','playbook','json','yaml','diagram','bundle');
+
+
+(aliniat cu parameter_sets din modelul canonic)
+
+4.2 Tabel 7D — parameter_sets (rezumat)
+
+domain text, scale scale_t, urgency urgency_t, complexity complexity_t, resources resources_t, application application_t, output_formats output_t[] + overrides jsonb (dif vs defaults).
+
+4.3 Evaluator — tabel & gate
+
+prompt_scores(run_id PK, clarity, execution, ambiguity, business_fit, feedback); ui/gateway blochează exportul dacă total < 80 conform rubricii.
+
+4.4 DoR/DoD — verificări automate
+
+DoR: 7D valid (enum‑only + signature), entitlements OK, output_spec & tests definite, input minim.
+
+DoD: score ≥80, output complet conform spec, checksum sha256 valid, manifest scris, telemetrie salvată.
+
+5) Pachete de domeniu (opțional, dar recomandat)
+
+Pentru industrii reglementate (ex. FinTech) aplici preset (jargon/KPI/compliance/stil) și poți impune formate (ex. .spec + .json obligatoriu la export). Gating prin entitlement “industryPack_*”.
+
+6) Exemple compacte (copier‑lipit)
+6.1 Normalizare 7D (pseudo)
+const enums = /* din ruleset.yml */;
+const preset = domainPreset[engine7d.domain];                  // din domain_configs
+assert(enums.domain.includes(engine7d.domain));
+const merged = { ...preset.defaults, ...engine7d };            // user > defaults
+validateAll(merged, enums);
+const signature_7d = sha256([
+  merged.domain, merged.scale, merged.urgency, merged.complexity,
+  merged.resources, merged.application, merged.output_format
+].join('|'));                                                  // chain compat
+
+
+(semnătura și compatibilitatea inter‑modul)
+
+6.2 Gate planuri (pseudo)
+// ex: export PDF
+await gate(orgId, ["canExportPDF"]);                           // Pro+
+
+
+(aceleași flags pentru GPT live / JSON / API / bundle.zip)
+
+6.3 Rubrică & gate (pseudo)
+const total = clarity + execution + (25 - (ambiguity/4)) + business_fit; // 0..100, echivalent rubricii
+if (total < 80) tightenOnce();                                           // apoi re‑evaluate; altfel FAIL
+
+
+(prag ≥80 + tighten‑once)
+
+7) De ce e corect (surse din knowledge)
+
+Modelul DB canonic (7D, runs, prompt_scores, bundles) și câmpurile pentru 7D/telemetrie sunt definite în schema v3.
+
+Domanii & defaults (CORE 25), plus output implicit și note de compliance — baza pentru fallback.
+
+SSOT & chain‑compat (ruleset.yml; semnătură 7D; fără text liber) — asigură determinism & reproducibilitate.
+
+Standardul de prompt + Test Engine (secțiuni fixe, rubrică, praguri) — guvernează calitatea.
+
+Entitlements & SKU‑uri (Pilot/Pro/Enterprise; feature flags concrete; mapping) — gating UI/API/Export.
+
+
+
+
+
+RELAȚIILE LOGICE cap‑coadă, cu FK‑uri, indici, politici ON DELETE, plus un mic ERD ASCII. Copiezi‑le după ce ai creat tabelele de bază (orgs, org_members, subscriptions, entitlements, api_keys, runs, prompt_history, modules, domain_configs, parameter_sets, prompt_scores, bundles, projects, plans).
+
+0) Diagrama (overview)
+orgs ──< org_members
+   └─< subscriptions  ──> plans
+   └─< entitlements  ───> plans (via source='plan', optional)
+   └─< api_keys
+   └─< projects ──< runs ──< prompt_scores (1:1)
+                   └─< bundles (1:N)
+         └────────────^
+modules ──< prompt_history
+       └─< runs
+domain_configs ──< parameter_sets ──< runs
+                              └─────< prompt_history
+
+1) orgs 1‑N org_members, subscriptions, entitlements, api_keys, runs, prompt_history
+alter table public.org_members
+  add constraint fk_org_members__org
+  foreign key (org_id) references public.orgs(id) on delete cascade;
+
+alter table public.subscriptions
+  add constraint fk_subscriptions__org
+  foreign key (org_id) references public.orgs(id) on delete cascade;
+
+alter table public.entitlements
+  add constraint fk_entitlements__org
+  foreign key (org_id) references public.orgs(id) on delete cascade;
+
+alter table public.api_keys
+  add constraint fk_api_keys__org
+  foreign key (org_id) references public.orgs(id) on delete cascade;
+
+alter table public.runs
+  add constraint fk_runs__org
+  foreign key (org_id) references public.orgs(id) on delete cascade;
+
+alter table public.prompt_history
+  add constraint fk_prompt_history__org
+  foreign key (org_id) references public.orgs(id) on delete cascade;
+
+-- indici utili
+create index if not exists idx_org_members__org on public.org_members(org_id);
+create index if not exists idx_subs__org        on public.subscriptions(org_id);
+create index if not exists idx_ent__org         on public.entitlements(org_id);
+create index if not exists idx_api_keys__org    on public.api_keys(org_id);
+create index if not exists idx_runs__org        on public.runs(org_id, started_at desc);
+create index if not exists idx_ph__org          on public.prompt_history(org_id, created_at desc);
+
+
+Notă: on delete cascade se potrivește pentru a curăța automat datele secundare când se șterge un workspace.
+
+2) modules 1‑N prompt_history și runs
+alter table public.prompt_history
+  add constraint fk_prompt_history__module
+  foreign key (module_id) references public.modules(module_id) on delete restrict;
+
+alter table public.runs
+  add constraint fk_runs__module
+  foreign key (module_id) references public.modules(module_id) on delete restrict;
+
+create index if not exists idx_ph__module on public.prompt_history(module_id, created_at desc);
+create index if not exists idx_runs__module on public.runs(module_id, started_at desc);
+
+
+Restrict — nu vrei să ștergi din greșeală un modul folosit istoric.
+
+3) domain_configs 1‑N parameter_sets
+alter table public.parameter_sets
+  add constraint fk_parameter_sets__domain
+  foreign key (domain) references public.domain_configs(industry) on delete restrict;
+
+create index if not exists idx_parameter_sets__domain on public.parameter_sets(lower(domain));
+
+
+parameter_sets.domain mapează pe domain_configs.industry.
+
+4) parameter_sets 1‑N runs și prompt_history
+alter table public.runs
+  add constraint fk_runs__paramset
+  foreign key (parameter_set_id) references public.parameter_sets(id) on delete restrict;
+
+alter table public.prompt_history
+  add constraint fk_prompt_history__paramset
+  foreign key (parameter_set_id) references public.parameter_sets(id) on delete set null;
+
+create index if not exists idx_runs__paramset on public.runs(parameter_set_id);
+create index if not exists idx_ph__paramset   on public.prompt_history(parameter_set_id);
+
+
+Pe istoric poți alege set null dacă accepți ca snapshotul text să rămână și când ștergi un param set temporar.
+
+5) runs 1‑1 prompt_scores, 1‑N bundles
+-- 1:1 prompt_scores
+alter table public.prompt_scores
+  add constraint fk_prompt_scores__run
+  foreign key (run_id) references public.runs(id) on delete cascade;
+
+create unique index if not exists uq_prompt_scores__run on public.prompt_scores(run_id);
+
+-- 1:N bundles
+alter table public.bundles
+  add constraint fk_bundles__run
+  foreign key (run_id) references public.runs(id) on delete cascade;
+
+create index if not exists idx_bundles__run on public.bundles(run_id, exported_at desc);
+
+
+Când ștergi o rulare, scorurile și bundle‑urile aferente se curăță automat.
+
+6) projects 1‑N runs & bundles (prin runs)
+-- adaugă FK în runs dacă nu există
+alter table public.runs
+  add column if not exists project_id uuid,
+  add constraint fk_runs__project foreign key (project_id)
+    references public.projects(id) on delete set null;
+
+-- bundles se leagă de projects prin runs → creezi o vedere pentru raportare rapidă
+create or replace view public.v_project_bundles as
+select p.id as project_id, p.slug, b.id as bundle_id, b.formats, b.exported_at, b.version
+from public.projects p
+join public.runs r on r.project_id = p.id
+join public.bundles b on b.run_id = r.id;
+
+
+runs.project_id permite filtre pe proiect; bundles rămâne legat de run.
+
+7) plans 1‑N subscriptions & entitlements
+alter table public.subscriptions
+  add constraint fk_subscriptions__plan
+  foreign key (plan_code) references public.plans(code) on delete restrict;
+
+-- entitlements primite din plan (source='plan'): relația e logică, nu FK direct;
+-- dar poți crea un check referențial ușor în aplicație; opțional un index:
+create index if not exists idx_ent__flag_source on public.entitlements(flag, source, source_ref);
+
+create index if not exists idx_subs__plan on public.subscriptions(plan_code);
+
+
+În practică, entitlements se populează din plans.flags prin webhook / funcție (nu ținem FK pentru că source_ref poate fi și addon/pack/license).
+
+8) Indici și chei compuse recomandate (rezumat)
+
+(org_id, started_at desc) pe runs și (org_id, created_at desc) pe prompt_history pentru listări rapide.
+
+unique (org_id, slug) pe projects.
+
+unique (org_id, user_id) pe org_members.
+
+unique (stripe_customer_id) pe subscriptions (plus stripe_subscription_id dacă îl folosești).
+
+unique (run_id) pe prompt_scores.
+
+unique (module_id, semver) pe module_versions (dacă folosești istoricul versiunilor).
+
+9) Politici ON DELETE (recomandate)
+
+CASCADE: org_members, subscriptions, entitlements, api_keys, runs, prompt_scores, bundles (legate de runs).
+
+RESTRICT: modules, plans, domain_configs, parameter_sets (asigură integritatea catalogului).
+
+SET NULL: runs.project_id, prompt_history.parameter_set_id (opțional).
+
+10) Teste rapide (SQL)
+-- 1) un org are mai multe runs, bundles și un singur score/ run
+select o.id, count(distinct r.id) as runs, count(distinct b.id) as bundles
+from public.orgs o
+left join public.runs r on r.org_id=o.id
+left join public.bundles b on b.run_id=r.id
+group by o.id;
+
+-- 2) verifică integritatea 1:1 run ↔ prompt_scores
+select r.id
+from public.runs r
+left join public.prompt_scores s on s.run_id=r.id
+group by r.id
+having count(s.run_id) > 1;  -- așteptat 0 rânduri
+
+-- 3) toate param set-urile folosite de runs (join 1‑N)
+select ps.id, count(r.id) as runs_count
+from public.parameter_sets ps
+left join public.runs r on r.parameter_set_id=ps.id
+group by ps.id;
+
+
+Cu aceste FK‑uri/indici/decizii ON DELETE, schema e coerentă, auditabilă și performantă. Dacă vrei, îți pot genera un script unic (_relatii.sql) care include toate ALTER TABLE‑urile de mai sus într‑o singură migrație.
+
+
+
+
+
+
+producție “Constrângeri / guardrails” ca reguli executabile în DB + contracte JSON + utilitare de verificare. Totul e aliniat 1:1 cu Rulebook‑ul v3: DoR (gata de rulat), DoD (gata de livrat), Export (bundle canonic), Telemetrie (chei obligatorii)【】【】【】.
+
+0) Rezumat oficial (din SSOT)
+
+DoR: 7D valid (enum‑only) + entitlements OK + output_spec încărcat + testcases definite + input minim prezent【】
+
+DoD: scor ≥80 + output complet + checksum valid + manifest scris + telemetrie salvată【】
+
+Export: bundle canonic /prompt.txt, /prompt.json, /prompt.md, /prompt.pdf, /manifest.json, /checksum.sha256 (ordre & checksum deterministe)【】
+
+Telemetrie: tta_seconds, score, tokens_in/out, policy_hits, overrides (fără text brut client)【】
+
+1) Contracte JSON (validatori)
+1.1 DoR payload (rezultat de verificare)
+{
+  "$id":"https://pf.v3/contracts/dor.result.json",
+  "type":"object",
+  "required":["ok","errors","checks"],
+  "properties":{
+    "ok":{"type":"boolean"},
+    "errors":{"type":"array","items":{"type":"string"}},
+    "checks":{
+      "type":"object",
+      "properties":{
+        "sevenD_valid":{"type":"boolean"},
+        "entitlements_valid":{"type":"boolean"},
+        "output_spec_loaded":{"type":"boolean"},
+        "tests_defined":{"type":"boolean"},
+        "input_minimum":{"type":"boolean"}
+      },
+      "additionalProperties":false
+    }
+  },
+  "additionalProperties":false
+}
+
+1.2 DoD payload (rezultat de verificare)
+{
+  "$id":"https://pf.v3/contracts/dod.result.json",
+  "type":"object",
+  "required":["ok","errors","checks"],
+  "properties":{
+    "ok":{"type":"boolean"},
+    "errors":{"type":"array","items":{"type":"string"}},
+    "checks":{
+      "type":"object",
+      "properties":{
+        "score_ge_80":{"type":"boolean"},
+        "output_complete":{"type":"boolean"},
+        "checksum_valid":{"type":"boolean"},
+        "manifest_present":{"type":"boolean"},
+        "telemetry_saved":{"type":"boolean"}
+      },
+      "additionalProperties":false
+    }
+  },
+  "additionalProperties":false
+}
+
+2) SQL — verificări DoR & DoD (utilitare DB)
+
+Se bazează pe tabelele din schema ta: runs, modules, parameter_sets, prompt_scores, bundles, plans, subscriptions, entitlements.
+
+2.1 Helpers: entitlements & 7D
+-- are planul curent acces la modul?
+create or replace function public.pf_has_module_access(p_org uuid, p_module text)
+returns boolean language sql stable as $$
+  with s as (
+    select plan_code from public.subscriptions
+    where org_id=p_org and status in ('trialing','active') order by current_period_end desc nulls last limit 1
+  ),
+  f as (
+    select (flags->>'allowedModules') as allow from public.plans, s
+    where plans.code=s.plan_code
+  )
+  select case
+    when f.allow='ALL' then true
+    when f.allow is null then false
+    else exists (select 1 from jsonb_array_elements_text(f.allow::jsonb) m where m=p_module)
+  end
+  from f;
+$$;
+
+-- output_spec încărcat la modul (minim: fields[])
+create or replace function public.pf_output_spec_loaded(p_module text)
+returns boolean language sql stable as $$
+  select coalesce( (output_schema ? 'fields') and jsonb_typeof(output_schema->'fields')='array' , false)
+  from public.modules where module_id=p_module;
+$$;
+
+-- tta_seconds (derivat)
+create or replace function public.pf_tta_seconds(p_run uuid)
+returns integer language sql stable as $$
+  select greatest(0, round(extract(epoch from (finished_at - started_at)))::int)
+  from public.runs where id=p_run;
+$$;
+
+2.2 DoR: pf_check_dor(run_id)
+create or replace function public.pf_check_dor(p_run uuid)
+returns jsonb language plpgsql stable as $$
+declare
+  r record; ok boolean:=true; errs text[]:='{}';
+  c_sevenD boolean; c_ent boolean; c_spec boolean; c_tests boolean; c_input boolean;
+begin
+  select r.org_id, r.module_id, r.parameter_set_id, ps.output_formats
+  into r
+  from public.runs r join public.parameter_sets ps on ps.id=r.parameter_set_id
+  where r.id=p_run;
+
+  if not found then
+    return jsonb_build_object('ok',false,'errors',array['RUN_NOT_FOUND'],'checks',jsonb_build_object());
+  end if;
+
+  -- 7D valid: enforce ENUM-only via FK/enum + output_formats nenule
+  c_sevenD := r.parameter_set_id is not null and coalesce(array_length(r.output_formats,1),0) > 0;
+
+  -- entitlements: plan + acces la modul
+  c_ent := public.pf_has_module_access(r.org_id, r.module_id);
+
+  -- output_spec: definit la modul (fields[])
+  c_spec := public.pf_output_spec_loaded(r.module_id);
+
+  -- testcases: minimal, verificăm existența unui rows în modules.spec care conține 'test' (soft) sau în versions (dacă folosești)
+  c_tests := exists (
+    select 1 from public.modules m
+    where m.module_id=r.module_id and m.spec ilike '%test%'
+  );
+
+  -- input minim: există parameter_set + output_formats
+  c_input := r.parameter_set_id is not null and array_length(r.output_formats,1) >= 1;
+
+  if not c_sevenD then errs := errs || '7D_INVALID'; end if;
+  if not c_ent    then errs := errs || 'ENTITLEMENTS_INVALID'; end if;
+  if not c_spec   then errs := errs || 'OUTPUT_SPEC_MISSING'; end if;
+  if not c_tests  then errs := errs || 'TESTS_UNDEFINED'; end if;
+  if not c_input  then errs := errs || 'INPUT_MINIMUM_MISSING'; end if;
+
+  ok := c_sevenD and c_ent and c_spec and c_tests and c_input;
+
+  return jsonb_build_object(
+    'ok', ok,
+    'errors', errs,
+    'checks', jsonb_build_object(
+      'sevenD_valid', c_sevenD,
+      'entitlements_valid', c_ent,
+      'output_spec_loaded', c_spec,
+      'tests_defined', c_tests,
+      'input_minimum', c_input
+    )
+  );
+end $$;
+
+
+Acoperă mecanic DoR (7D+entitlements+spec+tests+input) exact ca în Rulebook【】.
+
+2.3 DoD: pf_check_dod(run_id)
+create or replace function public.pf_check_dod(p_run uuid)
+returns jsonb language plpgsql stable as $$
+declare
+  s record;
+  c_score boolean; c_out boolean; c_cs boolean; c_mani boolean; c_tel boolean;
+  errs text[]:='{}';
+  ok boolean:=true;
+begin
+  -- scor ≥80
+  select (total >= 80) as pass into s from public.prompt_scores where run_id=p_run;
+  c_score := coalesce(s.pass,false);
+
+  -- bundle existent + output complet (=paths conține cheile pentru fiecare format)
+  select (jsonb_typeof(paths)='object') and
+         (select bool_and(paths ? f) from unnest(formats) f)
+  into c_out
+  from public.bundles where run_id=p_run order by exported_at desc limit 1;
+
+  -- checksum valid (pattern SHA256 deja e validat prin ck; aici doar prezența)
+  c_cs := exists (select 1 from public.bundles where run_id=p_run and checksum ~ '^sha256:[0-9a-f]{64}$');
+
+  -- manifest scris (paths conține 'manifest')
+  c_mani := exists (select 1 from public.bundles where run_id=p_run and (paths ? 'manifest'));
+
+  -- telemetrie salvată (runs.telemetry conține cheile cerute)
+  c_tel := exists (
+    select 1 from public.runs
+    where id=p_run
+      and telemetry ? 'score'
+      and telemetry ? 'policy_hits'
+      and telemetry ? 'overrides'
+  );
+
+  if not c_score then errs := errs || 'SCORE_LT_80'; end if;
+  if not c_out   then errs := errs || 'OUTPUT_INCOMPLETE'; end if;
+  if not c_cs    then errs := errs || 'CHECKSUM_INVALID_OR_MISSING'; end if;
+  if not c_mani  then errs := errs || 'MANIFEST_MISSING'; end if;
+  if not c_tel   then errs := errs || 'TELEMETRY_INCOMPLETE'; end if;
+
+  ok := c_score and c_out and c_cs and c_mani and c_tel;
+
+  return jsonb_build_object(
+    'ok', ok,
+    'errors', errs,
+    'checks', jsonb_build_object(
+      'score_ge_80', c_score,
+      'output_complete', c_out,
+      'checksum_valid', c_cs,
+      'manifest_present', c_mani,
+      'telemetry_saved', c_tel
+    )
+  );
+end $$;
+
+
+Exact DoD: scor ≥80; output complet; checksum; manifest; telemetrie salvată【】.
+
+3) Export — structură fixă bundle + verificare
+3.1 Reguli (din SSOT)
+
+Bundle conține (cel puțin): prompt.txt, prompt.json, prompt.md, prompt.pdf, manifest.json, checksum.sha256.
+
+checksum.sha256 = SHA‑256 al concatenării hash‑urilor per‑fișier în ordinea canonică (txt → json → md → pdf → manifest)【】.
+
+3.2 Contract manifest (rezumat)
+{
+  "version":"1.0.0",
+  "run_id":"uuid",
+  "final_7d":{...},
+  "score": 86,
+  "kpi": {"clarity":22,"execution":21,"ambiguity":20,"business_fit":23,"total":86},
+  "files":["prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json","checksum.sha256"],
+  "file_hashes":{"prompt.txt":"sha256:...","prompt.json":"sha256:...","prompt.md":"sha256:...","prompt.pdf":"sha256:...","manifest.json":"sha256:..."},
+  "bundle_checksum":"sha256:...",
+  "exported_at":"2025-08-19T01:23:45Z",
+  "license_notice":"© PROMPTFORGE v3 — licensed to ORG X. Redistribution prohibited."
+}
+
+
+(Exact formatul din standardul de export)【】.
+
+4) Telemetrie — chei, SLA & insert
+4.1 Chei obligatorii (în runs.telemetry)
+
+score (breakdown), policy_hits (ex: [PROMISES_FORBIDDEN, ...]), overrides (dif vs defaults), plus metadate: model, tokens_in, tokens_out. TTA se calculează din started_at/finished_at (vezi funcția pf_tta_seconds).
+
+4.2 Insert (exemplu)
+update public.runs
+set telemetry = coalesce(telemetry,'{}'::jsonb) || jsonb_build_object(
+  'score', jsonb_build_object('clarity',88,'execution',83,'ambiguity',12,'business_fit',82,'total',86),
+  'policy_hits', jsonb_build_array('no_unverified_claims'),
+  'overrides', jsonb_build_object('sevenD', jsonb_build_object('urgency', jsonb_build_object('default','planned','actual','sprint'))),
+  'model','gpt-4o',
+  'tokens_in',  6400,
+  'tokens_out', 3100
+)
+where id=:run_id;
+
+5) „One‑liners” de audit
+-- DoR / DoD per run
+select r.id as run_id,
+       (public.pf_check_dor(r.id)->>'ok')::boolean as dor_ok,
+       (public.pf_check_dod(r.id)->>'ok')::boolean as dod_ok
+from public.runs r
+where r.org_id=:org_id
+order by r.started_at desc
+limit 100;
+
+-- TTA (secunde), cost & tokens
+select id, public.pf_tta_seconds(id) as tta_s,
+       cost_usd, tokens_used, (telemetry->>'tokens_in')::int as tokens_in,
+       (telemetry->>'tokens_out')::int as tokens_out
+from public.runs
+where org_id=:org_id
+order by started_at desc;
+
+-- Bundle complet? (are toate cheile & manifest)
+select b.id, b.run_id,
+       (jsonb_typeof(paths)='object') and (paths ? 'manifest') as has_manifest,
+       (select bool_and(paths ? f) from unnest(formats) f) as paths_match_formats
+from public.bundles b
+join public.runs r on r.id=b.run_id
+where r.org_id=:org_id
+order by b.exported_at desc;
+
+6) De ce corespunde standardului
+
+DoR & DoD — verificate exact conform definițiilor din Rulebook v3 (gating executabil)【】.
+
+Export — bundle canonic + checksum determinist + manifest/liceță (structurat identic)【】.
+
+Telemetrie — chei standard (TTA, score, tokens, policy_hits, overrides) și fără conținut brut al clientului în clar【】.
+

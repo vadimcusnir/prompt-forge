@@ -1,0 +1,5 @@
+Plan,canUseAllModules,canExportMD,canExportPDF,canExportJSON,canUseGptTestReal,hasCloudHistory,hasEvaluatorAI,hasAPI,hasWhiteLabel,canExportBundleZip,hasSeatsGT1,module_allowlist,exports_allowed,retention_days
+Free,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"M01,M10,M18",txt,7
+Creator,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,ALL,"txt,md",30
+Pro,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,ALL,"txt,md,json,pdf",90
+Enterprise,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,ALL,"txt,md,json,pdf,bundle",-1

@@ -3,17 +3,32 @@
 ## Overview
 This guide explains how to configure Stripe webhooks for PromptForge to handle subscription events and automatically update the database.
 
-## Webhook Endpoint
-Your webhook endpoint should be:
+## Production Configuration
+Your production environment is already configured with these keys:
+
+```bash
+# Stripe Production Keys
+STRIPE_SECRET_KEY=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
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_51RnpkGGcCmkUZPV6SHA1YkmOhd30qN2kAxm5n6iE4ZHNjzU84ZFWifiZQ22cKntXM38KfRkIriTeOHqiBrdPHWWG00dw7WcY9p
+STRIPE_WEBHOOK_SECRET=whsec_LABaaLypGKgyw6qnPt0ugpOT6ozDQvrq
+
+# Supabase Production Keys
+NEXT_PUBLIC_SUPABASE_URL=https://siebamncgfgbzorkiwvo.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZWJhbW5jZmdmZ2J6b3JraXdvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTYwNjU2NywiZXhwIjoyMDcxMTgyNTY3fQ.7h_NRXxvMdKV9Lcme0EDTEzW3nClvgxd9jcDPubyumE
 ```
-https://yourdomain.com/api/stripe/webhook
+
+## Webhook Endpoint
+Your production webhook endpoint should be:
+```
+https://promptforge.ai/api/stripe/webhook
 ```
 
 ## Required Environment Variables
-Ensure these are set in your `.env.local`:
+Ensure these are set in your production environment:
 ```bash
-STRIPE_SECRET_KEY=sk_test_... # Your Stripe secret key
-STRIPE_WEBHOOK_SECRET=whsec_... # Your webhook signing secret
+STRIPE_SECRET_KEY=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
+STRIPE_WEBHOOK_SECRET=whsec_LABaaLypGKgyw6qnPt0ugpOT6ozDQvrq
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZWJhbW5jZmdmZ2J6b3JraXdvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTYwNjU2NywiZXhwIjoyMDcxMTgyNTY3fQ.7h_NRXxvMdKV9Lcme0EDTEzW3nClvgxd9jcDPubyumE
 ```
 
 ## Stripe Dashboard Configuration
@@ -21,7 +36,7 @@ STRIPE_WEBHOOK_SECRET=whsec_... # Your webhook signing secret
 ### 1. Create Webhook Endpoint
 1. Go to [Stripe Dashboard > Developers > Webhooks](https://dashboard.stripe.com/webhooks)
 2. Click "Add endpoint"
-3. Enter your webhook URL: `https://yourdomain.com/api/stripe/webhook`
+3. Enter your webhook URL: `https://promptforge.ai/api/stripe/webhook`
 4. Select the following events:
 
 #### Required Events:
@@ -33,12 +48,10 @@ STRIPE_WEBHOOK_SECRET=whsec_... # Your webhook signing secret
 - `invoice.payment_failed` - When a recurring payment fails
 - `customer.subscription.trial_will_end` - When a trial is about to end
 
-### 2. Get Webhook Secret
-After creating the webhook:
-1. Click on your webhook endpoint
-2. Click "Reveal" next to "Signing secret"
-3. Copy the `whsec_...` value
-4. Add it to your `.env.local` as `STRIPE_WEBHOOK_SECRET`
+### 2. Verify Webhook Secret
+Your webhook secret is: `whsec_LABaaLypGKgyw6qnPt0ugpOT6ozDQvrq`
+
+This should match the `STRIPE_WEBHOOK_SECRET` in your environment variables.
 
 ## Webhook Event Handling
 
@@ -174,9 +187,9 @@ https://promptforge.ai/api/stripe/webhook
 
 ### 2. Environment Variables
 Ensure production environment has:
-- `STRIPE_SECRET_KEY` (live key)
-- `STRIPE_WEBHOOK_SECRET` (production webhook secret)
-- `SUPABASE_SERVICE_ROLE_KEY` (for database access)
+- `STRIPE_SECRET_KEY` (live key) ✅ CONFIGURED
+- `STRIPE_WEBHOOK_SECRET` (production webhook secret) ✅ CONFIGURED
+- `SUPABASE_SERVICE_ROLE_KEY` (for database access) ✅ CONFIGURED
 
 ### 3. Monitoring
 - Set up webhook delivery monitoring

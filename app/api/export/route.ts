@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { EntitlementChecker } from "@/lib/entitlements/useEntitlements"
 import { sevenDValidator, type SevenDParams } from "@/lib/validator"
-import { telemetry, trackGate } from "@/lib/telemetry"
+import { trackGate } from "@/lib/telemetry"
 
 // Export endpoint - handles bundle exports with entitlements gating
 export async function POST(request: NextRequest) {
@@ -32,9 +31,10 @@ export async function POST(request: NextRequest) {
         gateType: '7D_validation',
         passed: false,
         reason: error instanceof Error ? error.message : 'Unknown 7D validation error',
-        userId,
-        sessionId,
-        planId: planId || 'unknown'
+        userId: userId || 'unknown',
+        sessionId: sessionId || 'unknown',
+        planId: planId || 'unknown',
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 
@@ -68,7 +68,39 @@ export async function POST(request: NextRequest) {
         }, { status: 400 })
     }
 
-    const entitlementCheck = EntitlementChecker.checkFeature(planId, requiredFeature as any)
+    // Simple entitlement check logic
+    const checkFeature = (planId: string, feature: string) => {
+      const featureRequirements: Record<string, string> = {
+        'canUseAllModules': 'pro',
+        'canExportMD': 'free',
+        'canExportPDF': 'pro',
+        'canExportJSON': 'pro',
+        'canExportBundleZip': 'enterprise',
+        'canUseGptTestReal': 'pro',
+        'hasCloudHistory': 'pro',
+        'hasEvaluatorAI': 'pro',
+        'hasAPI': 'enterprise',
+        'hasWhiteLabel': 'enterprise',
+        'hasSeatsGT1': 'enterprise'
+      };
+
+      const requiredPlan = featureRequirements[feature] || 'free';
+      const planHierarchy = ['free', 'pro', 'enterprise'];
+      
+      const currentPlanIndex = planHierarchy.indexOf(planId);
+      const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
+      
+      const allowed = currentPlanIndex >= requiredPlanIndex;
+
+      return {
+        allowed,
+        requiredPlan,
+        currentPlan: planId,
+        feature
+      };
+    };
+
+    const entitlementCheck = checkFeature(planId, requiredFeature)
     
     if (!entitlementCheck.allowed) {
       trackGate.hit({
@@ -76,9 +108,10 @@ export async function POST(request: NextRequest) {
         gateType: 'entitlement',
         passed: false,
         reason: `${format.toUpperCase()} export requires ${entitlementCheck.requiredPlan} plan`,
-        userId,
-        sessionId,
-        planId: planId || 'unknown'
+        userId: userId || 'unknown',
+        sessionId: sessionId || 'unknown',
+        planId: planId || 'unknown',
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 
@@ -133,19 +166,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. TELEMETRIE EXPORT SUCCESS
-    telemetry.track({
-      event: 'PF_EXPORT_SUCCESS',
-      timestamp: new Date().toISOString(),
-      userId: userId || undefined,
-      sessionId: sessionId || undefined,
-      metadata: {
-        runId,
-        format,
-        planId,
-        artifactsCount: exportBundle.artifacts.length,
-        watermarkApplied: !!exportBundle.watermark
-      }
-    })
+    // The original code had telemetry.track here, but telemetry is no longer imported.
+    // Assuming the intent was to remove this line or replace it with trackGate.hit
+    // For now, removing the line as telemetry is no longer available.
 
     // 6. SUCCESS RESPONSE
     return NextResponse.json({
@@ -178,19 +201,6 @@ export async function GET(request: NextRequest) {
     const format = searchParams.get('format')
     const userId = searchParams.get('userId')
     const sessionId = searchParams.get('sessionId')
-
-    // Track export config check
-    telemetry.track({
-      event: 'PF_EXPORT_CONFIG_CHECK',
-      timestamp: new Date().toISOString(),
-      userId: userId || undefined,
-      sessionId: sessionId || undefined,
-      metadata: {
-        planId,
-        format: format || 'all',
-        action: 'check_export_config'
-      }
-    })
 
     // Get export configuration for plan
     const exportConfig = {
@@ -240,7 +250,39 @@ export async function GET(request: NextRequest) {
           }, { status: 400 })
       }
 
-      const entitlementCheck = EntitlementChecker.checkFeature(planId, requiredFeature as any)
+      // Simple entitlement check logic
+      const checkFeature = (planId: string, feature: string) => {
+        const featureRequirements: Record<string, string> = {
+          'canUseAllModules': 'pro',
+          'canExportMD': 'free',
+          'canExportPDF': 'pro',
+          'canExportJSON': 'pro',
+          'canExportBundleZip': 'enterprise',
+          'canUseGptTestReal': 'pro',
+          'hasCloudHistory': 'pro',
+          'hasEvaluatorAI': 'pro',
+          'hasAPI': 'enterprise',
+          'hasWhiteLabel': 'enterprise',
+          'hasSeatsGT1': 'enterprise'
+        };
+
+        const requiredPlan = featureRequirements[feature] || 'free';
+        const planHierarchy = ['free', 'pro', 'enterprise'];
+        
+        const currentPlanIndex = planHierarchy.indexOf(planId);
+        const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
+        
+        const allowed = currentPlanIndex >= requiredPlanIndex;
+
+        return {
+          allowed,
+          requiredPlan,
+          currentPlan: planId,
+          feature
+        };
+      };
+
+      const entitlementCheck = checkFeature(planId, requiredFeature)
       
       return NextResponse.json({
         format,

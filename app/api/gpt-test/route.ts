@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sevenDValidator, type SevenDParams } from "@/lib/validator"
-import { entitlementChecker } from "@/lib/entitlements/useEntitlements"
-import { telemetry, trackRun, trackGate } from "@/lib/telemetry"
+import { trackRun, trackGate } from "@/lib/telemetry"
 
 // GPT Test endpoint - requires Pro+ plan (live GPT testing)
 export async function POST(request: NextRequest) {
@@ -28,9 +27,10 @@ export async function POST(request: NextRequest) {
         gateType: '7D_validation',
         passed: false,
         reason: error instanceof Error ? error.message : 'Unknown 7D validation error',
-        userId,
-        sessionId,
-        planId: planId || 'unknown'
+        userId: userId || 'unknown',
+        sessionId: sessionId || 'unknown',
+        planId: planId || 'unknown',
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 
@@ -41,11 +41,40 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. GATING ENTITLEMENTS STRICT (Pro+ only pentru live GPT testing)
-    const entitlementCheck = entitlementChecker.checkFeature(
-      planId || 'pilot', 
-      'canUseGptTestReal',
-      userId
-    )
+    // Simple entitlement check logic
+    const checkFeature = (planId: string, feature: string) => {
+      const featureRequirements: Record<string, string> = {
+        'canUseAllModules': 'pro',
+        'canExportMD': 'free',
+        'canExportPDF': 'pro',
+        'canExportJSON': 'pro',
+        'canExportBundleZip': 'enterprise',
+        'canUseGptTestReal': 'pro',
+        'hasCloudHistory': 'pro',
+        'hasEvaluatorAI': 'pro',
+        'hasAPI': 'enterprise',
+        'hasWhiteLabel': 'enterprise',
+        'hasSeatsGT1': 'enterprise'
+      };
+
+      const requiredPlan = featureRequirements[feature] || 'free';
+      const planHierarchy = ['free', 'pro', 'enterprise'];
+      
+      const currentPlanIndex = planHierarchy.indexOf(planId);
+      const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
+      
+      const allowed = currentPlanIndex >= requiredPlanIndex;
+
+      return {
+        allowed,
+        requiredPlan,
+        currentPlan: planId,
+        feature,
+        reason: allowed ? 'Feature allowed' : `Feature requires ${requiredPlan} plan`
+      };
+    };
+
+    const entitlementCheck = checkFeature(planId || 'free', 'canUseGptTestReal')
     
     if (!entitlementCheck.allowed) {
       trackGate.hit({
@@ -53,9 +82,10 @@ export async function POST(request: NextRequest) {
         gateType: 'entitlement',
         passed: false,
         reason: entitlementCheck.reason,
-        userId,
-        sessionId,
-        planId: planId || 'unknown'
+        userId: userId || 'unknown',
+        sessionId: sessionId || 'unknown',
+        planId: planId || 'unknown',
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 
@@ -71,8 +101,8 @@ export async function POST(request: NextRequest) {
     trackRun.start({
       moduleId,
       sevenD: validatedSevenD,
-      userId,
-      sessionId,
+      userId: userId || 'unknown',
+      sessionId: sessionId || 'unknown',
       planId: planId || 'pro'
     })
 
@@ -83,9 +113,10 @@ export async function POST(request: NextRequest) {
         gateType: 'DoR',
         passed: false,
         reason: `Input too short: ${prompt?.length || 0} bytes, required: 64+`,
-        userId,
-        sessionId,
-        planId: planId || 'pro'
+        userId: userId || 'unknown',
+        sessionId: sessionId || 'unknown',
+        planId: planId || 'pro',
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 
@@ -153,9 +184,10 @@ export async function POST(request: NextRequest) {
         gateType: 'DoD',
         passed: false,
         reason: `Test score ${testResults.score} below threshold 80`,
-        userId,
-        sessionId,
-        planId: planId || 'pro'
+        userId: userId || 'unknown',
+        sessionId: sessionId || 'unknown',
+        planId: planId || 'pro',
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 
@@ -172,8 +204,8 @@ export async function POST(request: NextRequest) {
       scores: { [testType]: testResults.score },
       tokenCount: prompt.length, // Mock token count
       success: true,
-      userId,
-      sessionId,
+      userId: userId || 'unknown',
+      sessionId: sessionId || 'unknown',
       planId: planId || 'pro'
     })
 
@@ -214,10 +246,7 @@ export async function GET(request: NextRequest) {
     const planId = searchParams.get('planId') || 'pilot'
     
     // Check entitlements for test access
-    const entitlementCheck = entitlementChecker.checkFeature(
-      planId, 
-      'canUseGptTestReal'
-    )
+    const entitlementCheck = checkFeature(planId, 'canUseGptTestReal')
     
     if (!entitlementCheck.allowed) {
       return NextResponse.json({ 

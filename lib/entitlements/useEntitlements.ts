@@ -33,13 +33,13 @@ export function useEntitlements(): Entitlements {
 function getFeaturesForPlan(plan: Plan): string[] {
   switch (plan) {
     case 'free':
-      return ['basic_generation', 'txt_export'];
+      return ['basic_generation', 'txt_export', 'limited_modules'];
     case 'creator':
-      return ['basic_generation', 'txt_export', 'md_export', 'advanced_generation'];
+      return ['basic_generation', 'txt_export', 'md_export', 'all_modules'];
     case 'pro':
-      return ['basic_generation', 'txt_export', 'md_export', 'pdf_export', 'json_export', 'real_testing', 'advanced_generation'];
+      return ['basic_generation', 'txt_export', 'md_export', 'pdf_export', 'json_export', 'real_testing', 'all_modules', 'cloud_history', 'evaluator_ai'];
     case 'enterprise':
-      return ['basic_generation', 'txt_export', 'md_export', 'pdf_export', 'json_export', 'bundle_export', 'real_testing', 'advanced_generation', 'custom_modules'];
+      return ['basic_generation', 'txt_export', 'md_export', 'pdf_export', 'json_export', 'bundle_export', 'real_testing', 'all_modules', 'cloud_history', 'evaluator_ai', 'api_access', 'white_label', 'multi_seat'];
     default:
       return ['basic_generation', 'txt_export'];
   }
@@ -72,21 +72,21 @@ export class EntitlementChecker {
 
     // Define feature requirements
     const featureRequirements: Record<string, string> = {
-      'canUseAllModules': 'pro',
-      'canExportMD': 'free',
+      'canUseAllModules': 'creator',
+      'canExportMD': 'creator',
       'canExportPDF': 'pro',
       'canExportJSON': 'pro',
       'canExportBundleZip': 'enterprise',
+      'canExportZIP': 'enterprise', // Add explicit ZIP restriction
       'canUseGptTestReal': 'pro',
       'hasCloudHistory': 'pro',
       'hasEvaluatorAI': 'pro',
       'hasAPI': 'enterprise',
-      'hasWhiteLabel': 'enterprise',
-      'hasSeatsGT1': 'enterprise'
+      'hasWhiteLabel': 'enterprise'
     };
 
     const requiredPlan = featureRequirements[feature] || 'free';
-    const planHierarchy = ['free', 'pro', 'enterprise'];
+    const planHierarchy = ['free', 'creator', 'pro', 'enterprise'];
     
     const currentPlanIndex = planHierarchy.indexOf(planId);
     const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
@@ -103,8 +103,23 @@ export class EntitlementChecker {
 
   // Static method for validating plan
   static validatePlan(planId: string): Plan | null {
-    const validPlans: Plan[] = ['free', 'pro', 'enterprise'];
+    const validPlans: Plan[] = ['free', 'creator', 'pro', 'enterprise'];
     return validPlans.includes(planId as Plan) ? planId as Plan : null;
+  }
+
+  // Check if user can access a specific module
+  static canAccessModule(planId: string, moduleId: string): boolean {
+    const plan = EntitlementChecker.validatePlan(planId);
+    if (!plan) return false;
+
+    // Free plan can only access M01, M10, M18
+    if (plan === 'free') {
+      const allowedModules = ['M01', 'M10', 'M18'];
+      return allowedModules.includes(moduleId);
+    }
+
+    // All other plans can access all modules
+    return true;
   }
 
   canExport(format: string): boolean {
@@ -127,7 +142,7 @@ export class EntitlementChecker {
 
   canUseAdvancedGeneration(): boolean {
     const features = getFeaturesForPlan(this.plan);
-    return features.includes('advanced_generation');
+    return features.includes('all_modules');
   }
 
   canUseRealTesting(): boolean {
@@ -137,7 +152,7 @@ export class EntitlementChecker {
 
   canUseCustomModules(): boolean {
     const features = getFeaturesForPlan(this.plan);
-    return features.includes('custom_modules');
+    return features.includes('all_modules');
   }
 
   getPlan(): Plan {

@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sevenDValidator, type SevenDParams } from "@/lib/validator"
-import { entitlementChecker } from "@/lib/entitlements/useEntitlements"
-import { telemetry, trackRun, trackGate, trackBundle } from "@/lib/telemetry"
+import { trackRun, trackGate, trackBundle } from "@/lib/telemetry"
 
 // Bundle Export endpoint - Enterprise only for ZIP bundles
 export async function POST(request: NextRequest) {
@@ -44,6 +43,44 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. GATING ENTITLEMENTS STRICT (Enterprise pentru ZIP, Pro+ pentru alte formate)
+    // Simple entitlement check logic
+    const checkFeature = (planId: string, feature: string) => {
+      const featureRequirements: Record<string, string> = {
+        'canUseAllModules': 'pro',
+        'canExportMD': 'free',
+        'canExportPDF': 'pro',
+        'canExportJSON': 'pro',
+        'canExportBundleZip': 'enterprise',
+        'canExportZip': 'enterprise',
+        'canExportPdf': 'pro',
+        'canExportJson': 'pro',
+        'canExportMd': 'free',
+        'canExportTxt': 'free',
+        'canUseGptTestReal': 'pro',
+        'hasCloudHistory': 'pro',
+        'hasEvaluatorAI': 'pro',
+        'hasAPI': 'enterprise',
+        'hasWhiteLabel': 'enterprise',
+        'hasSeatsGT1': 'enterprise'
+      };
+
+      const requiredPlan = featureRequirements[feature] || 'free';
+      const planHierarchy = ['free', 'pro', 'enterprise'];
+      
+      const currentPlanIndex = planHierarchy.indexOf(planId);
+      const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
+      
+      const allowed = currentPlanIndex >= requiredPlanIndex;
+
+      return {
+        allowed,
+        requiredPlan,
+        currentPlan: planId,
+        feature,
+        reason: allowed ? 'Feature allowed' : `Feature requires ${requiredPlan} plan`
+      };
+    };
+
     let requiredFeature: 'canExportZip' | 'canExportPdf' | 'canExportJson' | 'canExportMd' | 'canExportTxt'
     
     switch (format) {
@@ -66,11 +103,7 @@ export async function POST(request: NextRequest) {
         requiredFeature = 'canExportTxt'
     }
 
-    const entitlementCheck = entitlementChecker.checkFeature(
-      planId || 'pilot', 
-      requiredFeature,
-      userId
-    )
+    const entitlementCheck = checkFeature(planId || 'free', requiredFeature)
     
     if (!entitlementCheck.allowed) {
       await trackGate.hit({
@@ -81,8 +114,7 @@ export async function POST(request: NextRequest) {
         userId: userId || 'unknown',
         sessionId: sessionId || 'unknown',
         planId: planId || 'unknown',
-        timestamp: new Date(),
-        metadata: { feature: requiredFeature, requiredPlan: entitlementCheck.requiredPlan, format }
+        timestamp: new Date()
       })
       
       return NextResponse.json({ 

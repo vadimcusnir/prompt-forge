@@ -1,0 +1,19 @@
+{
+  "module_code": "M42",
+  "vector": 7,
+  "name": "Contra‑cadru mediatic (MD/RO)",
+  "purpose": "Poziționare cu citări legale: argumente, referințe și Q&A pentru politici media.",
+  "tags": ["media", "legal", "q&a"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] }, "schema": { "type": "object", "required": ["policy_topics", "legislatie_links", "citari"], "properties": { "policy_topics": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "legislatie_links": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "citari": { "type": "array", "minItems": 2, "items": { "type": "string" } } } }, "example": { "policy_topics": ["copyright","defamation"], "legislatie_links": ["link1","link2"], "citari": ["art.1","art.2"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "arguments", "type": "markdown", "required": true }, { "name": "refs", "type": "json", "required": true }, { "name": "qa", "type": "markdown", "required": false } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M42-T1", "name": "Arguments + refs", "input": { "custom": { "policy_topics": ["a","b"], "legislatie_links": ["l1","l2"], "citari": ["c1","c2"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

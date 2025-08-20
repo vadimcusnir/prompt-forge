@@ -1,0 +1,31 @@
+{
+  "module_code": "M09",
+  "vector": 1,
+  "name": "Post‑Purchase Subscription Engine",
+  "purpose": "Orchestrare onboarding→activare→upsell→retenție→winback cu early‑warning pentru churn.",
+  "tags": ["subscription", "nudging", "retention"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "md", "bundle"] },
+    "schema": {
+      "type": "object",
+      "required": ["plans", "onboarding_flow", "habit_events"],
+      "properties": {
+        "plans": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "onboarding_flow": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
+        "habit_events": { "type": "array", "items": { "type": "string" }, "minItems": 3 }
+      }
+    },
+    "example": { "plans": ["Starter", "Pro"], "onboarding_flow": ["welcome", "setup", "first value"], "habit_events": ["weekly report", "milestone"] }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "onboarding", "type": "json", "required": true }, { "name": "activation", "type": "json", "required": true }, { "name": "upsell", "type": "json", "required": true }, { "name": "retention", "type": "json", "required": true }, { "name": "winback", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M09-T1", "name": "Generează onboarding și retention", "input": { "custom": { "plans": ["Starter"], "onboarding_flow": ["a","b","c"], "habit_events": ["x","y","z"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true, "no_promises": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

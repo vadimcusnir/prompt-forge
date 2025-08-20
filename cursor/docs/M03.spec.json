@@ -1,0 +1,43 @@
+{
+  "module_code": "M03",
+  "vector": 2,
+  "name": "Codul 7:1™",
+  "purpose": "Generează campanii end‑to‑end în 7 etape care converg într‑un verdict comercial unic, cu active și teste asociate.",
+  "tags": ["campaign", "funnel", "tests"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["md", "bundle"] },
+    "schema": {
+      "type": "object",
+      "required": ["product", "avatar", "objective", "budget", "kpi"],
+      "properties": {
+        "product": { "type": "string", "minLength": 3 },
+        "avatar": { "type": "string", "minLength": 3 },
+        "objective": { "type": "string", "minLength": 8 },
+        "budget": { "type": "string" },
+        "kpi": { "type": "string" }
+      }
+    },
+    "example": { "product": "SaaS Analytics", "avatar": "Marketing Director", "objective": "+15% CR", "budget": "$10k", "kpi": "CR uplift" }
+  },
+  "outputs": {
+    "artifact_type": "bundle",
+    "fields": [
+      { "name": "copy", "type": "markdown", "required": true },
+      { "name": "assets", "type": "array", "required": true },
+      { "name": "tests", "type": "json", "required": true },
+      { "name": "verdict", "type": "string", "required": true }
+    ]
+  },
+  "kpi": { "score_min": 85, "tta_text_s": 60, "tta_sop_s": 300, "weights": { "clarity": 0.25, "execution": 0.25, "ambiguity": 0.25, "business_fit": 0.25 } },
+  "tests": [
+    { "id": "M03-T1", "name": "Conține verdict și tests", "input": { "custom": { "product": "X", "avatar": "Y", "objective": "Z", "budget": "$5k", "kpi": "CR" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 85, "contains": ["verdict", "tests"] } }
+  ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true, "no_promises": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

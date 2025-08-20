@@ -1,0 +1,19 @@
+{
+  "module_code": "M29",
+  "vector": 2,
+  "name": "Indoctrinare Soft",
+  "purpose": "Micro‑ritualuri, lexic și microacțiuni pentru adoptarea obiceiurilor; design de reinforcement.",
+  "tags": ["habits", "lexicon", "rituals"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] }, "schema": { "type": "object", "required": ["rituals", "phrases", "cadence"], "properties": { "rituals": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "phrases": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "cadence": { "type": "string" } } }, "example": { "rituals": ["daily1","weekly1","monthly1"], "phrases": ["lex1","lex2","lex3","lex4","lex5"], "cadence": "daily" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "rituals", "type": "markdown", "required": true }, { "name": "lexicon", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M29-T1", "name": "Rituals + lexicon", "input": { "custom": { "rituals": ["a","b","c"], "phrases": ["1","2","3","4","5"], "cadence": "weekly" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

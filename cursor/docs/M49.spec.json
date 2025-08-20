@@ -1,0 +1,19 @@
+{
+  "module_code": "M49",
+  "vector": 1,
+  "name": "Assistant Onboarding GPT (Nota Doi)",
+  "purpose": "Profilare progresivă și memorie curtabilă: slots, forms, answers.",
+  "tags": ["assistant", "onboarding", "memory"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json"] }, "schema": { "type": "object", "required": ["profile", "memorie", "flow"], "properties": { "profile": { "type": "object" }, "memorie": { "type": "object" }, "flow": { "type": "array", "minItems": 3, "items": { "type": "string" } } } }, "example": { "profile": {}, "memorie": {}, "flow": ["slot1","slot2","slot3"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "onboarding", "type": "markdown", "required": true }, { "name": "memory_slots", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M49-T1", "name": "Onboarding + slots", "input": { "custom": { "profile": {}, "memorie": {}, "flow": ["a","b","c"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

@@ -1,0 +1,881 @@
+nomenclatorul oficial pentru parametrul domain din schema PROMPTFORGE™ v3. Acesta definește industriile canonice (CORE 25), fiecare cu sub-industrii posibile, jargon, KPI și note de conformitate.
+
+Domenii Canonice (CORE 25)
+SaaS – Software as a Service (B2B SaaS, Productivity, Collaboration, DevTools)
+FinTech – Banking, Payments, Lending, Insurance, RegTech
+E-Commerce – Retail, Marketplaces, D2C, Dropshipping
+Consulting – Management, Strategy, Marketing, IT Consulting
+Education – E-learning, K-12, Higher Ed, Corporate Training
+Healthcare – Hospitals, Telemedicine, MedTech, Pharma
+Legal – Law Firms, Compliance, Contract Automation
+Marketing – Agencies, Performance, SEO/Content, MarTech
+Media – Publishing, Entertainment, Influencers, News
+Real Estate – PropTech, Construction, Interior Design, Facility Mgmt
+HR – Recruiting, PeopleOps, Employee Engagement
+NGO – Nonprofits, Activism, Foundations
+Government – Public Sector, Policy, Civic Tech
+Web3 – Blockchain, Crypto, NFTs, DAOs
+AI/ML – Applied AI, Research, Agents, PromptOps
+Cybersecurity – Threat Intel, Compliance, Zero-Trust
+Manufacturing – Industry 4.0, Robotics, Automotive, Aerospace
+Logistics – Supply Chain, Mobility, Shipping, Warehousing
+Travel – Hospitality, Airlines, Tourism
+Gaming – eSports, VR/AR, Indie Dev, Mobile
+Fashion – Apparel, Luxury, Streetwear, Sustainable
+Beauty – Cosmetics, Wellness, Skincare
+Spiritual – Coaching, Religion Tech, Communities
+Architecture – Urbanism, Design Studios, Engineering
+Agriculture – AgriTech, Food Supply, Biotech
+
+Structură de parametrizare
+Fiecare domain are:
+jargon[] – termeni specifici industriei (ex: FinTech → KYC, AML)
+kpis[] – indicatori tipici (ex: Education → engagement, completion, retention)
+compliance_notes – reglementări sau restricții (ex: FinTech → SEC/FCA sensitive)
+style_bias – ton recomandat (formal, gamified, audit-like, etc.)
+default_output_format – format standard de livrare (ex: spec, playbook)
+
+
+1. SaaS – Software as a Service
+Sub-industrii: B2B SaaS, Productivity Tools, Collaboration Platforms, DevTools
+jargon[]: ["ARR", "MRR", "CAC", "LTV", "churn", "freemium", "multi-tenant", "API-first", "integration", "uptime SLA"]
+kpis[]: ["MRR growth", "churn rate", "net retention", "activation rate", "DAU/WAU/MAU", "time-to-value", "NPS"]
+compliance_notes: GDPR, SOC2, ISO 27001, Data Residency (EU/US)
+style_bias: analitic, orientat pe metrici, clar (business-case driven)
+default_output_format: spec (documentație tehnică, arhitectură, playbook scalare)
+
+2. FinTech – Banking, Payments, Lending, Insurance, RegTech
+Sub-industrii: Digital Banking, Payments & Wallets, Lending Platforms, InsurTech, RegTech
+jargon[]: ["KYC", "AML", "PSD2", "open banking", "onboarding", "fraud detection", "compliance stack", "tokenization", "risk scoring"]
+kpis[]: ["fraud_rate", "KYC_completion_time", "approval_rate", "transaction_success_rate", "compliance_incidents", "customer acquisition cost"]
+compliance_notes: SEC/FCA sensitive, Basel III, GDPR, PCI DSS, Anti-Money Laundering Directives
+style_bias: formal, layered, orientat pe risc și reglementare
+default_output_format: spec (politici, arhitecturi, proceduri de risc)
+
+3. E-Commerce – Retail, Marketplaces, D2C, Dropshipping
+Sub-industrii: Online Retail, Marketplaces, D2C Brands, Social Commerce, Dropshipping
+jargon[]: ["conversion rate", "AOV", "ROAS", "retargeting", "checkout funnel", "cart abandonment", "SKU", "last-mile delivery", "CX", "RFM segmentation"]
+kpis[]: ["conversion_rate", "AOV", "cart_abandonment_rate", "LTV", "ROAS", "return_rate", "D2C repeat purchase rate"]
+compliance_notes: GDPR (data privacy), PSD2 SCA (Strong Customer Authentication), Consumer Protection Directives, Sales Tax / VAT rules
+style_bias: pragmatic, optimizat pe vânzări și UX, cu accent pe funnel și date comerciale
+default_output_format: playbook (flow-uri funnel, SOP-uri pentru campanii, analize comerciale)
+
+4. Consulting – Management, Strategy, Marketing, IT Consulting
+Sub-industrii: Management Consulting, Strategy, Marketing Advisory, Digital Transformation, IT Services
+jargon[]: ["OKRs", "scope creep", "buy-in", "change management", "benchmarking", "value proposition", "due diligence", "workstream", "deliverables"]
+kpis[]: ["ROI", "decision_speed", "execution_alignment", "client_satisfaction", "project_on-time_rate", "scope adherence"]
+compliance_notes: Contractual NDAs, ISO 9001 (quality management), Data Confidentiality Standards
+style_bias: audit-like, autoritar, orientat pe diagrame și frameworks
+default_output_format: spec (diagrame, rapoarte executive, SOP-uri de strategie)
+
+5. Education – E-learning, K-12, Higher Ed, Corporate Training
+Sub-industrii: EdTech, K-12 Schools, Universities, MOOCs, Corporate Learning
+jargon[]: ["LMS", "blended learning", "cohort-based", "microlearning", "gamification", "learning outcomes", "adaptive learning", "student retention"]
+kpis[]: ["engagement_rate", "completion_rate", "knowledge_retention", "student_satisfaction", "dropout_rate", "learning_outcome_improvement"]
+compliance_notes: FERPA (US), GDPR (EU students), Accessibility (WCAG, ADA), SCORM/xAPI standards
+style_bias: narativ, gamified, empatic, rațional
+default_output_format: playbook (curriculum map, lesson plan, rubrici de evaluare)
+
+6. Healthcare – Hospitals, Telemedicine, MedTech, Pharma
+Sub-industrii: Hospitals, Telehealth, Medical Devices, Digital Health Apps, Pharmaceuticals
+jargon[]: ["EMR", "EHR", "HIPAA", "HL7", "telehealth", "clinical trial", "patient journey", "ICD-10", "precision medicine"]
+kpis[]: ["patient_outcome_improvement", "readmission_rate", "treatment_adherence", "teleconsultation_volume", "clinical_trial_success_rate", "time_to_diagnosis"]
+compliance_notes: HIPAA (US), GDPR (EU patient data), FDA / EMA (drugs & devices), CE Marking, Medical Ethics Boards
+style_bias: formal, etic, cu accent pe siguranță și dovezi clinice
+default_output_format: spec (procese clinice, protocoale, documentație medicală)
+
+7. Legal – Law Firms, Compliance, Contract Automation
+Sub-industrii: Corporate Law, Compliance, Contract Automation, Litigation, IP Law
+jargon[]: ["case law", "precedent", "due diligence", "M&A", "arbitration", "compliance framework", "GDPR clauses", "contract lifecycle management"]
+kpis[]: ["contract_review_time", "compliance_incident_rate", "case_win_rate", "client_retention_rate", "automation_adoption_rate"]
+compliance_notes: GDPR, SOX, AML directives, Bar Association rules, Local/EU/US Contract Law
+style_bias: juridic, precis, conservator, auditabil
+default_output_format: spec (contracte standard, opinii legale, proceduri de conformitate)
+
+8. Marketing – Agencies, Performance, SEO/Content, MarTech
+Sub-industrii: Creative Agencies, Performance Marketing, SEO & Content, Influencer Marketing, MarTech SaaS
+jargon[]: ["ROAS", "CPC", "CTR", "conversion funnel", "content pillar", "persona", "SEO audit", "customer journey", "growth loop"]
+kpis[]: ["CTR", "conversion_rate", "ROAS", "CAC", "engagement_rate", "brand_awareness", "share_of_voice"]
+compliance_notes: GDPR (cookies, tracking), FTC Guidelines (ads & influencers), ASA (advertising standards), Transparency in Sponsored Content
+style_bias: creativ, persuasiv, storytelling + dată-driven
+default_output_format: playbook (funneluri de campanie, calendare editoriale, SOP de execuție)
+
+9. Media – Publishing, Entertainment, Influencers, News
+Sub-industrii: Publishing, Entertainment Platforms, Journalism, Social Media Influencers, Streaming
+jargon[]: ["engagement", "CPM", "CPE", "syndication", "OTT", "reach", "virality", "UGC", "sponsored content", "editorial calendar"]
+kpis[]: ["audience_reach", "subscriber_growth", "watch_time", "ad_revenue", "CPM", "engagement_rate", "shareability"]
+compliance_notes: Copyright/IP law, GDPR (audience data), DMA (Digital Markets Act), FTC disclosures (sponsored content), Press Ethics Codes
+style_bias: narativ, atractiv, semiotic (pentru influenceri), factual și verificabil (pentru news)
+default_output_format: playbook (planuri editoriale, campanii media, rapoarte de impact)
+
+10. Real Estate – PropTech, Construction, Interior Design, Facility Mgmt
+Sub-industrii: PropTech Platforms, Smart Buildings, Construction, Real Estate Agencies, Interior Design, Facility Management
+jargon[]: ["MLS", "valuation", "mortgage origination", "occupancy rate", "lease agreement", "square footage", "BIM", "CAPEX", "tenant retention"]
+kpis[]: ["occupancy_rate", "rental_yield", "time_on_market", "lead_conversion_rate", "project_completion_time", "facility_operating_costs"]
+compliance_notes: Local zoning laws, Building Codes, Fair Housing Act, GDPR (tenant data), OSHA (workplace safety)
+style_bias: pragmatic, investițional, formal pentru partea legală, vizual pentru partea de design
+default_output_format: spec (analize investiții, rapoarte proiect, planuri de construcție/design)
+
+11. HR – Recruiting, PeopleOps, Employee Engagement
+Sub-industrii: Recruiting, Talent Acquisition, HR Tech, PeopleOps, Employee Engagement Platforms
+jargon[]: ["ATS", "talent pipeline", "employee lifecycle", "turnover", "retention", "onboarding", "DEI", "engagement survey", "OKRs"]
+kpis[]: ["time_to_hire", "cost_per_hire", "employee_retention_rate", "employee_satisfaction", "offer_acceptance_rate", "engagement_index"]
+compliance_notes: GDPR (candidate data), Equal Employment Opportunity, Labor Law, Workplace Safety Standards
+style_bias: empatic, people-centric, formal pentru politici, motivațional pentru engagement
+default_output_format: playbook (proces de recrutare, SOP onboarding, survey frameworks)
+
+12. NGO – Nonprofits, Activism, Foundations
+Sub-industrii: International NGOs, Humanitarian Aid, Grassroots Activism, Philanthropic Foundations
+jargon[]: ["impact report", "donor engagement", "advocacy", "fundraising", "capacity building", "SDGs", "field operations", "stakeholder mapping"]
+kpis[]: ["fundraising_growth", "donor_retention_rate", "impact_metrics", "program_reach", "volunteer_engagement", "cost_per_beneficiary"]
+compliance_notes: NGO Governance Codes, Tax-exemption rules (IRS 501(c)(3) / EU equivalents), Anti-terrorism financing checks, GDPR for donor/beneficiary data
+style_bias: empatic, misionar, storytelling orientat pe impact social
+default_output_format: playbook (rapoarte de impact, fundraising campaigns, activism frameworks)
+
+13. Government – Public Sector, Policy, Civic Tech
+Sub-industrii: Central/Local Government, Policy Think Tanks, Digital Public Services, Civic Tech Startups
+jargon[]: ["public policy", "legislative framework", "citizen engagement", "open data", "governance", "e-procurement", "PPP (public-private partnership)"]
+kpis[]: ["policy_implementation_rate", "citizen_satisfaction", "service_delivery_time", "budget_utilization", "transparency_index"]
+compliance_notes: GDPR (citizen data), Freedom of Information Acts, National Procurement Laws, Cybersecurity Directives (NIS2 in EU)
+style_bias: formal, instituțional, orientat pe transparență și conformitate
+default_output_format: spec (policy papers, regulatory frameworks, civic dashboards)
+
+14. Web3 – Blockchain, Crypto, NFTs, DAOs
+Sub-industrii: DeFi, Crypto Exchanges, NFT Marketplaces, DAOs, Web3 Infrastructure
+jargon[]: ["DeFi", "staking", "DAO governance", "NFT minting", "tokenomics", "smart contracts", "L1/L2", "DEX", "wallet"]
+kpis[]: ["TVL (total value locked)", "transaction_volume", "active_wallets", "DAO_participation_rate", "NFT_floor_price", "protocol_revenue"]
+compliance_notes: SEC/CFTC oversight (US), MiCA (EU), FATF Travel Rule, AML/KYC requirements, consumer protection for crypto-assets
+style_bias: tehnic, experimental, comunitar, orientat pe transparență și autonomie
+default_output_format: spec (tokenomics papers, governance proposals, DAO frameworks)
+
+15. AI/ML – Applied AI, Research, Agents, PromptOps
+Sub-industrii: Applied AI, Machine Learning Research, AI Agents, Prompt Engineering Ops, AutoML Platforms
+jargon[]: ["LLM", "fine-tuning", "embedding", "multi-agent", "reinforcement learning", "prompt chaining", "vector DB", "hallucination control"]
+kpis[]: ["model_accuracy", "inference_latency", "token_efficiency", "adoption_rate", "agent_success_rate", "deployment_costs"]
+compliance_notes: AI Act (EU), NIST AI Risk Framework (US), Data Privacy (GDPR), Model Accountability Guidelines, OpenAI Policy guardrails
+style_bias: tehnic, inovativ, semi-academic dar pragmatic (whitepaper style)
+default_output_format: spec (model cards, prompt frameworks, research notes, technical playbooks)
+
+16. Cybersecurity – Threat Intel, Compliance, Zero-Trust
+Sub-industrii: Threat Intelligence, Zero-Trust Security, SOC Operations, Identity & Access Management, Cloud Security
+jargon[]: ["SOC", "SIEM", "phishing", "zero-trust", "IAM", "incident response", "CVE", "penetration testing", "endpoint security"]
+kpis[]: ["MTTR (mean time to respond)", "number_of_incidents_detected", "false_positive_rate", "patching_time", "system_uptime", "breach_cost_reduction"]
+compliance_notes: GDPR (data security), ISO 27001, NIS2 Directive, CCPA (US), SOC2, OWASP standards
+style_bias: formal, tehnic, focus pe risc și reziliență
+default_output_format: spec (playbook incident response, threat intel reports, compliance checklists)
+
+17. Manufacturing – Industry 4.0, Robotics, Automotive, Aerospace
+Sub-industrii: Smart Factories, Robotics, Automotive Manufacturing, Aerospace, Industrial IoT
+jargon[]: ["Industry 4.0", "CNC", "lean manufacturing", "Six Sigma", "OEE", "supply chain resilience", "automation pipeline", "predictive maintenance"]
+kpis[]: ["OEE (overall equipment effectiveness)", "downtime", "production_yield", "defect_rate", "throughput", "supply_chain_lead_time"]
+compliance_notes: ISO 9001 (quality), ISO/TS 16949 (automotive), FAA/EASA (aerospace), OSHA safety standards
+style_bias: ingineresc, pragmatic, investițional (optimizare procese)
+default_output_format: spec (process optimization reports, SOPs, design blueprints)
+
+18. Logistics – Supply Chain, Mobility, Shipping, Warehousing
+Sub-industrii: Supply Chain Management, Freight & Shipping, Warehousing, Mobility & Fleet Management
+jargon[]: ["last-mile delivery", "fleet utilization", "cold chain", "3PL", "intermodal transport", "RFID", "inventory optimization", "just-in-time"]
+kpis[]: ["on_time_delivery_rate", "cost_per_mile", "inventory_turnover", "fulfillment_accuracy", "fleet_utilization_rate", "carbon_emissions_per_shipment"]
+compliance_notes: Customs & Trade Compliance, IATA (air freight), IMO (maritime), OSHA (warehouse safety), EU Mobility Package
+style_bias: operațional, optimizat pe eficiență și costuri
+default_output_format: playbook (supply chain workflows, logistics dashboards, optimization SOPs)
+
+19. Travel – Hospitality, Airlines, Tourism
+Sub-industrii: Hospitality, Airlines, Travel Tech, Tour Operators, Tourism Boards
+jargon[]: ["occupancy_rate", "yield management", "dynamic pricing", "load factor", "GDS", "OTA", "guest experience", "ancillary revenue"]
+kpis[]: ["occupancy_rate", "RevPAR", "load_factor", "customer_satisfaction", "ancillary_revenue", "average_booking_window"]
+compliance_notes: GDPR (traveler data), IATA (aviation), ICAO safety, Local Tourism & Hospitality Regulations
+style_bias: experiențial, orientat pe client, storytelling (emoție + date)
+default_output_format: playbook (guest journey maps, pricing strategies, service SOPs)
+
+20. Gaming – eSports, VR/AR, Indie Dev, Mobile
+Sub-industrii: eSports, Game Studios, VR/AR Platforms, Mobile Games, Indie Development
+jargon[]: ["DAU/MAU", "retention curve", "in-app purchase", "ARPU", "live ops", "matchmaking", "latency", "user acquisition", "whale players"]
+kpis[]: ["DAU", "MAU", "retention_day1/day7/day30", "ARPU", "LTV", "churn_rate", "esports_viewership"]
+compliance_notes: Age Ratings (PEGI/ESRB), GDPR (player data), Loot box regulations, Streaming/IP copyright laws
+style_bias: interactiv, ludic, narativ, orientat pe engagement și UX
+default_output_format: playbook (game design docs, monetization frameworks, live ops roadmaps)
+
+21. Fashion – Apparel, Luxury, Streetwear, Sustainable
+Sub-industrii: Apparel & Retail, Luxury Fashion, Streetwear, Sustainable/Ethical Fashion
+jargon[]: ["collection drop", "SKU", "fast fashion", "capsule collection", "runway", "D2C", "luxury margin", "sustainability index", "supply chain traceability"]
+kpis[]: ["sell_through_rate", "gross_margin", "inventory_turnover", "brand_awareness", "ecommerce_conversion_rate", "repeat_purchase_rate"]
+compliance_notes: Ethical Sourcing Standards, Labor Law, Sustainability Regulations (EU CSRD), Counterfeit/IP protection
+style_bias: vizual, aspirational, trend-driven, storytelling identitar
+default_output_format: playbook (campanii sezoniere, lookbooks, strategie de brand)
+
+22. Beauty – Cosmetics, Wellness, Skincare
+Sub-industrii: Cosmetics Brands, Wellness Products, Skincare, Influencer-led Beauty
+jargon[]: ["skincare routine", "clean beauty", "retinol", "formulation", "cruelty-free", "shelf life", "cosmeceuticals", "product launch cycle"]
+kpis[]: ["repeat_purchase_rate", "customer_loyalty_index", "influencer_engagement", "product_review_score", "sell_through", "retention_rate"]
+compliance_notes: FDA/EMA cosmetic regulations, EU Cosmetic Directive, Cruelty-Free Certifications, Claims Substantiation (before/after marketing)
+style_bias: emoțional, narativ, orientat pe aspirație și lifestyle
+default_output_format: playbook (campanii influencer, routine guides, product launch SOPs)
+
+23. Spiritual – Coaching, Religion Tech, Communities
+Sub-industrii: Life Coaching, Religion Tech Platforms, Spiritual Communities, Transformational Retreats
+jargon[]: ["mindfulness", "awakening journey", "ritual design", "sacred space", "tribe building", "energetic alignment", "initiation", "transformational practice"]
+kpis[]: ["community_growth", "retreat_attendance", "program_completion_rate", "donation_volume", "spiritual_engagement_index"]
+compliance_notes: Ethical standards in coaching, Nonprofit registration (if religious org), Transparency in donations, Data privacy (community data)
+style_bias: ritualic, inspirațional, semiotic, cu ton empatic și transformator
+default_output_format: playbook (ritual frameworks, transformational journeys, community guides)
+
+24. Architecture – Urbanism, Design Studios, Engineering
+Sub-industrii: Urban Planning, Architecture Studios, Engineering Firms, Smart Cities
+jargon[]: ["CAD", "BIM", "zoning", "master plan", "urban density", "sustainability rating", "LEED certification", "mixed-use development"]
+kpis[]: ["project_completion_time", "budget_adherence", "sustainability_score", "client_approval_rate", "occupancy_rate"]
+compliance_notes: Local zoning laws, Building Codes, Safety Standards, LEED/BREEAM sustainability frameworks, GDPR for tenant/urban data
+style_bias: tehnic, vizual, investițional, orientat pe estetică și conformitate legală
+default_output_format: spec (urban plans, design blueprints, compliance reports)
+
+25. Agriculture – AgriTech, Food Supply, Biotech
+Sub-industrii: AgriTech Platforms, Smart Farming, Food Supply Chains, Agricultural Biotech
+jargon[]: ["precision agriculture", "yield optimization", "farm-to-fork", "supply chain traceability", "GMO", "crop rotation", "soil health index", "drone monitoring"]
+kpis[]: ["crop_yield", "input_efficiency", "supply_chain_integrity", "food_waste_reduction", "CO2_emissions_reduction", "farm_profitability"]
+compliance_notes: Food Safety Standards (HACCP, ISO 22000), USDA/EU Agricultural Regulations, GMO compliance, Sustainability/Climate directives
+style_bias: pragmatic, sustenabil, dată-driven, tehnic cu accent pe inovație
+default_output_format: spec (agricultural SOPs, sustainability reports, biotech protocols)
+
+
+
+
+set canonic complet de enumerări pentru param engine 7D din PROMPTFORGE™ v3 – cu valori permise și default per domeniu (din cele 25 CORE).
+
+🔹 1. Domain (25 industrii canonice)
+Valori permise:
+["saas","fintech","ecommerce","consulting","education",
+"healthcare","legal","marketing","media","real_estate",
+"hr","ngo","government","web3","aiml","cybersecurity",
+"manufacturing","logistics","travel","gaming",
+"fashion","beauty","spiritual","architecture","agriculture"]
+
+Default global: "consulting" (neutru, business-case driven)
+Default per domeniu: fiecare industry are propriul config (vezi mai jos).
+
+🔹 2. Scale (mărime / maturitate organizațională)
+Valori permise:
+["personal_brand","solo","startup","boutique_agency","smb","corporate","enterprise"]
+Default global: "startup"
+Ex. per domain:
+SaaS → "startup"
+Consulting → "boutique_agency"
+Government → "enterprise"
+Education → "smb"
+
+🔹 3. Urgency (nivel presiune execuțională)
+Valori permise:
+["low","planned","sprint","pilot","crisis"]
+Default global: "planned"
+Ex. per domain:
+FinTech → "sprint" (reglementare + competiție rapidă)
+Healthcare → "crisis" (viață/moarte, reglementări)
+Media → "sprint" (timp real, trending)
+Education → "planned" (cicluri de învățare)
+
+🔹 4. Complexity (adâncime execuțională)
+Valori permise:
+["foundational","standard","advanced","expert"]
+Default global: "standard"
+Ex. per domain:
+SaaS → "advanced" (multi-step API + scale)
+Legal → "expert" (juridic + precedent + contracte)
+Spiritual → "foundational" (simplicity, storytelling)
+AI/ML → "expert" (multi-agent, abstracții)
+
+🔹 5. Resources (capacitate operațională)
+Valori permise:
+["minimal","solo","lean_team","agency_stack","full_stack_org","enterprise_budget"]
+Default global: "lean_team"
+Ex. per domain:
+NGO → "minimal" (resurse limitate)
+SaaS → "lean_team"
+Government → "enterprise_budget"
+Fashion → "agency_stack"
+
+🔹 6. Application (caz de utilizare)
+Valori permise:
+["training","audit","implementation","strategy_design","crisis_response","experimentation","documentation"]
+Default global: "implementation"
+Ex. per domain:
+Education → "training"
+Consulting → "strategy_design"
+Cybersecurity → "crisis_response"
+Media → "documentation" (editorial)
+
+🔹 7. Output Format (artefact livrabil)
+Valori permise:
+["txt","md","checklist","spec","playbook","json","yaml","diagram","bundle"]
+Default global: "spec"
+Ex. per domain:
+SaaS → "spec" (API docs, arhitectură)
+Marketing → "playbook" (campanii, funneluri)
+Education → "playbook" (curriculum, lesson maps)
+Gaming → "playbook" (roadmaps, live ops)
+Government → "spec" (policy papers)
+
+📌 Exemplu JSON (FinTech defaults)
+{
+  "domain": "fintech",
+  "scale": "enterprise",
+  "urgency": "sprint",
+  "complexity": "advanced",
+  "resources": "full_stack_org",
+  "application": "implementation",
+  "output_format": "spec"
+}
+
+
+
+25 industrii canonice × valori default pentru 7D. Acesta este blueprint direct pentru params/domain/*.json (PROMPTFORGE™).
+
+📊 Nomenclator 7D Defaults (CORE 25 Domains)
+Domain	Scale Default	Urgency Default	Complexity Default	Resources Default	Application Default	Output Format Default
+SaaS	startup	planned	advanced	lean_team	implementation	spec
+FinTech	enterprise	sprint	advanced	full_stack_org	implementation	spec
+E-Commerce	smb	sprint	standard	agency_stack	implementation	playbook
+Consulting	boutique_agency	planned	advanced	agency_stack	strategy_design	spec
+Education	smb	planned	standard	lean_team	training	playbook
+Healthcare	corporate	crisis	expert	full_stack_org	implementation	spec
+Legal	corporate	planned	expert	full_stack_org	documentation	spec
+Marketing	boutique_agency	sprint	standard	agency_stack	implementation	playbook
+Media	smb	sprint	standard	agency_stack	documentation	playbook
+Real Estate	smb	planned	advanced	full_stack_org	strategy_design	spec
+HR	smb	planned	standard	lean_team	implementation	playbook
+NGO	minimal	crisis	foundational	minimal	strategy_design	playbook
+Government	enterprise	planned	advanced	enterprise_budget	documentation	spec
+Web3	startup	pilot	advanced	lean_team	experimentation	spec
+AI/ML	startup	sprint	expert	full_stack_org	experimentation	spec
+Cybersecurity	corporate	crisis	advanced	full_stack_org	crisis_response	spec
+Manufacturing	corporate	planned	advanced	enterprise_budget	implementation	spec
+Logistics	smb	sprint	advanced	full_stack_org	implementation	playbook
+Travel	smb	sprint	standard	agency_stack	implementation	playbook
+Gaming	startup	sprint	advanced	lean_team	experimentation	playbook
+Fashion	smb	sprint	standard	agency_stack	strategy_design	playbook
+Beauty	smb	sprint	standard	agency_stack	implementation	playbook
+Spiritual	personal_brand	planned	foundational	solo	training	playbook
+Architecture	corporate	planned	advanced	full_stack_org	strategy_design	spec
+Agriculture	smb	planned	standard	lean_team	implementation	spec
+📐 Observații
+
+Scale: reflectă tipologia dominantă din industrie (ex: SaaS → startup, Gov → enterprise).
+Urgency: industriile cu risc (Healthcare, Cybersec) default la crisis; altele la planned sau sprint.
+Complexity: domenii reglementate (Legal, Healthcare, AI/ML) merg pe expert.
+Resources: NGO → minimal; Enterprise-heavy → enterprise_budget.
+Application: Education/Spiritual → training, Consulting → strategy_design, Cybersec → crisis_response.
+Output Format: spec pentru industrii tehnice/reglementate, playbook pentru comerciale/creative.
+👉 Îți pot genera acest tabel direct ca JSON master file (params/domain_defaults.json), cu structura:
+
+{
+  "saas": { "scale": "startup", "urgency": "planned", "complexity": "advanced", "resources": "lean_team", "application": "implementation", "output_format": "spec" },
+  "fintech": { "scale": "enterprise", "urgency": "sprint", "complexity": "advanced", "resources": "full_stack_org", "application": "implementation", "output_format": "spec" },
+  ...
+}
+
+
+
+
+
+
+contract canonic de modul (valabil pentru M01–M50) + un șablon JSON gata de import + un exemplu completat (M07) + un catalog M01–M50 (denumire + scop 1‑linie). Totul e aliniat la engine‑ul 7D, telemetrie, scoring și export bundle.
+
+Contract de Modul (valabil M01–M50)
+
+Obiectiv: fiecare modul primește un context 7D + inputuri specifice și livrează un artefact executabil (spec/playbook/json/etc.), cu KPI măsurabili, guardrails și deps clare.
+
+1) Câmpuri canonice (schema)
+
+module_id (ex: "M07")
+
+name (scurt, operativ)
+
+vectors (int[] 1..7 – Strategic/Retoric/Conținut/Cognitiv/Memetic/Date/Criză)
+
+purpose (ce rezolvă în 1–2 fraze)
+
+inputs
+
+parameter_set_7d: {domain, scale, urgency, complexity, resources, application, output_format}
+
+module_params: chei specifice modulului (ex: persona, funnel, constraints)
+
+context_assets: opțional (brief, CSV/JSON, URL, text)
+
+process
+
+steps[]: pașii logici (prompt flow)
+
+eval_hooks[]: verificări interne (clarity, execution, policy)
+
+post_ops[]: structuri (formatare, rezumare, bundling)
+
+outputs
+
+primary: tipul (spec/playbook/json/diagram/bundle) + schema
+
+secondary[]: (ex: checklist.md, json metrics, diagram.mermaid)
+
+kpi
+
+definition[]: listează indicatorii (cu formule)
+
+targets: ținte implicite per‑domain (override‑abile)
+
+measurement: cum înregistrezi (telemetry.run → prompt_scores)
+
+guardrails
+
+policy: sensitive data, compliance (după domain)
+
+style: ton/stil (bias per domain)
+
+constraints: limite (tokens, temperatură, interdicții)
+
+fallbacks: ce faci la scor mic / lipsă date
+
+dependencies
+
+internal: domain_configs, evaluators, templates, taxonomii
+
+external: API‑uri (Stripe/Supabase/Jira/GA4 etc.), standarde (ISO/PCI/WCAG)
+
+telemetry
+
+run_meta: model, tokens, cost, durată
+
+policy_hits: ce reguli au fost aplicate
+
+scores: clarity/execution/ambiguity/alignment/business_fit
+
+export
+
+formats[]: md/json/pdf/bundle
+
+structure: layout + naming + checksum
+
+2) Șablon JSON (ready‑to‑use)
+{
+  "module_id": "MXX",
+  "name": "",
+  "vectors": [2,6],
+  "purpose": "",
+  "inputs": {
+    "parameter_set_7d": {
+      "domain": "", "scale": "", "urgency": "", "complexity": "",
+      "resources": "", "application": "", "output_format": ""
+    },
+    "module_params": {},
+    "context_assets": []
+  },
+  "process": {
+    "steps": ["collect > analyze > generate > validate > adapt > format"],
+    "eval_hooks": ["clarity>=80", "execution>=80", "policy_ok"],
+    "post_ops": ["structure_output", "attach_metrics", "bundle_export"]
+  },
+  "outputs": {
+    "primary": {"type": "spec", "schema": {"sections": []}},
+    "secondary": [{"type":"checklist","path":"checklist.md"}]
+  },
+  "kpi": {
+    "definition": [
+      {"name":"clarity","calc":"prompt_scores.clarity"},
+      {"name":"execution","calc":"prompt_scores.execution"}
+    ],
+    "targets": {"clarity":85,"execution":85},
+    "measurement": "scores from Evaluator AI + task-specific metrics"
+  },
+  "guardrails": {
+    "policy": ["gdpr", "ip/copyright", "domain_compliance"],
+    "style": {"tone":"audit-like","bias":"data-first"},
+    "constraints": {"max_tokens":6000,"temperature":0.4},
+    "fallbacks": ["reduce_scope","ask_for_missing_inputs","switch_format"]
+  },
+  "dependencies": {
+    "internal": ["domain_configs","evaluator_ai","export_templates"],
+    "external": []
+  },
+  "telemetry": {"enabled": true},
+  "export": {"formats":["md","json","pdf"], "structure":"by-domain/module"}
+}
+
+3) Pipeline de execuție (state machine)
+validate_7d → normalize_inputs → plan(steps) → generate(drafts) → evaluate(scores) → repair(if < target) → format(schema) → export(bundle) → log(telemetry)
+Exemplu completat — M07: Risk & Trust Reversal
+module_id: M07
+name: Risk & Trust Reversal
+vectors: [2,7] (Retoric + Criză)
+purpose: reduce riscul perceput și obiecțiile prin garanții, dovezi și recadre identitare; scade drop‑off în funnel.
+
+inputs
+parameter_set_7d: (ex) {"domain":"fintech","scale":"enterprise","urgency":"sprint","complexity":"advanced","resources":"full_stack_org","application":"implementation","output_format":"spec"}
+
+module_params:
+offer_profile: {price, terms, refund, trial, compliance_notes}
+objections_top: [listă clasată]
+proof_assets: [testimoniale, studii, audit extern]
+risk_matrix: {legal, financiar, reputațional, operațional}
+
+process.steps:
+Map obiecții → tip de risc (legal/fin/reputațional/exec)
+Propune 3–5 mecanisme reversare (garanții, escrow, milestones, SLA)
+Re‑scrie promisiunea în 2 registre (conservator & ofensiv)
+Montează dovada (case study, standarde, audit)
+Validare compliance (fintech: AML/KYC/PCI; fără promisiuni neconforme)
+Formatare: spec + checklist.md + json metrics
+
+outputs
+primary (spec): secțiuni = {Context, Risk Map, Trust Devices, Terms & SLA, Proof Set, Compliance Fit, Roll‑out Plan}
+secondary: checklist.md, offer_terms.json
+kpi
+
+definition:
+dropoff_delta: % scădere în pasul critic (calc: A/B run)
+approval_rate: % lead‑uri approve (KYC/credit)
+time_to_decision: medie până la accept
+targets: dropoff_delta ≤ -25%, approval_rate +10%, time_to_decision -20%
+measurement: înainte/după în 14 zile; scor Evaluator AI ≥ 85/100
+
+guardrails
+policy: fără afirmații financiare nereglementate; disclaimere; respect PCI/PSD2
+style: audit‑like, autoritar, clar
+constraints: temperature ≤ 0.4, max_tokens 7k
+fallbacks: dacă lipsesc dovezile → cere assets minime; dacă compliance flag → blochează secțiunea „promisiune”
+
+dependencies
+internal: domain_configs(fintech), evaluator_ai, templates/spec_v2
+external: PCI DSS ref, PSD2 SCA checklist
+telemetry: log tokens, cost, duration; prompt_scores (clarity/execution/alignment/business_fit)
+export: md/json/pdf + checksum; bundle path: /bundles/fintech/M07/…
+
+Catalog M01–M50 (denumire + scop 1‑linie)
+M01 Persona & Offer Clarifier — definești avatar, problemă, promisiune, ofertă.
+M02 Message‑Market Fit Map — mapezi mesaje pe segmente & canale cu dovezi.
+M03 Narrative Positioning — construiești povestea de poziționare (brand spine).
+M04 Value Ladder & Bundles — structurezi pachete, upsell/cross‑sell, margini.
+M05 Funnel Blueprint — arhitectură completă TOFU‑MOFU‑BOFU cu KPI.
+M06 Objection Mining — extragi/ordonezi obiecții + contra‑argumente.
+M07 Risk & Trust Reversal — (exemplul de mai sus).
+M08 Social Proof Matrix — sistematizezi testimoniale, studii, validări.
+M09 Pricing Strategy — ancore, planuri, discounting controlat, test A/B.
+M10 Offer Terms & SLA — clauze, SLA, rampe de risc, conformitate.
+M11 Content Strategy OS — piloni, calendar, repurpose, distribuție.
+M12 SEO/Intent Playbook — hărți intenție → conținut, briefuri, structuri.
+M13 Ads Creative Generator — concepte, copys, hooks, variații controlate.
+M14 Landing Page Spec — structură, blocuri, hedonics, micro‑conversii.
+M15 Email Lifecycle — secvențe onboarding, nurture, winback cu KPI.
+M16 Sales Scripts (JTBD) — scenarii pe situații, întrebări, closing paths.
+M17 Demo/Deck Architect — storyboard convingător + slide spec.
+M18 Retention & LTV — tactici anti‑churn, expansion, NRR playbook.
+M19 Referral & Ambassador — program structură, stimulente, KPI.
+M20 Community Engine — mecanici membership, ritualuri, moderare.
+M21 SOP Builder — procese operaționale + checklisturi auditabile.
+M22 QA & Test Harness — plan de test, criterii, rapoarte, gates.
+M23 Support & Success OS — macro‑procese CS, macros, baze de cunoștințe.
+M24 Incident & Crisis Comms — playbook criză, status page, mesaje.
+M25 Compliance Pack — mapezi norme (GDPR/ISO/PCI) → controale.
+M26 Data & Metrics Spec — definiții, surse, dashboards, fiabilitate.
+M27 Experimentation Lab — ipoteze, design test, MDE, analiză.
+M28 Partner & Affiliate — program parteneri, termeni, tracking.
+M29 Product Research Agent — colectează/rezumă dovezi din surse.
+M30 ICP/Segmentation — segmentare multi‑criterială + mesaje.
+M31 Brand Voice Codex — stil, ritm, lexicon, interdicții, exemple.
+M32 Visual Identity Brief — cerințe vizuale, sistem, livrabile.
+M33 Webinar/Workshop Kit — structură, flow, CTA, suport execuție.
+M34 Crisis Risk Map — evaluare riscuri, probabilitate × impact, plan.
+M35 GTM Planner — lansare: canale, bugete, milestones, responsabilități.
+M36 Enterprise RFP Responder — răspunsuri structurate la RFP.
+M37 Procurement Readiness — pachet legal, securitate, DS, politic.
+M38 Knowledge Base Writer — articole, structuri, taxonomii.
+M39 Training Curriculum — plan pe module, rezultate, evaluări.
+M40 Hiring Scorecards — roluri, criterii, interviuri, decizii.
+M41 OKR Designer — obiective, key results, aliniere organizațională.
+M42 Roadmapping OS — hartă trimestrială/anuală, riscuri, dependențe.
+M43 Budget & Unit Economics — P&L simplificat, CAC/LTV, payback.
+M44 Localization & Intl — piețe, adaptări, conformități locale.
+M45 Accessibility & A11y — WCAG, testare, remedieri, evidențe.
+M46 Security Controls Spec — controale, politici, audit trail.
+M47 Data Privacy Pack — registre, DSR, rețineri, DPIA.
+M48 API & Integration Spec — endpointuri, SLA, versionare.
+M49 Telemetry & Observability — loguri, dashboards, alerte.
+M50 Bundle Export Designer — layout‑uri md/json/pdf, watermark, checksum.
+Mini‑spec rapid pentru orice modul (input → output)
+
+Input minim: parameter_set_7d + module_params + (opțional) context_assets
+Output minim: artefact conform output_format + checklist.md + metrics.json
+KPI minim: clarity≥85 / execution≥85 + 1 metric specific modulului
+Guardrails minim: respect policy domain + stil domain + constraints
+Deps minim: domain_configs + evaluator_ai + export_templates
+
+
+
+
+
+# Create the PROMPTFORGE module bundle files
+
+from pathlib import Path
+import json
+import zipfile
+from datetime import datetime
+
+base = Path("/mnt/data")
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+bundle_dir = base / f"PROMPTFORGE_module_bundle_{ts}"
+bundle_dir.mkdir(parents=True, exist_ok=True)
+
+# 1) module_contract.md
+module_contract_md = """# Contract de Modul PROMPTFORGE™ (valabil M01–M50)
+
+## Obiectiv
+Fiecare modul primește un context 7D + inputuri specifice și livrează un artefact executabil (spec/playbook/json/diagram/bundle), cu KPI măsurabili, guardrails și dependențe clare.
+
+## Câmpuri canonice
+- module_id — ex: "M07"
+- name — scurt, operativ
+- vectors — int[] 1..7 (Strategic, Retoric, Conținut, Cognitiv, Memetic, Date, Criză)
+- purpose — scop în 1–2 fraze
+- inputs
+  - parameter_set_7d — {domain, scale, urgency, complexity, resources, application, output_format}
+  - module_params — chei specifice modulului
+  - context_assets — opțional (brief, CSV/JSON, URL, text)
+- process
+  - steps[] — pași logici (prompt flow)
+  - eval_hooks[] — verificări (clarity, execution, policy)
+  - post_ops[] — formatare, rezumare, bundling
+- outputs
+  - primary {type, schema} — artefactul principal
+  - secondary[] — artefacte suplimentare (checklist, json, diagram)
+- kpi
+  - definition[] — indicatori + formule
+  - targets — ținte implicite per‑domain (override‑abile)
+  - measurement — cum se măsoară (telemetry → prompt_scores)
+- guardrails
+  - policy — reguli (GDPR, IP, domain compliance)
+  - style — ton/stil (bias per domain)
+  - constraints — limite (tokens, temperature, interdicții)
+  - fallbacks — plan de rezervă
+- dependencies
+  - internal — domain_configs, evaluators, templates, taxonomii
+  - external — API‑uri/standarde (Stripe/Supabase/Jira/GA4/ISO/PCI/WCAG etc.)
+- telemetry
+  - run_meta — model, tokens, cost, durată
+  - policy_hits — reguli aplicate
+  - scores — clarity/execution/ambiguity/alignment/business_fit
+- export
+  - formats[] — md/json/pdf/bundle
+  - structure — layout + naming + checksum
+
+## Pipeline (state machine)
+validate_7d → normalize_inputs → plan → generate → evaluate → repair → format → export → log
+"""
+
+# 2) module_contract.json (schema/template)
+module_contract_json = {
+  "module_id": "MXX",
+  "name": "",
+  "vectors": [2, 6],
+  "purpose": "",
+  "inputs": {
+    "parameter_set_7d": {
+      "domain": "",
+      "scale": "",
+      "urgency": "",
+      "complexity": "",
+      "resources": "",
+      "application": "",
+      "output_format": ""
+    },
+    "module_params": {},
+    "context_assets": []
+  },
+  "process": {
+    "steps": ["collect", "analyze", "generate", "validate", "adapt", "format"],
+    "eval_hooks": ["clarity>=80", "execution>=80", "policy_ok"],
+    "post_ops": ["structure_output", "attach_metrics", "bundle_export"]
+  },
+  "outputs": {
+    "primary": {"type": "spec", "schema": {"sections": []}},
+    "secondary": [{"type": "checklist", "path": "checklist.md"}]
+  },
+  "kpi": {
+    "definition": [
+      {"name": "clarity", "calc": "prompt_scores.clarity"},
+      {"name": "execution", "calc": "prompt_scores.execution"}
+    ],
+    "targets": {"clarity": 85, "execution": 85},
+    "measurement": "scores from Evaluator AI + task-specific metrics"
+  },
+  "guardrails": {
+    "policy": ["gdpr", "ip/copyright", "domain_compliance"],
+    "style": {"tone": "audit-like", "bias": "data-first"},
+    "constraints": {"max_tokens": 6000, "temperature": 0.4},
+    "fallbacks": ["reduce_scope", "ask_for_missing_inputs", "switch_format"]
+  },
+  "dependencies": {
+    "internal": ["domain_configs", "evaluator_ai", "export_templates"],
+    "external": []
+  },
+  "telemetry": {"enabled": True},
+  "export": {"formats": ["md", "json", "pdf"], "structure": "by-domain/module"}
+}
+
+# 3) M07 example spec
+m07_spec_md = """# M07 — Risk & Trust Reversal (FinTech)
+
+## Purpose
+Reduce riscul perceput și obiecțiile prin garanții, dovezi și recadre identitare. Ținta: scădere drop‑off pe pasul critic din funnel.
+
+## Inputs
+- parameter_set_7d: {"domain":"fintech","scale":"enterprise","urgency":"sprint","complexity":"advanced","resources":"full_stack_org","application":"implementation","output_format":"spec"}
+- module_params:
+  - offer_profile: {price, terms, refund, trial, compliance_notes}
+  - objections_top: [listă clasată]
+  - proof_assets: [testimoniale, studii, audit extern]
+  - risk_matrix: {legal, financiar, reputațional, operațional}
+- context_assets: opțional (linkuri, politici, rapoarte)
+
+## Process (steps)
+1) Map obiecții → tip de risc (legal/fin/reputațional/exec)
+2) Propune 3–5 mecanisme reversare (garanții, escrow, milestones, SLA)
+3) Re‑scrie promisiunea în 2 registre (conservator & ofensiv)
+4) Montează dovada (case study, standarde, audit)
+5) Validare compliance (AML/KYC/PCI; fără promisiuni nereglementate)
+6) Formatare artefacte: spec + checklist.md + offer_terms.json
+
+## Output (primary: spec)
+### 1. Context
+### 2. Risk Map (legal/fin/reputațional/exec)
+### 3. Trust Devices (garanții, escrow, milestones, SLA)
+### 4. Terms & SLA (limite, timpi, responsabilități)
+### 5. Proof Set (studii, audit, certificări)
+### 6. Compliance Fit (AML/KYC/PCI/PSD2)
+### 7. Roll‑out Plan (pași, owneri, timeline)
+
+## Secondary
+- checklist.md
+- offer_terms.json
+
+## KPI
+- dropoff_delta: % scădere în pasul critic (A/B)
+- approval_rate: % lead‑uri approve (KYC/credit)
+- time_to_decision: medie până la accept
+**Targets**: dropoff_delta ≤ -25%, approval_rate +10%, time_to_decision -20%
+**Measurement**: înainte/după în 14 zile; Evaluator AI ≥ 85/100
+
+## Guardrails
+- Policy: fără afirmații financiare nereglementate; disclaimere; respect PCI/PSD2
+- Style: audit‑like, autoritar, clar
+- Constraints: temperature ≤ 0.4, max_tokens 7000
+- Fallbacks: dacă lipsesc dovezi → cere assets min.; dacă compliance flag → blochează promisiunea
+
+## Dependencies
+- internal: domain_configs(fintech), evaluator_ai, templates/spec_v2
+- external: PCI DSS ref, PSD2 SCA checklist
+
+## Telemetry & Export
+- Log: tokens, cost, duration; prompt_scores (clarity/execution/alignment/business_fit)
+- Export: md/json/pdf + checksum
+- Bundle path: /bundles/fintech/M07/...
+"""
+
+# 4) catalog_M01-M50.md
+catalog_lines = [
+"**M01 Persona & Offer Clarifier** — definești avatar, problemă, promisiune, ofertă.",
+"**M02 Message‑Market Fit Map** — mapezi mesaje pe segmente & canale cu dovezi.",
+"**M03 Narrative Positioning** — poveste de poziționare (brand spine).",
+"**M04 Value Ladder & Bundles** — pachete, upsell/cross‑sell, margini.",
+"**M05 Funnel Blueprint** — arhitectură TOFU‑MOFU‑BOFU + KPI.",
+"**M06 Objection Mining** — obiecții + contra‑argumente clasate.",
+"**M07 Risk & Trust Reversal** — garanții + dovadă → scazi drop‑off.",
+"**M08 Social Proof Matrix** — testimoniale, studii, validări sistematizate.",
+"**M09 Pricing Strategy** — ancore, planuri, discounting controlat, A/B.",
+"**M10 Offer Terms & SLA** — clauze, SLA, rampe de risc, conformitate.",
+"**M11 Content Strategy OS** — piloni, calendar, repurpose, distribuție.",
+"**M12 SEO/Intent Playbook** — hărți intenție → conținut, briefuri, structuri.",
+"**M13 Ads Creative Generator** — concepte, copys, hooks, variații.",
+"**M14 Landing Page Spec** — structură, blocuri, micro‑conversii.",
+"**M15 Email Lifecycle** — onboarding, nurture, winback cu KPI.",
+"**M16 Sales Scripts (JTBD)** — scenarii pe situații, closing paths.",
+"**M17 Demo/Deck Architect** — storyboard + slide spec convingător.",
+"**M18 Retention & LTV** — anti‑churn, expansion, NRR playbook.",
+"**M19 Referral & Ambassador** — program parteneri, stimulente, KPI.",
+"**M20 Community Engine** — membership, ritualuri, moderare.",
+"**M21 SOP Builder** — procese operaționale + checklisturi auditabile.",
+"**M22 QA & Test Harness** — plan de test, criterii, rapoarte, gates.",
+"**M23 Support & Success OS** — macro‑procese CS, macros, KB.",
+"**M24 Incident & Crisis Comms** — criză, status page, mesaje.",
+"**M25 Compliance Pack** — mapezi norme (GDPR/ISO/PCI) → controale.",
+"**M26 Data & Metrics Spec** — definiții, surse, dashboards, fiabilitate.",
+"**M27 Experimentation Lab** — ipoteze, design test, MDE, analiză.",
+"**M28 Partner & Affiliate** — parteneri, termeni, tracking.",
+"**M29 Product Research Agent** — colectează/rezumă dovezi.",
+"**M30 ICP/Segmentation** — segmentare + mesaje.",
+"**M31 Brand Voice Codex** — stil, ritm, lexicon, interdicții, exemple.",
+"**M32 Visual Identity Brief** — cerințe vizuale, sistem, livrabile.",
+"**M33 Webinar/Workshop Kit** — structură, flow, CTA, execuție.",
+"**M34 Crisis Risk Map** — riscuri, probabilitate × impact, plan.",
+"**M35 GTM Planner** — lansare: canale, bugete, milestones.",
+"**M36 Enterprise RFP Responder** — răspunsuri structurate la RFP.",
+"**M37 Procurement Readiness** — pachet legal, securitate, DS, politici.",
+"**M38 Knowledge Base Writer** — articole, structuri, taxonomii.",
+"**M39 Training Curriculum** — plan pe module, rezultate, evaluări.",
+"**M40 Hiring Scorecards** — roluri, criterii, interviuri, decizii.",
+"**M41 OKR Designer** — obiective, key results, aliniere.",
+"**M42 Roadmapping OS** — hartă trimestrială/anuală, dependențe.",
+"**M43 Budget & Unit Economics** — P&L, CAC/LTV, payback.",
+"**M44 Localization & Intl** — piețe, adaptări, conformități locale.",
+"**M45 Accessibility & A11y** — WCAG, testare, remedieri.",
+"**M46 Security Controls Spec** — controale, politici, audit trail.",
+"**M47 Data Privacy Pack** — registre, DSR, rețineri, DPIA.",
+"**M48 API & Integration Spec** — endpointuri, SLA, versionare.",
+"**M49 Telemetry & Observability** — loguri, dashboards, alerte.",
+"**M50 Bundle Export Designer** — layout md/json/pdf, watermark, checksum."
+]
+catalog_md = "# Catalog Module M01–M50\n\n" + "\n".join(f"- {line}" for line in catalog_lines)
+
+# Write files
+(module_contract_path := bundle_dir / "module_contract.md").write_text(module_contract_md, encoding="utf-8")
+(module_contract_json_path := bundle_dir / "module_contract.json").write_text(json.dumps(module_contract_json, indent=2, ensure_ascii=False), encoding="utf-8")
+(m07_spec_path := bundle_dir / "M07_risk_trust_spec.md").write_text(m07_spec_md, encoding="utf-8")
+(catalog_path := bundle_dir / "catalog_M01-M50.md").write_text(catalog_md, encoding="utf-8")
+
+# Create a unified .txt bundle
+unified_txt = f"""PROMPTFORGE™ — Bundle Module (Contract + M07 + Catalog)
+
+== module_contract.md ==
+{module_contract_md}
+
+== module_contract.json ==
+{json.dumps(module_contract_json, indent=2, ensure_ascii=False)}
+
+== M07_risk_trust_spec.md ==
+{m07_spec_md}
+
+== catalog_M01-M50.md ==
+{catalog_md}
+"""
+(unified_path := bundle_dir / "promptforge_module_bundle.txt").write_text(unified_txt, encoding="utf-8")
+
+# Zip the bundle
+zip_path = base / f"PROMPTFORGE_module_bundle_{ts}.zip"
+with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+    zf.write(module_contract_path, arcname=module_contract_path.name)
+    zf.write(module_contract_json_path, arcname=module_contract_json_path.name)
+    zf.write(m07_spec_path, arcname=m07_spec_path.name)
+    zf.write(catalog_path, arcname=catalog_path.name)
+    zf.write(unified_path, arcname=unified_path.name)
+
+{
+  "module_contract_md": str(module_contract_path),
+  "module_contract_json": str(module_contract_json_path),
+  "m07_spec_md": str(m07_spec_path),
+  "catalog_md": str(catalog_path),
+  "unified_txt": str(unified_path),
+  "zip": str(zip_path)
+}
+
+
+
+
+
+
+
+

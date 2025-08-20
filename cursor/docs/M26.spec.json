@@ -1,0 +1,19 @@
+{
+  "module_code": "M26",
+  "vector": 4,
+  "name": "JTBD Matrix (avatar Andrei Moșanu)",
+  "purpose": "Matrice 5×5 jobs×niveluri cu criterii de succes și forțe JTBD.",
+  "tags": ["jtbd", "matrix", "strategy"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "md"] }, "schema": { "type": "object", "required": ["jobs", "criteria", "levels"], "properties": { "jobs": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "criteria": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "levels": { "type": "array", "minItems": 5, "items": { "type": "string" } } } }, "example": { "jobs": ["discover","evaluate","buy","use","expand"], "criteria": ["time","quality","cost"], "levels": ["L1","L2","L3","L4","L5"] } },
+  "outputs": { "artifact_type": "json", "fields": [ { "name": "matrix", "type": "json", "required": true }, { "name": "forces", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M26-T1", "name": "Matrix + forces", "input": { "custom": { "jobs": ["a","b","c","d","e"], "criteria": ["x","y","z"], "levels": ["L1","L2","L3","L4","L5"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

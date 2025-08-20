@@ -1,0 +1,19 @@
+{
+  "module_code": "M46",
+  "vector": 3,
+  "name": "Librărie de Swipe Files",
+  "purpose": "Index semantic de exemple (swipe files) cu ACL pe abonamente și licențiere clară.",
+  "tags": ["library", "semantic", "acl"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json"] }, "schema": { "type": "object", "required": ["categorii", "tags", "search_api"], "properties": { "categorii": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "tags": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "search_api": { "type": "string" } } }, "example": { "categorii": ["ads","emails"], "tags": ["hook","cta","proof"], "search_api": "vector-db" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "index", "type": "json", "required": true }, { "name": "license", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M46-T1", "name": "Index + license", "input": { "custom": { "categorii": ["a","b"], "tags": ["x","y","z"], "search_api": "s" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

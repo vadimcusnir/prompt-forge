@@ -1,0 +1,69 @@
+{
+  "slug": "ecommerce",
+  "title": "E-Commerce Pack",
+  "price_eur_per_year": 1490,
+  "min_plan": "pro",
+  "modules": [
+    "M03",
+    "M09",
+    "M13",
+    "M14",
+    "M22",
+    "M32"
+  ],
+  "domain_preset": {
+    "jargon": [
+      "CR",
+      "AOV",
+      "LTV",
+      "CAC",
+      "RFM segmentation"
+    ],
+    "kpis": [
+      "conversion_rate",
+      "average_order_value",
+      "lifetime_value",
+      "return_rate"
+    ],
+    "compliance_notes": "Transparent pricing & returns; consumer protection",
+    "style_bias": "operational, test-driven, crisp CTAs",
+    "default_output_format": "playbook",
+    "risk_level": "medium"
+  },
+  "defaults_7d": {
+    "scale": "smb",
+    "urgency": "sprint",
+    "complexity": "standard",
+    "resources": "lean_team",
+    "application": "implementation",
+    "output": [
+      "playbook",
+      "checklist",
+      "json"
+    ]
+  },
+  "export_requirements": [
+    "playbook",
+    "checklist"
+  ],
+  "evaluator_lints": [
+    "Check copy for clear price & returns policy",
+    "Ensure KPI ownership and thresholds per experiment"
+  ],
+  "guardrails": [
+    "No dark patterns; explicit opt-in/out"
+  ],
+  "ui": {
+    "upsell_banner_copy": "Porne\u0219te E\u2011Commerce Mode: CR/AOV/LTV presets + playbook & checklist auto.",
+    "paywall_feature": "industryPack_ecommerce"
+  },
+  "stripe": {
+    "floor_eur": 1490,
+    "product_id": "",
+    "price_id_monthly": "",
+    "price_id_annual": ""
+  },
+  "supabase": {
+    "gating_sql_note": "SELECT 1 FROM org_industry_packs WHERE org_id=$1 AND pack_slug='ecommerce';"
+  }
+}

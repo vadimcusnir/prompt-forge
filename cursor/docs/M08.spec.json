@@ -1,0 +1,31 @@
+{
+  "module_code": "M08",
+  "vector": 2,
+  "name": "Status‑Tier Loyalty",
+  "purpose": "Definire de tiers (bronze→mythic) cu privilegii simbolice, reguli de progresie și XP logic pentru LTV↑.",
+  "tags": ["loyalty", "tiers", "ltv"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["segments", "ltv_target", "benefits"],
+      "properties": {
+        "segments": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "ltv_target": { "type": "number", "minimum": 0 },
+        "benefits": { "type": "array", "items": { "type": "string" }, "minItems": 3 }
+      }
+    },
+    "example": { "segments": ["new", "vip"], "ltv_target": 1.3, "benefits": ["badge", "early access", "priority support"] }
+  },
+  "outputs": { "artifact_type": "json", "fields": [ { "name": "tiers", "type": "array", "required": true }, { "name": "rules", "type": "json", "required": true }, { "name": "perks", "type": "array", "required": true }, { "name": "progression", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M08-T1", "name": "Generează tiers și rules", "input": { "custom": { "segments": ["a","b"], "ltv_target": 1.2, "benefits": ["x","y","z"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

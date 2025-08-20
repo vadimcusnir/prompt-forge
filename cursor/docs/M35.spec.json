@@ -1,0 +1,19 @@
+{
+  "module_code": "M35",
+  "vector": 6,
+  "name": "Content Heatmap",
+  "purpose": "Calculează densitatea conversiilor pe platforme/segmente/intervale și recomandă cadenta optimă.",
+  "tags": ["heatmap", "content", "analytics"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json", "md"] }, "schema": { "type": "object", "required": ["platforme", "segmente", "intervale"], "properties": { "platforme": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "segmente": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "intervale": { "type": "array", "minItems": 1, "items": { "type": "string" } } } }, "example": { "platforme": ["LinkedIn","YouTube"], "segmente": ["founders"], "intervale": ["Mon 9-12","Tue 18-21"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "heatmap", "type": "json", "required": true }, { "name": "cadence", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M35-T1", "name": "Heatmap + cadence", "input": { "custom": { "platforme": ["a"], "segmente": ["b"], "intervale": ["c"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

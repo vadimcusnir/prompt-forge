@@ -1,0 +1,31 @@
+{
+  "module_code": "M41",
+  "vector": 7,
+  "name": "Agent de Criză PR",
+  "purpose": "Detectează narațiuni ostile și răspunde simbolic: playbooks, template-uri și escalări.",
+  "tags": ["pr", "crisis", "playbooks"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["monitoring", "severity", "stance"],
+      "properties": {
+        "monitoring": { "type": "string" },
+        "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"], "default": "medium" },
+        "stance": { "type": "string", "enum": ["apologetic", "defensive", "assertive", "neutral"], "default": "neutral" }
+      }
+    },
+    "example": { "monitoring": "social+media", "severity": "high", "stance": "assertive" }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "playbooks", "type": "markdown", "required": true }, { "name": "templates", "type": "markdown", "required": true }, { "name": "escalations", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M41-T1", "name": "Playbooks + escalations", "input": { "custom": { "monitoring": "m", "severity": "high", "stance": "neutral" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

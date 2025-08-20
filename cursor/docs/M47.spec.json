@@ -1,0 +1,19 @@
+{
+  "module_code": "M47",
+  "vector": 3,
+  "name": "Curriculum INTELIGENȚIA™ (5 săpt.)",
+  "purpose": "Program complet cu outcomes și rubrici; syllabus + assets.",
+  "tags": ["curriculum", "assessment", "education"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["modules", "lessons", "exercises", "assess"], "properties": { "modules": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "lessons": { "type": "array", "minItems": 10, "items": { "type": "string" } }, "exercises": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "assess": { "type": "string" } } }, "example": { "modules": ["m1","m2","m3","m4","m5"], "lessons": ["l1","l2","..."], "exercises": ["e1","e2","e3","e4","e5"], "assess": "rubrics" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "syllabus", "type": "markdown", "required": true }, { "name": "assets", "type": "string", "required": false }, { "name": "assess", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M47-T1", "name": "Syllabus + assess", "input": { "custom": { "modules": ["a","b","c","d","e"], "lessons": ["l1","l2","l3","l4","l5","l6","l7","l8","l9","l10"], "exercises": ["e1","e2","e3","e4","e5"], "assess": "rubrics" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

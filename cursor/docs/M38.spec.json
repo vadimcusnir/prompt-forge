@@ -1,0 +1,19 @@
+{
+  "module_code": "M38",
+  "vector": 3,
+  "name": "Blueprint Antișcoală",
+  "purpose": "Design system + module map cu tokens, componente și documentație pentru export rapid.",
+  "tags": ["design-system", "docs", "components"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json", "md"] }, "schema": { "type": "object", "required": ["style_guide", "modules", "assets"], "properties": { "style_guide": { "type": "string" }, "modules": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "assets": { "type": "array", "minItems": 1, "items": { "type": "string" } } } }, "example": { "style_guide": "tokens..", "modules": ["m1","m2","m3"], "assets": ["logo.svg"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "ds", "type": "json", "required": true }, { "name": "docs", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M38-T1", "name": "DS + docs", "input": { "custom": { "style_guide": "sg", "modules": ["a","b","c"], "assets": ["x"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

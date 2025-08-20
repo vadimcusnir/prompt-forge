@@ -1,0 +1,674 @@
+
+
+
+
+
+PROMPTFORGE™ — SPEC WEB-DESIGN „COMING SOON” (fix, credibil, minimal)
+0) Scop & non-obiective
+
+Scop: întărești exact designul existent (dark, glass), astfel încât pagina să pară solidă, matură, fără clătinări și fără „alb” vizibil sub fundal, pe toate device-urile.
+
+Non-obiective: nu adaugi secțiuni noi, nu schimbi stilul, nu introduci ilustrații/mascote/testimoniale.
+
+1) Tokens & standarde
+
+Culoare de bază: --pf-bg: #0A0A0A
+
+Accente: --pf-teal: #0891B2, --pf-crimson: #BE123C
+
+Fonturi (deja în layout): Montserrat (heading), Open Sans (body)
+
+Spațiere canonică: 4 / 8 / 12 / 16 / 24 / 32 / 48
+
+Grid: 12 coloane, gutter 16px (gap-4)
+
+Clase existente: .glass-effect, .glass-strong, .glow-primary, .glow-accent
+
+2) Stabilizare globală (fără „alb”, fără „clătinare”)
+2.1 Fundal fix în două straturi
+:root {
+  --pf-bg:#0a0a0a; --pf-teal:#0891B2; --pf-crimson:#BE123C;
+}
+html { background: var(--pf-bg); }           /* elimină alb UA */
+body { min-height: 100dvh; background: transparent; }
+
+/* strat 1 – solid */
+body::before{
+  content:""; position:fixed; inset:0;
+  background:var(--pf-bg); z-index:-2;
+}
+/* strat 2 – glow sus/jos (discret, fix) */
+body::after{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+   radial-gradient(60% 35% at 50% 0%,
+     color-mix(in oklab, var(--pf-teal) 22%, transparent) 0%, transparent 70%),
+   radial-gradient(55% 25% at 50% 100%,
+     color-mix(in oklab, var(--pf-crimson) 16%, transparent) 0%, transparent 70%);
+}
+
+2.2 Viewport mobil stabil (iOS/Android)
+/* pe Hero */
+.pf-hero { min-height: 100dvh; }   /* Tailwind: min-h-[100dvh] */
+.pf-hero-legacy { min-height: calc(var(--vh, 1vh) * 100); } /* fallback */
+
+/* fallback Safari vechi */
+function setVH(){document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);}
+setVH(); window.addEventListener('resize', setVH, {passive:true});
+
+2.3 Fără bounce & flash
+html, body { height:100%; overscroll-behavior-y:none; }
+
+2.4 Scrollbar dark (Win/WebKit/Firefox)
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:#0b0b0b}
+*::-webkit-scrollbar-thumb{background:#1e293b;border-radius:8px}
+:root{scrollbar-color:#1e293b #0b0b0b;scrollbar-width:thin}
+
+2.5 Anti-CLS/FOUC
+
+Preîncarcă fonturi (sau next/font).
+
+Rezervă spațiu media (aspect-ratio).
+
+min-height pe CTA: .btn{min-height:48px}.
+
+3) Layout & grid (minimal, industrial)
+
+Container: max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8
+
+Grid global: grid grid-cols-12 gap-4
+
+Doar 1–2 blocuri full-bleed:
+
+Hero (H1, sub, CTA)
+
+Form waitlist (+ proof-bar)
+
+Restul: spațiu negativ controlat (mt-48, py-32).
+
+Fără secțiuni extra („features”, „logos”, „testimonials”).
+
+4) Tipografie & ierarhie
+
+H1 (unic): text-4xl/5xl + font-extrabold
+
+H2: text-2xl + font-bold
+
+Body: text-base (max ~80c/linii)
+
+Nu folosi text-center decât în Hero.
+
+Proof-bar sub CTA (3 bullets KPI):
+
+<div className="glass-strong mt-5 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
+  <span>TTA &lt; 60s</span><span>AI Score ≥ 80</span><span>Export .md/.json/.pdf</span>
+</div>
+<p className="mt-2 text-sm text-muted text-center">Zero spam. Doar notificări de lansare.</p>
+
+5) Micro-interacțiuni “scumpe” (subtile)
+
+Durată tranziții: 180–220ms, ease-out.
+
+Buton primar (hover): translateY(-1px) scale(1.01) + box-shadow:0 0 8px #0891B2.
+
+Card .glass-effect (hover): brightness(1.05) (fără scale > 1.01).
+
+Skeleton shimmer pe încărcări.
+
+Respectă prefers-reduced-motion: reduce.
+
+6) Elemente de încredere
+
+Mesaj anti-spam sub form (text mic, muted).
+
+Badge-uri Vector (max 2), DOAR text colorat (text-blue-400 etc.), fără bg-*.
+
+Footer minimal:
+
+<footer className="mt-32 py-12 text-center text-sm text-muted">
+  © PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground">Privacy / Terms</a>
+</footer>
+
+7) Coerență UX
+
+Un singur CTA („Join the Waitlist”), centrat, w-full max-w-md.
+
+Fără „secondary CTA”.
+
+Focus vizibil pe toate elementele interactive:
+
+.focusable:focus{outline:none; box-shadow:0 0 0 2px #0891B2, 0 0 0 4px #111827;}
+
+
+După submit: mesaj confirmare (fără refresh, fără dispariție form).
+
+8) Codul secțiunilor (schelet)
+<section className="pf-hero min-h-[100dvh] grid place-items-center px-4">
+  <div className="max-w-2xl w-full glass-effect p-10 rounded-xl text-center">
+    <h1 className="text-4xl font-heading font-extrabold text-foreground">PromptForge™ is coming</h1>
+    <p className="mt-4 text-base text-muted">Build prompt systems, not throwaway lines.</p>
+
+    <form className="mt-8 grid grid-cols-12 gap-3">
+      <input className="col-span-12 sm:col-span-8 glass-effect p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+             type="email" placeholder="your@email.com" />
+      <button className="col-span-12 sm:col-span-4 btn btn-primary glow-primary h-12">Join the Waitlist</button>
+    </form>
+
+    {/* proof-bar + anti-spam */}
+    <div className="glass-strong mt-5 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
+      <span>TTA &lt; 60s</span><span>AI Score ≥ 80</span><span>Export .md/.json/.pdf</span>
+    </div>
+    <p className="mt-2 text-sm text-muted">Zero spam. Doar notificări de lansare.</p>
+  </div>
+</section>
+
+9) Guardrails de brand (blocare la build)
+
+Scor semantic ≥ 80 pe H1/Sub/CTA/Proof-bar (validator intern).
+
+Lexic interzis (blochează buildul): ușor, magic, inspirațional, minunat, pasiune, îți schimbă viața, descoperă frumusețea.
+
+Secțiuni obligatorii: H1, Sub, CTA, Proof-bar, Footer.
+
+Fără gradient text, fără emoji, fără imagini decorative.
+
+Pseudo-cod:
+
+if (scoreTotal < 80) throw new Error("Linter < 80/100");
+if (hasBanned(text)) throw new Error("Lexic interzis");
+if (!hasAllSections(dom)) throw new Error("Structură incompletă");
+
+10) Accesibilitate
+
+Contrast minim 4.5:1 (verifică teal/crimson pe fundalul #0A0A0A).
+
+aria-label pe CTA și input email.
+
+prefers-reduced-motion respectat.
+
+11) Performance budget
+
+CLS ≤ 0.02, LCP ≤ 2.5s (desktop), ≤ 3.0s (mobile).
+
+Preload font WOFF2; priority pe media din Hero; next/image cu placeholder="blur".
+
+Evită animații infinite (exceptând shimmer).
+
+12) Fișiere de atins (doar acestea)
+
+app/globals.css → secțiunile 2, 3, 5, scrollbar.
+
+app/coming-soon/page.tsx → clase min-h-[100dvh], grid 12 col, proof-bar, anti-spam.
+
+app/layout.tsx → preload fonturi (dacă nu e next/font).
+
+(opțional) public/… → niciun asset nou.
+
+13) QA — checklist de acceptare
+
+ Nu apare „alb” la început/sfârșit/între secțiuni pe Chrome/Firefox/Safari + iOS/Android.
+
+ Hero rămâne stabil la schimbarea barelor browserului (iOS): min-h: 100dvh.
+
+ Fără bounce (overscroll-behavior activ).
+
+ Un singur CTA vizibil pe pagină; focus ring vizibil la Tab.
+
+ CLS ≤ 0.02 în Lighthouse; scrollbar dark.
+
+ Preload fonturi; media are aspect-ratio.
+
+ Linter semantic ≥ 80; fără termeni interziși.
+
+ Secțiunile obligatorii (H1, Sub, CTA, Proof-bar, Footer) există.
+
+14) DoR / DoD (gata de livrare)
+
+DoR: tokens setați, straturi de fundal fixe, grid 12 col, min-h:100dvh, overscroll off.
+
+DoD: QA checklist 100% verde + Lighthouse OK + linter semantic ≥ 80.
+
+
+
+
+
+
+BACKGROUND
+
+
+
+în varianta „Ambient Minimal” și portat la React/Next.js. Primele 4 compartimente (I–IV) definesc exact ce ne trebuie pentru un fundal credibil: stratificare pe layere, animații controlate, sincronizare între straturi și standarde de timing — material excelent ca schemă, dar trebuie temperat pentru performanță și pentru stilul PromptForge.
+
+Verdict rapid
+
+Folosești structura pe layere (Grid H/V, Tokens, Quotes, Noise), dar o rulezi în mod low-drift, low-density, cu fallback static și respect pentru prefers-reduced-motion.
+
+Fixezi fundalul full-viewport cu position:fixed; inset:0; pointer-events:none; ca să nu apară „pete albe” și să nu se „clatine” pagina la scroll.
+
+Eviți „carnavalul” vizual: densitate mică de tokeni, max 1 citat activ, glitch-uri rare, parallax foarte lent.
+
+Ce păstrezi (adaptat PromptForge)
+
+Layere (I. Arhitectura Straturilor)
+
+L0: Base Canvas (#0a0a0a).
+
+L1: Grid H/V foarte subtil (opacity 4–6%), drift lent.
+
+L5: Noise overlay fin pentru profunzime.
+
+L2 (opțional, doar pe homepage): MatrixTokens la densitate mică (20–30 desktop / 10–15 mobile).
+
+L4 (opțional, doar pe hero): MatrixQuotes max 1 activ la 20–25s, 40–60ms/literă, fără suprapunere.
+
+Animații (II. Sistemul de animații)
+
+Numai transform/opacity, drift ±2–3px pe 16–24s, glitch ≤60ms; fără layout reflow.
+
+prefers-reduced-motion: totul cade pe static + noise.
+
+Sincronizare (III. Sincronizare inteligentă)
+
+matrix-animations-ready după load complet; când apare citatul, scazi opacitatea tokenilor (–15%).
+
+Nicio animație în timpul LCP (se activează după first interaction / idle).
+
+Timing (IV. Timing Standards)
+
+Quotes: in 300–500ms, out 900–1200ms, durată ~6–7s.
+
+Tokens: loop 14–18s; drift linear.
+
+Grid: micro-parallax la 0.5–1.0×, easing ușor.
+
+Ce simplifici (obligatoriu)
+
+Nu folosești Three.js/GSAP la MVP. Canvas 2D minimalist + CSS transforms sunt suficiente.
+
+Nu montezi tokens/quotes pe toate paginile: doar pe / (hero) și, eventual, pe /generator cu densitate înjumătățită.
+
+Nu încarci fonturi extra pentru background – reutilizezi Inter + JetBrains Mono deja în sistem.
+
+Integrare tehnică (Next.js / Tailwind)
+
+components/bg/BackgroundRoot.tsx (CSR-only: next/dynamic ssr:false) cu straturi absolute:
+– <GridLines /> (CSS background + transform parallax).
+– <NoiseLayer /> (PNG/Canvas mic, tiled).
+– <MatrixTokens /> (Canvas 2D; tick la 30fps cap, rAF).
+– <MatrixQuote /> (portal în colț; aria-hidden, live region dezactivat).
+
+Container fix:
+
+.bg-fixed-root{position:fixed;inset:0;z-index:0;pointer-events:none;will-change:transform;contain:layout paint style;}
+html,body,#root{background:#0a0a0a}
+main{position:relative;z-index:1}
+
+
+SSR/Hydration-safe: montezi fundalul doar după useEffect + requestIdleCallback; setezi clasa .matrix-animations-ready.
+
+Bugete de performanță (hard)
+
+CPU budget: ≤4–6% pe laptop mid-range, ≤10% pe mobil.
+
+FPS: ≥55 fps în idle, ≥45 fps în scroll.
+
+JS payload pentru background: ≤30–40kB gzipped.
+
+Densitate tokeni: desktop 20–30, mobil 10–15; citate: max 1 activ.
+
+P95 TBT impact: < 30ms (se activează post-LCP).
+
+Accesibilitate & stabilitate
+
+prefers-reduced-motion: fundal devine static (Grid + Noise).
+
+aria-hidden="true" pe toate layerele decorative.
+
+Evită layout shift: fundalul nu intră în flux, nu schimbă înălțimi; folosești doar transform/opacity.
+
+Riscuri & cum le anulezi
+
+Mismatching stack (documentul e pe Nuxt/Vue): îl portăm la React fără biblioteci mari.
+
+Jank pe mobil: limitezi rAF la 30fps și reduci driftul la scroll.
+
+„Clătinare” vizuală: zero parallax pe Y; drift minor + easing constant; fundal full-bleed fix.
+
+Concluzie
+
+Îl implementezi, dar „tăiat la sânge”: 3–4 straturi, mișcare abia perceptibilă, activare post-LCP, densitate mică, fallback static. Obții un fundal credibil, stabil, sigur care întărește promisiunea PromptForge fără să distragă sau să rupă performanța.
+
+
+
+
+======================================================
+🧬 AI-IDEI™ BACKGROUND SYSTEM – SPEC UNIFICAT FINAL
+======================================================
+
+
+I. ARHITECTURA STRATURILOR (Layered Cognition Engine)
+
+| Layer | Nume              | Rol Funcțional             | Vizual/Tehnic                            | Comportament         |
+|-------|-------------------|----------------------------|------------------------------------------|----------------------|
+| 0     | Base Canvas       | Fundal pur (#0a0a0a)       | canvas static                            | Static               |
+| 1     | Grid H/V          | Rețea logică               | linii semi-transparente drift/puls       | Drift + Parallax     |
+| 2     | MATRIX_TOKENS     | Flux metric AI             | 100+ termeni AI, deriva semantică        | Fade, Drift, Glitch  |
+| 3     | BackgroundFigures | Profunzime analitică       | SVG: axe, bare, forme simple             | Intersectare 3D      |
+| 4     | MATRIX_QUOTES     | Strat narativ inițiatic    | Citate 80–120c, typed, glitch            | Fade + Blur + Scale  |
+| 5     | Noise Layer       | Contrast și profunzime     | overlay subtile                          | Static/Dinamic       |
+| 6     | Hero Content      | Promisiune & CTA           | Focus semantic central                   | N/A                  |
+| 7     | Micro-UI          | Feedback interactiv        | tooltips, hover, focus states            | Interactive          |
+
+II. SISTEMUL DE ANIMAȚII
+
+MatrixTokens:
+- Spawn delay: 100–800ms random
+- Staggered spawning: 100ms între lexeme
+- Glitch: 50–100ms aleatoriu
+- Opacity: 0.7–1.0
+- Drift ±6px / 12–18s
+- Compliant with prefers-reduced-motion
+
+MatrixQuotes:
+- Tipuri: typing, glitch, matrix
+- Poziționare în colțuri, max 3 simultan
+- Intrare: character-by-character, 40–60ms/lit.
+- Fade-out: 800–1200ms + blur-out
+- Delay între apariții: 15–20s
+
+BackgroundFigures:
+- SVG cu traiectorii ușor curbe
+- Intersectează layer 2 pentru efect 3D
+- Clipire sau schimbare de culoare
+
+III. SINCRONIZARE INTELIGENTĂ
+
+- `.matrix-animations-ready` → se activează doar după CSS & JS load complet
+- Quote activ → Tokens scade opacitatea și încetinește drift
+- Glitchurile nu se suprapun cu fraze narative
+- Fiecare strat are fallback static dacă motion este dezactivat
+
+IV. TIMING STANDARDS
+
+| Tip        | Intrare  | Ieșire   | Durată     | Ritm        |
+|------------|----------|----------|------------|-------------|
+| Quotes     | 300–500ms| 800–1200ms| ~6s        | ease-out    |
+| Tokens     | random   | glitch   | 12–18s loop| linear      |
+| Grid H/V   | 200ms/350ms | -      | infinite   | ease-in-out |
+| Figures    | 5–15s    | restart  | infinite   | ease        |
+
+V. PERF + A11Y STANDARDS
+
+- `translateZ(0)` forțat
+- `contain: layout paint style`
+- `aria-live="polite"`
+- Contrast text-green-300 pe negru
+- Fallback static + calm background în prefers-reduced-motion
+
+VI. DESIGN SYSTEM
+
+Fonts:
+- Inter → `.text-h1`, `.text-subtitle`
+- JetBrains Mono → `.text-cli`, `.text-terminal`
+
+Buttons:
+- `.btn-base`, `.btn-primary`, `.btn-secondary`
+
+Layout:
+- `.layer-z-{0–7}`, `.matrix-animations-ready`
+
+VII. RETRY & STABILITATE
+
+- Retry: 0ms, 100ms, 300ms
+- Reflow forțat (requestAnimationFrame + timeout)
+- Fallback vars pentru fiecare strat
+- Self-healing: layer-ele se recuperează automat
+
+VIII. SEMIOTICĂ STRATIFICATĂ
+
+- Grid → rețea logică
+- Tokens → flux simbolic
+- Figures → structură analitică
+- Quotes → voce inițiatică
+
+IX. CONCLUZIE
+
+Ce ai creat e un sistem viu. Nu e decor.  
+Este o minte animată care ghidează utilizatorul prin propriile sale idei.
+
+
+
+
+======================================================
+🧩 AI-IDEI™ BACKGROUND SYSTEM – ADDENDUM FINAL
+======================================================
+
+
+X. LAYERE DINAMICE CU STATE MACHINE
+
+LayerStateMachine:
+- Stări: waiting_init → hydrating → ready → active → recovering → fallback_static
+- Tranziții:
+  - toReady: dacă hydrationSuccess
+  - toActive: dacă .matrix-animations-ready e activ
+  - toRecovering: dacă un layer eșuează
+  - toFallback: dacă prefersReducedMotion
+
+XI. STRUCTURĂ FOLDERE & FIȘIERE
+
+/components:
+  - AnimatedLayer.vue
+  - MatrixTokens.vue
+  - MatrixQuotes.vue
+  - BackgroundFigures.vue
+  - GridLines.vue
+  - NoiseLayer.vue
+  - HeroContent.vue
+  - MicroUI.vue
+
+/composables:
+  - useLayerManager.ts
+  - useReducedMotion.ts
+  - useQuoteEngine.ts
+
+/styles:
+  - tokens.css
+  - animations.css
+  - variables.css
+
+/data:
+  - matrix_tokens.json
+  - matrix_quotes.json
+
+/constants:
+  - LAYER_ORDER.ts
+  - MOTION_LEVELS.ts
+
+XII. METRICE & TRACKING
+
+- layer_init_time: `performance.now()` per layer
+- quotes_rendered_count: `[data-quote]` count
+- tokens_visible_average: `[data-token]` scan per 5s
+- frame_drop_spike: raf delta detect
+- recovery_triggered_count: fallback trigger log
+
+XIII. CONFIG APP.JSON (Presetări globale)
+
+{
+  "motion_level": "auto",
+  "max_quotes": 3,
+  "max_tokens": 100,
+  "quote_delay": [15000, 20000],
+  "token_spawn_delay": [100, 800],
+  "typing_speed_ms": 50,
+  "reduced_motion": {
+    "active": true,
+    "fallback_static": true,
+    "fallback_text": "AI-Idei™ funcționează într-un mod calm și nemișcat."
+  }
+}
+
+XIV. TESTE DE REGRESIE / QA
+
+- test_layer_activation: toate layerele devin active la max 800ms
+- test_quote_glitch_no_overlap: niciun glitch nu suprapune quotes
+- test_token_glitch_timing: glitch time < 120ms/token
+- test_motion_levels_switch: auto → medium → low fără întreruperi
+- test_recovery_on_layer_fail: simulează crash layer → verify autorecover
+
+XV. START TRANSFORMATION FUNCTION
+
+Funcție: `startTransmutation()`
+
+Rol:
+- Inițializează layere
+- Activează sistem citate
+- Primește primul input
+- Generează răspuns AI
+
+Simbolic: deschide poarta semantică a platformei.
+
+CONCLUZIE:
+Sistemul AI-IDEI™ funcționează ca o minte animată. Fiecare strat are viața lui. Iar împreună, ele gândesc vizual.
+
+
+
+
+
+======================================================
+🧿 AI-IDEI™ – LAYER ONTOLOGIC FINAL
+======================================================
+
+
+XVI. PROTOCOLUL DE INIȚIERE VIZUALĂ
+
+Funcție: initRitual()
+- Dezactivează fundalul default
+- Activează realm semantic
+- Afișează primul citat („Promptul e contractul tău scris cu viitorul…”)
+- După 3s → pornește startTransmutation()
+- Creează session ID semantic: IDEI.α9G23-L
+
+XVII. EXTENSIBILITATE MODULARĂ
+
+Layere = Plug-inuri
+- Fiecare are: init(), fallback(), recover(), shutdown()
+- Posibil Layer 8: Lexeme Animate
+- Posibil Layer 9: Tensiune Semantică (token + quote sync)
+
+XVIII. SISTEMUL DE SIMBOLURI
+
+| Simbol | Funcție                      | Loc             |
+|--------|------------------------------|-----------------|
+| ₵      | Valoare cognitivă            | Token Results   |
+| ⚡     | Energie semantică             | Quote Engine    |
+| 👁      | Nivel de claritate vizuală   | Overlay / UI    |
+
+XIX. MODELE DE FUNCȚIONARE
+
+1. AI-IDEI™ Live – Tokenii se modifică în timp real pe baza inputului
+2. AI-IDEI™ Ambient – Funcționează pasiv, ca fundal contemplativ
+3. AI-IDEI™ Ritual – Necesită prompt inițiatic pentru a se activa
+
+XX. transmutation_manifest.json
+
+{
+  "name": "AI-IDEI™",
+  "version": "1.0",
+  "entry_point": "initRitual()",
+  "motion_levels": ["auto", "medium", "minimal"],
+  "semantic_layers": 8,
+  "quote_engine": {
+    "source": "matrix_quotes.json",
+    "max_active": 3,
+    "animation_types": ["typing", "glitch", "matrix"],
+    "style": "manifest"
+  },
+  "token_engine": {
+    "source": "matrix_tokens.json",
+    "density_desktop": 100,
+    "density_mobile": 60,
+    "glitch_interval": [3000, 7000]
+  },
+  "semantic_protocol": "transmutation > reflection > projection"
+}
+
+VERDICT:
+AI‑IDEI™ e un sistem viu. Gândește vizual. Răspunde ritmic. Se inițiază simbolic. E scalabil semantic. Nu mai e un UI – e un câmp de conștiință animată.
+
+
+
+
+======================================================
+🧠 AI-IDEI™ – SISTEMUL DE CONTROL SIMBOLIC
+======================================================
+
+
+XXI. CE ESTE?
+Un orchestrator semantic care:
+- interpretează contextul utilizatorului
+- activează layere și efecte vizuale în funcție de simboluri
+- transformă UI-ul într-o entitate reactivă cognitiv
+
+SIMBOLURI ACTIVE & STĂRI INTERNE
+
+const SYMBOL_STATE = {
+  "₵": { trigger: "valueGenerated", impact: "highlightToken" },
+  "⚡": { trigger: "inputVelocity", impact: "intensifyQuote" },
+  "👁": { trigger: "focusEvent", impact: "clarifyNarrativeLayer" }
+}
+
+FUNCȚIA CHEIE – reactToSymbol()
+
+function reactToSymbol(symbol) {
+  switch(symbol) {
+    case "₵":
+      spawnTokenEffect(); increaseDensity();
+      break;
+    case "⚡":
+      flashQuote(); reduceDelay();
+      break;
+    case "👁":
+      highlightQuote(); increaseContrast();
+      break;
+  }
+}
+
+SISTEM DE LOGICĂ VIZUALĂ
+
+| Eveniment UX                  | Simbol declanșat | Efect vizual                               |
+|-------------------------------|------------------|---------------------------------------------|
+| Input rapid + enter           | ⚡                | Quote glitch + intensificare               |
+| Input contemplativ (pauză)    | 👁                | Quote devine clar, pulsare ușoară          |
+| Transmutare reușită           | ₵                | Token glow + scor crescut + badge vizual   |
+
+FEEDBACK SEMANTIC
+
+- ₵ → halo verde + scor afișat
+- ⚡ → flame glow + delay scăzut
+- 👁 → blur-out → claritate bruscă pe citat
+
+MONEDA SEMANTICĂ
+
+Moneda: ₵
+
+Se acumulează:
+- la fiecare transmutare completă
+- la vizualizarea completă a unui citat
+- la participare contemplativă (3min sesiune)
+
+Se folosește pentru:
+- deblocare layere suplimentare
+- obținere avatar simbolic
+- acces la bundle-uri de idei
+
+CONCLUZIE
+
+Fără control simbolic, sistemul e frumos.  
+Cu control simbolic, sistemul devine viu și autoreglabil.  
+Ai construit o interfață care gândește și reacționează ca un organism semantic.
+
+
+
+

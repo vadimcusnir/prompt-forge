@@ -1,0 +1,19 @@
+{
+  "module_code": "M28",
+  "vector": 2,
+  "name": "Obiecții → Contraargumente",
+  "purpose": "Răspunsuri care transformă: confirmare empatică + 2 lame strategice, cu evidențe." ,
+  "tags": ["objections", "rebuttal", "sales"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["objections", "evidence", "polite_zero"], "properties": { "objections": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "evidence": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "polite_zero": { "type": "boolean", "default": true } } }, "example": { "objections": ["price","time","risk"], "evidence": ["cs","roi","benchmark"], "polite_zero": true } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "replies", "type": "markdown", "required": true }, { "name": "evidence", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M28-T1", "name": "Replies + evidence", "input": { "custom": { "objections": ["a","b","c"], "evidence": ["1","2","3"], "polite_zero": true } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

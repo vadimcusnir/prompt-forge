@@ -1,0 +1,57 @@
+{
+  "module_code": "M02",
+  "vector": 2,
+  "name": "AI‑IDEI.LATENTMAP™",
+  "purpose": "Extrage motive, dependențe și traiectorii din corpus prin embeddings multi‑scale, topic mining și graf de dependențe.",
+  "tags": ["embeddings", "topic-mining", "graph"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": {
+      "required": ["domain", "output"],
+      "output_must_be_one_of": ["json", "md", "bundle"]
+    },
+    "schema": {
+      "type": "object",
+      "required": ["corpus_paths", "horizon_days", "depth", "anti_surface"],
+      "properties": {
+        "corpus_paths": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "horizon_days": { "type": "integer", "minimum": 1, "maximum": 365 },
+        "depth": { "type": "string", "enum": ["shallow", "medium", "deep"], "default": "medium" },
+        "anti_surface": { "type": "boolean", "default": true }
+      }
+    },
+    "example": {
+      "corpus_paths": ["/data/blog", "/data/docs"],
+      "horizon_days": 90,
+      "depth": "deep",
+      "anti_surface": true
+    }
+  },
+  "outputs": {
+    "artifact_type": "bundle",
+    "fields": [
+      { "name": "latent_graph", "type": "json", "required": true },
+      { "name": "motifs", "type": "array", "required": true },
+      { "name": "strategies", "type": "array", "required": true },
+      { "name": "trajectories", "type": "array", "required": true },
+      { "name": "actions", "type": "array", "required": true }
+    ],
+    "example": "{\n  \"latent_graph\": {\n    \"nodes\": [], \"edges\": []\n  }\n}"
+  },
+  "kpi": { "score_min": 80, "tta_text_s": 60, "tta_sop_s": 300 },
+  "tests": [
+    {
+      "id": "M02-T1",
+      "name": "Produce latent_graph și trajectories",
+      "input": { "custom": { "corpus_paths": ["/data/blog"], "horizon_days": 30, "depth": "medium", "anti_surface": true } },
+      "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80, "contains": ["latent_graph", "trajectories"] }
+    }
+  ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true, "style_rules": ["explică metodele și limitele"] },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

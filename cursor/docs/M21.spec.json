@@ -1,0 +1,37 @@
+{
+  "module_code": "M21",
+  "vector": 1,
+  "name": "SOP AI în Moodle",
+  "purpose": "Conector LTI/API pentru feedback automatizat cu rubrici; definește setup și fluxuri de evaluare.",
+  "tags": ["moodle", "lti", "rubrics"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["moodle_version", "gpt_api", "rubrics"],
+      "properties": {
+        "moodle_version": { "type": "string" },
+        "gpt_api": { "type": "string" },
+        "rubrics": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "example": { "moodle_version": "4.3", "gpt_api": "gpt-4o", "rubrics": ["clarity", "argument"] }
+  },
+  "outputs": {
+    "artifact_type": "bundle",
+    "fields": [
+      { "name": "setup", "type": "markdown", "required": true },
+      { "name": "flows", "type": "markdown", "required": true }
+    ]
+  },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M21-T1", "name": "Setup + flows", "input": { "custom": { "moodle_version": "4.3", "gpt_api": "gpt-4o", "rubrics": ["r1"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

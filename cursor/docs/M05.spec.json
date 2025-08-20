@@ -1,0 +1,31 @@
+{
+  "module_code": "M05",
+  "vector": 4,
+  "name": "ORAKON Memory Grid",
+  "purpose": "Definește reguli de memorie stratificată (core/project/session/ephemeral) cu politici de uitare controlată și compaction jobs.",
+  "tags": ["memory", "policy", "retention"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "yaml"] },
+    "schema": {
+      "type": "object",
+      "required": ["layers", "ttl", "retention_policy"],
+      "properties": {
+        "layers": { "type": "array", "items": { "type": "string", "enum": ["core", "project", "session", "ephemeral"] }, "minItems": 2 },
+        "ttl": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "retention_policy": { "type": "string", "minLength": 8 }
+      }
+    },
+    "example": { "layers": ["core", "project", "session"], "ttl": { "core": 0, "project": 2592000, "session": 86400 }, "retention_policy": "PII hashing + LRU" }
+  },
+  "outputs": { "artifact_type": "json", "fields": [ { "name": "write_rules", "type": "json", "required": true }, { "name": "read_rules", "type": "json", "required": true }, { "name": "forget_rules", "type": "json", "required": true }, { "name": "compaction_jobs", "type": "array", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M05-T1", "name": "Conține toate regulile", "input": { "custom": { "layers": ["core", "session"], "ttl": { "session": 3600 }, "retention_policy": "hashing" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

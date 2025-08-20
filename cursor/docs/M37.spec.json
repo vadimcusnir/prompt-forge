@@ -1,0 +1,19 @@
+{
+  "module_code": "M37",
+  "vector": 5,
+  "name": "Ritual de Inițiere (The Architect)",
+  "purpose": "Secvență în 3 acte (jurământ→provocare→recompensă) cu gating și badge.",
+  "tags": ["ritual", "initiation", "badge"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["oath", "challenge", "reward"], "properties": { "oath": { "type": "string", "minLength": 20 }, "challenge": { "type": "string", "minLength": 20 }, "reward": { "type": "string", "minLength": 5 } } }, "example": { "oath": "commitment...", "challenge": "build X in Y", "reward": "access + badge" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "script", "type": "markdown", "required": true }, { "name": "criteria", "type": "json", "required": true }, { "name": "badge", "type": "string", "required": false } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M37-T1", "name": "Script + criteria", "input": { "custom": { "oath": "o", "challenge": "c...", "reward": "r" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

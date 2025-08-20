@@ -1,0 +1,19 @@
+{
+  "module_code": "M48",
+  "vector": 3,
+  "name": "Playbook Internaționalizare (EN/RO)",
+  "purpose": "Copy multi‑piață cu QA lingvistic și proces de adaptare; export playbook și glosar.",
+  "tags": ["i18n", "copy", "qa"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["piete", "canal", "localizare"], "properties": { "piete": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "canal": { "type": "string" }, "localizare": { "type": "string" } } }, "example": { "piete": ["RO","EN"], "canal": "email", "localizare": "formal" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "copy", "type": "string", "required": true }, { "name": "glossary", "type": "markdown", "required": true }, { "name": "process", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M48-T1", "name": "Copy + glossary + process", "input": { "custom": { "piete": ["RO","EN"], "canal": "web", "localizare": "friendly" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

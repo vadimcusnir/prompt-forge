@@ -1,0 +1,37 @@
+{
+  "module_code": "M16",
+  "vector": 3,
+  "name": "AI Clone (HeyGen)",
+  "purpose": "Specificație etică și tehnică pentru clonă video (script, timbru vocal, disclaimere, QA).",
+  "tags": ["video", "heygen", "ethics"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "md", "bundle"] },
+    "schema": {
+      "type": "object",
+      "required": ["script", "voiceprint", "ethics"],
+      "properties": {
+        "script": { "type": "string", "minLength": 50 },
+        "voiceprint": { "type": "string", "minLength": 8 },
+        "ethics": { "type": "array", "minItems": 2, "items": { "type": "string" } }
+      }
+    },
+    "example": { "script": "Intro + value + CTA ...", "voiceprint": "en_US_male_02", "ethics": ["consent", "disclaimer on"] }
+  },
+  "outputs": {
+    "artifact_type": "bundle",
+    "fields": [
+      { "name": "video_spec", "type": "json", "required": true },
+      { "name": "qa", "type": "markdown", "required": true }
+    ]
+  },
+  "kpi": { "score_min": 85 },
+  "tests": [ { "id": "M16-T1", "name": "Spec + QA", "input": { "custom": { "script": "...long...", "voiceprint": "v1", "ethics": ["consent","disclaimer"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 85 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true, "no_promises": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

@@ -1,0 +1,19 @@
+{
+  "module_code": "M39",
+  "vector": 3,
+  "name": "Promptoscopie™",
+  "purpose": "Analiză în 4 faze (emoție→logică→joc→destin) cu cadre și teste; rapoarte structurale.",
+  "tags": ["analysis", "framing", "tests"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["term", "context", "scope"], "properties": { "term": { "type": "string" }, "context": { "type": "string" }, "scope": { "type": "string" } } }, "example": { "term": "AI agent", "context": "SaaS", "scope": "marketing" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "analysis", "type": "markdown", "required": true }, { "name": "frames", "type": "markdown", "required": true }, { "name": "tests", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M39-T1", "name": "Analysis + frames + tests", "input": { "custom": { "term": "x", "context": "y", "scope": "z" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

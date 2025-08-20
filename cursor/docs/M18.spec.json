@@ -1,0 +1,19 @@
+{
+  "module_code": "M18",
+  "vector": 2,
+  "name": "Carusele RFA",
+  "purpose": "Structură 7–9 slide‑uri (hook→lamă→verdict) pentru impact memetic (save/share).",
+  "tags": ["carousel", "social", "rfa"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["md"] }, "schema": { "type": "object", "required": ["tema", "teza", "dovezi", "cta"], "properties": { "tema": { "type": "string" }, "teza": { "type": "string" }, "dovezi": { "type": "array", "items": { "type": "string" }, "minItems": 3 }, "cta": { "type": "string" } } }, "example": { "tema": "X", "teza": "Y", "dovezi": ["a","b","c"], "cta": "Follow" } },
+  "outputs": { "artifact_type": "md", "fields": [ { "name": "slides", "type": "array", "required": true }, { "name": "copy_len", "type": "json", "required": false } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M18-T1", "name": "Slides generate", "input": { "custom": { "tema": "A", "teza": "B", "dovezi": ["1","2","3"], "cta": "C" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

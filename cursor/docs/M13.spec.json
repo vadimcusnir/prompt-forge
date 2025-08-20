@@ -1,0 +1,32 @@
+{
+  "module_code": "M13",
+  "vector": 4,
+  "name": "Pricing Psychology",
+  "purpose": "Matrice de prețuri cu ancorare/bundle/decoy și plan de experimente.",
+  "tags": ["pricing", "experiments", "psychology"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["anchor", "bundles", "decoy", "test_plan"],
+      "properties": {
+        "anchor": { "type": "string" },
+        "bundles": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "decoy": { "type": "string" },
+        "test_plan": { "type": "string" }
+      }
+    },
+    "example": { "anchor": "$99", "bundles": ["Basic","Pro"], "decoy": "Pro+", "test_plan": "A/B 4 weeks" }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "price_matrix", "type": "json", "required": true }, { "name": "readouts", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M13-T1", "name": "Matrix + readouts", "input": { "custom": { "anchor": "$49", "bundles": ["A","B"], "decoy": "B+", "test_plan": "2w" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

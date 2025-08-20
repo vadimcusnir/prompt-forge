@@ -1,0 +1,48 @@
+{
+  "entitlements": [
+    {
+      "key": "canUseAllModules",
+      "description": "Acces la întregul set de module M01–M50"
+    },
+    {
+      "key": "canExportMD",
+      "description": "Permite exportul .md (Markdown)"
+    },
+    {
+      "key": "canExportPDF",
+      "description": "Permite exportul .pdf (raport brand-uit)"
+    },
+    {
+      "key": "canExportJSON",
+      "description": "Permite exportul .json (artefacte structurate)"
+    },
+    {
+      "key": "canUseGptTestReal",
+      "description": "Rulare Test Engine pe GPT live (telemetry & cost)"
+    },
+    {
+      "key": "hasCloudHistory",
+      "description": "Persistență istoric în Supabase (nelimitat)"
+    },
+    {
+      "key": "hasEvaluatorAI",
+      "description": "Scoruri + feedback narativ din Evaluator AI"
+    },
+    {
+      "key": "hasAPI",
+      "description": "Acces endpoint public /api/run/{moduleId}"
+    },
+    {
+      "key": "hasWhiteLabel",
+      "description": "Branding custom + licență self-host / whitelabel"
+    },
+    {
+      "key": "canExportBundleZip",
+      "description": "Export .zip complet (txt/md/json/pdf + manifest + checksum)"
+    },
+    {
+      "key": "hasSeatsGT1",
+      "description": "Licență multi-seat (>1 user/org)"
+    }
+  ]
+}

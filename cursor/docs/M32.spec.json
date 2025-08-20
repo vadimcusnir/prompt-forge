@@ -1,0 +1,31 @@
+{
+  "module_code": "M32",
+  "vector": 6,
+  "name": "Cohort Experiments",
+  "purpose": "Definește 6 teste robuste cu design, power și criterii de oprire; produce rezultate și recomandări.",
+  "tags": ["experiments", "cohort", "ab"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["hypotheses", "sample", "alpha"],
+      "properties": {
+        "hypotheses": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "sample": { "type": "integer", "minimum": 30 },
+        "alpha": { "type": "number", "minimum": 0.01, "maximum": 0.5, "default": 0.05 }
+      }
+    },
+    "example": { "hypotheses": ["H1","H2"], "sample": 200, "alpha": 0.05 }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "designs", "type": "markdown", "required": true }, { "name": "results", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M32-T1", "name": "Designs + results", "input": { "custom": { "hypotheses": ["A","B"], "sample": 100, "alpha": 0.05 } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

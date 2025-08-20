@@ -1,0 +1,197 @@
+# /cursor/docs/ruleset.yml  — Single Source of Truth (SSOT)
+
+project: PROMPTFORGE_v3
+semver: 0.1.0
+updated_at: "2025-08-20T00:00:00Z"
+source_of_truth: "/cursor/docs/ruleset.yml"
+
+contracts:
+  # Toate runtime‑urile trebuie să consume aceste chei.
+  fe_must_read: [seven_d, plans, entitlements, export_bundle, scoring, telemetry, api, versioning]
+  be_must_read: [seven_d, dor, dod, export_bundle, entitlements, scoring, telemetry, api, versioning, compliance]
+
+seven_d:
+  enum_only: true     # Blochezi orice valoare în afara enumurilor SSOT
+  raise_on_invalid: true
+  # Enums canonice (aliniate la SSOT)
+  # Referință: schema 7D (domain_code, scale, urgency, complexity, resources, application, output_formats) :contentReference[oaicite:1]{index=1}
+  domain:
+    # Registry minimal (poți extinde în seeds): coduri canonice FIN/ECOM/EDU etc. :contentReference[oaicite:2]{index=2}
+    codes: [FIN, ECOM, EDU, SAAS, HEALTH, LEGAL, GOV, MEDIA]
+    defaults_by_code:
+      FIN:   { scale: team, urgency: normal, complexity: medium, resources: standard, application: content_ops, output: bundle }
+      ECOM:  { scale: team, urgency: normal, complexity: medium, resources: standard, application: sales_ops,  output: bundle }
+      EDU:   { scale: team, urgency: normal, complexity: medium, resources: standard, application: research,   output: bundle }
+      SAAS:  { scale: team, urgency: normal, complexity: medium, resources: standard, application: product_ops, output: bundle }
+      HEALTH: { scale: org,  urgency: high,   complexity: high,   resources: extended, application: research,   output: bundle }
+      LEGAL: { scale: org,  urgency: normal, complexity: high,   resources: extended, application: crisis_ops, output: bundle }
+      GOV:   { scale: org,  urgency: high,   complexity: high,   resources: extended, application: research,   output: bundle }
+      MEDIA: { scale: team, urgency: normal, complexity: medium, resources: standard, application: content_ops, output: bundle }
+  scale:      [solo, team, org, market]
+  urgency:    [low, normal, high, crisis]
+  complexity: [low, medium, high]
+  resources:  [minimal, standard, extended]
+  application: [content_ops, sales_ops, product_ops, research, crisis_ops]
+  output:     [text, sop, plan, bundle]
+
+dor:  # Definition of Ready — gates înainte de execuție
+  # Conform auditului: validate 7D, entitlements, output_spec, tests_defined, min input. :contentReference[oaicite:9]{index=9}
+  gates:
+    - id: seven_d_valid
+      rule: "validate(enums=seven_d, enum_only=true, raise_on_invalid=true)"  # :contentReference[oaicite:10]{index=10}
+    - id: entitlements_present
+      rule: "check(plan_features>=required_for_request)"
+    - id: output_spec_loaded
+      rule: "spec.required_keys_present"
+    - id: tests_defined
+      rule: "module.has_testcases==true"
+    - id: min_input
+      rule: "input.bytes>=64"
+
+dod:  # Definition of Done — gates după execuție
+  # Conform auditului: score ≥80, output_complete, checksum valid, manifest scris, telemetrie salvată. :contentReference[oaicite:11]{index=11}
+  gates:
+    - id: score_threshold
+      rule: "scoring.overall>=80"
+    - id: output_complete
+      rule: "artifacts.contains_all(export_bundle.artifacts_order)"
+    - id: checksum_valid
+      rule: "sha256(bundle.concat(export_bundle.artifacts_order))==bundle.checksum"
+    - id: manifest_written
+      rule: "exists(manifest.json)"
+    - id: telemetry_saved
+      rule: "telemetry.persisted==true"
+
+entitlements:
+  # Matrice plan → capabilități; FE/BE derivă flags din aici (v_entitlements_effective_*) :contentReference[oaicite:12]{index=12}
+  plans:
+    pilot:
+      label: "Pilot"
+      features:
+        canUseAllModules: false
+        canExportMD: true
+        canExportPDF: false
+        canExportJSON: false
+        canUseGptTestReal: false
+        hasCloudHistory: false
+        hasEvaluatorAI: false
+        hasAPI: false
+        hasWhiteLabel: false
+        canExportBundleZip: false
+        hasSeatsGT1: false
+    pro:
+      label: "Pro"
+      features:
+        canUseAllModules: true
+        canExportMD: true
+        canExportPDF: true
+        canExportJSON: true
+        canUseGptTestReal: true
+        hasCloudHistory: true
+        hasEvaluatorAI: true
+        hasAPI: false
+        hasWhiteLabel: false
+        canExportBundleZip: false
+        hasSeatsGT1: false
+    enterprise:
+      label: "Enterprise"
+      features:
+        canUseAllModules: true
+        canExportMD: true
+        canExportPDF: true
+        canExportJSON: true
+        canUseGptTestReal: true
+        hasCloudHistory: true
+        hasEvaluatorAI: true
+        hasAPI: true
+        hasWhiteLabel: true
+        canExportBundleZip: true
+        hasSeatsGT1: true
+
+export_bundle:
+  # Ordinea canonică folosită la checksum + numele fișierului checksum.sha256 :contentReference[oaicite:13]{index=13} :contentReference[oaicite:14]{index=14}
+  artifacts_order: ["prompt.txt","prompt.json","prompt.md","prompt.pdf","manifest.json"]
+  checksum:
+    algorithm: "sha256"
+    file: "checksum.sha256"
+    concat_separator: "\n"   # LF între fișiere când calculezi hashul :contentReference[oaicite:15]{index=15}
+  manifest:
+    required_fields: ["version","license_notice","formats","paths","run_id","module_id","ruleset_checksum","created_at"]  # :contentReference[oaicite:16]{index=16}
+  gating:
+    # Enforcement (BE+DB): PDF/JSON doar Pro+, bundle.zip doar Enterprise. :contentReference[oaicite:17]{index=17}
+    pdf_min_plan: "pro"
+    json_min_plan: "pro"
+    zip_min_plan: "enterprise"
+  watermark:
+    apply_on:
+      plan: "pro"
+      trial: true
+    targets: ["prompt.pdf","prompt.json"]
+
+scoring:
+  rubric: ["clarity","execution","ambiguity","business_fit"]   # :contentReference[oaicite:18]{index=18}
+  threshold: 80
+  verdicts: { pass: "overall>=80", partial_pass: "60<=overall<80", fail: "overall<60" }
+  auto_tighten:
+    enabled: true
+    max_passes: 1          # “tighten o singură dată” înainte de gate DoD :contentReference[oaicite:19]{index=19}
+
+telemetry:
+  # Evenimente obligatorii și PII‑safe; DB sanitize pentru chei interzise. :contentReference[oaicite:20]{index=20} :contentReference[oaicite:21]{index=21}
+  pii_disallowed_keys: ["raw_content","input_raw","attachments_raw"]
+  events:
+    - PF_LANDING_CTA_CLICK
+    - PF_PRICING_VIEW
+    - PF_PLAN_SELECTED
+    - PF_CHECKOUT_STARTED
+    - PF_CHECKOUT_COMPLETED
+    - PF_GATE_HIT
+    - PF_PAYWALL_VIEWED
+    - PF_PAYWALL_CTA_CLICK
+    - PF_RUN_STARTED
+    - PF_RUN_FINISHED
+  metrics:
+    tta_text_sla_seconds: 60
+    tta_sop_sla_seconds: 300
+    # TTA = first meaningful action − page load; colectează și click‑depth→checkout. :contentReference[oaicite:22]{index=22}
+
+api:
+  # Gates pe endpointuri sensibile (enforce la API, nu doar UI). :contentReference[oaicite:23]{index=23}
+  endpoints:
+    /api/gpt-editor:
+      min_plan: "pilot"   # optimizare locală permisă, fără live test
+    /api/gpt-test:
+      min_plan: "pro"     # live GPT doar Pro+
+    /api/run/:moduleId:
+      min_plan: "pro"
+    /api/export:
+      pdf_min_plan: "pro"
+      json_min_plan: "pro"
+      zip_min_plan: "enterprise"
+    /api/keys:
+      min_plan: "enterprise"
+
+versioning:
+  ruleset:
+    pinned: true     # fiecare run se leagă de ruleset_version activ (DB trigger) :contentReference[oaicite:24]{index=24}
+  id_scheme:
+    run_id: "{date:YYYYMMDD}-{org}-{module}-{domain}-{semver}"
+    bundle_paths_template:
+      txt: "/bundles/{org}/{date}/{domain}/{module}/prompt.txt"
+      md: "/bundles/{org}/{date}/{domain}/{module}/prompt.md"
+      json: "/bundles/{org}/{date}/{domain}/{module}/prompt.json"
+      pdf: "/bundles/{org}/{date}/{domain}/{module}/prompt.pdf"
+      manifest: "/bundles/{org}/{date}/{domain}/{module}/manifest.json"
+      checksum: "/bundles/{org}/{date}/{domain}/{module}/checksum.sha256"
+      zip: "/bundles/{org}/{date}/{domain}/{module}/bundle.zip"   # exemplu conform auditului :contentReference[oaicite:25]{index=25}
+
+compliance:
+  db_enforcement:
+    rls_membership_required: true
+    validate_ruleset_pinning: true
+    export_bundle_triggers:
+      require_manifest_and_checksum_sha256: true   # validate manifest + checksum.sha256 la finalizare :contentReference[oaicite:26]{index=26}
+    api_keys_rls_entitlement_check: true           # check_entitlement(...) pentru API/ZIP :contentReference[oaicite:27]{index=27}
+  seo_slo:
+    lcp_budget_ms: 2500
+    cls_budget: 0.02

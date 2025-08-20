@@ -1,0 +1,165 @@
+{
+  "$schema": "https://promptforge.dev/schemas/cursor-init-v1.json",
+  "meta": {
+    "project": "PROMPTFORGE™ v3.0",
+    "source_of_truth": "/cursor/init",
+    "description": "Canonical initializer for the Cursor agent. Enumerates forge_v3_* files and interaction rules.",
+    "last_updated": "2025-08-20"
+  },
+  "directories": {
+    "root": "/cursor",
+    "docs_root": "/cursor/docs",
+    "docs_subfolders": [
+      "/cursor/docs/coming_soon",
+      "/cursor/docs/industry_packs_bundle",
+      "/cursor/docs/licensing",
+      "/cursor/docs/supabase_migrations"
+    ]
+  },
+  "language_policy": {
+    "output_language": "en",
+    "translate_non_en_inputs": true,
+    "detect_languages": ["ro", "ru", "en", "fr", "de", "es"],
+    "fail_closed_on_detection_error": true,
+    "style_note": "All public/UI copy, docs, pages, and generated artifacts must be in English; non-English source docs are to be translated to English before writing."
+  },
+  "preflight": {
+    "scan_globs": ["/cursor/forge_v3_*"],
+    "must_exist_min": 5,
+    "compile_rules_index": true,
+    "validate_sections": ["DoR", "DoD", "prompt_standard", "entitlements"],
+    "abort_on_missing_or_conflict": true
+  },
+  "precedence": {
+    "note": "Smaller number = higher priority.",
+    "order": [
+      { "id": "init",       "path": "/cursor/init",                 "level": 0 },
+      { "id": "p1",         "path": "/cursor/forge_v3_p1.txt",      "level": 1 },
+      { "id": "rulebook",   "path": "/cursor/forge_v3_rulebook_v1.txt", "level": 2 },
+      { "id": "standard",   "path": "/cursor/forge_v3_standard.txt",    "level": 3 },
+      { "id": "runtime",    "paths": ["/cursor/forge_v3_runtime_1.txt", "/cursor/forge_v3_runtime_2.txt"], "level": 4 },
+      { "id": "domains",    "path": "/cursor/forge_v3_standard_domenii.txt", "level": 5 },
+      { "id": "entitlements","path": "/cursor/forge_v3_standard_entitlements.txt", "level": 6 },
+      { "id": "prompts",    "path": "/cursor/forge_v3_standard_prompt.txt", "level": 7 },
+      { "id": "backend",    "paths": ["/cursor/forge_v3_backend_supabase.txt", "/cursor/forge_v3_backend_supabase_2.txt"], "level": 8 },
+      { "id": "frontend",   "path": "/cursor/forge_v3_front_end.txt", "level": 9 },
+      { "id": "branding",   "path": "/cursor/forge_v3_branding.txt",  "level": 10 },
+      { "id": "templates",  "path": "/cursor/forge_v3_dor_dod_temp.txt", "level": 11 }
+    ]
+  },
+  "instruction_files": [
+    { "path": "/cursor/forge_v3_p1.txt",                 "role": "priority_bootstrap", "interaction": "compile_apply",   "description": "Immediate boot directives (P1)."},
+    { "path": "/cursor/forge_v3_rulebook_v1.txt",        "role": "rulebook",           "interaction": "read_only",       "description": "Project constitution and hierarchy."},
+    { "path": "/cursor/forge_v3_standard.txt",           "role": "standard_protocol",  "interaction": "read_only",       "description": "Protocol standards & execution model."},
+    { "path": "/cursor/forge_v3_standard_prompt.txt",    "role": "prompt_skeletons",   "interaction": "compile_apply",   "description": "Prompt skeletons, KPIs, guardrails, telemetry."},
+    { "path": "/cursor/forge_v3_standard_domenii.txt",   "role": "domain_taxonomy",    "interaction": "reference_apply", "description": "Domain taxonomy (CORE 25)."},
+    { "path": "/cursor/forge_v3_standard_entitlements.txt","role": "entitlements",     "interaction": "reference_apply", "description": "Feature flags & plan gating."},
+    { "path": "/cursor/forge_v3_runtime_1.txt",          "role": "runtime",            "interaction": "read_only",       "description": "Runtime rules I."},
+    { "path": "/cursor/forge_v3_runtime_2.txt",          "role": "runtime",            "interaction": "read_only",       "description": "Runtime rules II."},
+    { "path": "/cursor/forge_v3_backend_supabase.txt",   "role": "backend_supabase",   "interaction": "reference_generate", "description": "Supabase schema & RLS."},
+    { "path": "/cursor/forge_v3_backend_supabase_2.txt", "role": "backend_supabase_ext","interaction": "reference_generate", "description": "Supabase extensions/migrations."},
+    { "path": "/cursor/forge_v3_front_end.txt",          "role": "frontend_spec",      "interaction": "reference_generate", "description": "UI/UX, Editor, Test, Export, History."},
+    { "path": "/cursor/forge_v3_branding.txt",           "role": "branding",           "interaction": "reference_apply", "description": "Brand OS / visual identity."},
+    { "path": "/cursor/forge_v3_dor_dod_temp.txt",       "role": "templates",          "interaction": "reference_apply", "description": "DoR/DoD templates & SOP stencils."},
+
+    { "path": "/cursor/forge_v3_agent_init.txt",         "role": "agent_init",         "interaction": "reference_apply", "description": "Agent bootstrap notes."},
+    { "path": "/cursor/forge_v3_arborE.txt",             "role": "tree",               "interaction": "read_only",       "description": "System tree/arbore."},
+    { "path": "/cursor/forge_v3_artifacts.txt",          "role": "artifacts",          "interaction": "reference_apply", "description": "Artifacts catalog & exports."},
+    { "path": "/cursor/forge_v3_branding_web_design.txt","role": "branding_web",       "interaction": "reference_apply", "description": "Web design addenda."},
+    { "path": "/cursor/forge_v3_checklist_launch.txt",   "role": "checklists",         "interaction": "reference_apply", "description": "Launch checklist."},
+    { "path": "/cursor/forge_v3_code_html.txt",          "role": "frontend_notes",     "interaction": "read_only",       "description": "Static HTML notes."},
+    { "path": "/cursor/forge_v3_coming_soon.txt",        "role": "docs_placeholder",   "interaction": "read_only",       "description": "Docs stubs."},
+    { "path": "/cursor/forge_v3_descriere.txt",          "role": "description",        "interaction": "read_only",       "description": "Product description."},
+    { "path": "/cursor/forge_v3_documentation.txt",      "role": "documentation",      "interaction": "read_only",       "description": "General documentation."},
+    { "path": "/cursor/forge_v3_mvp_1.txt",              "role": "mvp",                "interaction": "read_only",       "description": "MVP baseline."},
+    { "path": "/cursor/forge_v3_mvp_growth.txt",         "role": "growth",             "interaction": "read_only",       "description": "Growth notes."},
+    { "path": "/cursor/forge_v3_mvp_tasks.txt",          "role": "tasks",              "interaction": "read_only",       "description": "Tasks list."},
+    { "path": "/cursor/forge_v3_mvp_tasks_functional.txt","role": "tasks",             "interaction": "read_only",       "description": "Functional tasks."},
+    { "path": "/cursor/forge_v3_mvp_tasks_preturi.txt",  "role": "tasks_pricing",      "interaction": "read_only",       "description": "Pricing tasks."},
+    { "path": "/cursor/forge_v3_workflows.txt",          "role": "workflows",          "interaction": "read_only",       "description": "Project workflows."}
+  ],
+  "docs_routing": {
+    "write_allowed": [
+      "/cursor/docs/coming_soon",
+      "/cursor/docs/industry_packs_bundle",
+      "/cursor/docs/licensing",
+      "/cursor/docs/supabase_migrations"
+    ],
+    "write_forbidden": [
+      "/cursor",
+      "/cursor/init",
+      "/cursor/forge_v3_p1.txt",
+      "/cursor/forge_v3_rulebook_v1.txt",
+      "/cursor/forge_v3_standard.txt",
+      "/cursor/forge_v3_runtime_1.txt",
+      "/cursor/forge_v3_runtime_2.txt",
+      "/cursor/forge_v3_standard_domenii.txt",
+      "/cursor/forge_v3_standard_entitlements.txt",
+      "/cursor/forge_v3_standard_prompt.txt",
+      "/cursor/forge_v3_front_end.txt",
+      "/cursor/forge_v3_backend_supabase.txt",
+      "/cursor/forge_v3_backend_supabase_2.txt",
+      "/cursor/forge_v3_branding.txt",
+      "/cursor/forge_v3_dor_dod_temp.txt"
+    ],
+    "migrations_target": "/cursor/docs/supabase_migrations",
+    "licensing_target": "/cursor/docs/licensing",
+    "bundles_target": "/cursor/docs/industry_packs_bundle"
+  },
+  "sevenD_defaults": {
+    "domain": "generic",
+    "scale": "team",
+    "urgency": "normal",
+    "complexity": "medium",
+    "resources": "standard",
+    "application": "prompt_engineering",
+    "output": "bundle"
+  },
+  "global_settings": {
+    "currency": "USD",
+    "language": "en",
+    "locale": "en-US",
+    "timezone": "UTC"
+  },
+  "commands": {
+    "generateArtifact": {
+      "uses": ["/cursor/forge_v3_standard_prompt.txt", "/cursor/forge_v3_standard.txt", "/cursor/forge_v3_branding.txt"],
+      "writes_to": ["/cursor/docs/coming_soon", "/cursor/docs/industry_packs_bundle"],
+      "pre_hooks": ["rules.preflight", "language.enforce"]
+    },
+    "evaluatePrompt": {
+      "uses": ["/cursor/forge_v3_standard.txt", "/cursor/forge_v3_runtime_1.txt", "/cursor/forge_v3_runtime_2.txt"],
+      "writes_to": ["/cursor/docs/coming_soon"],
+      "pre_hooks": ["rules.preflight", "language.enforce"]
+    },
+    "exportBundle": {
+      "uses": ["*"],
+      "writes_to": ["/cursor/docs/industry_packs_bundle"],
+      "pre_hooks": ["rules.preflight", "language.enforce"]
+    },
+    "licenseCheck": {
+      "uses": ["/cursor/forge_v3_standard_entitlements.txt"],
+      "writes_to": ["/cursor/docs/licensing"]
+    },
+    "supabaseMigrate": {
+      "uses": ["/cursor/forge_v3_backend_supabase.txt", "/cursor/forge_v3_backend_supabase_2.txt"],
+      "writes_to": ["/cursor/docs/supabase_migrations"]
+    }
+  },
+  "non_deviation_laws": [
+    { "id": 1,  "text": "Follow precedence. /cursor/init is SSOT." },
+    { "id": 2,  "text": "Do not write/edit/delete any read_only file." },
+    { "id": 3,  "text": "Operate only under /cursor and /cursor/docs." },
+    { "id": 4,  "text": "No asynchronous promises. Deliver in the same run." },
+    { "id": 5,  "text": "No invented files/APIs. Use only what init enumerates." },
+    { "id": 6,  "text": "On conflict, lower numeric level wins." },
+    { "id": 7,  "text": "Validate entitlements before any licensed action." },
+    { "id": 8,  "text": "Migrations MUST write only to /cursor/docs/supabase_migrations." },
+    { "id": 9,  "text": "Branding from forge_v3_branding.txt is mandatory in PDF exports." },
+    { "id": 10, "text": "7D parameters are mandatory; otherwise the artifact is invalid." },
+    { "id": 11, "text": "English-only outputs for public artifacts; translate non-EN inputs." },
+    { "id": 12, "text": "Compile & validate all forge_v3_* rules; abort on missing DoR/DoD/specs." },
+    { "id": 13, "text": "USD is the canonical currency." },
+    { "id": 14, "text": "All UI/docs follow the Prompt Standard & Export Bundle rules." }
+  ]
+}

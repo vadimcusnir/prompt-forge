@@ -1,0 +1,19 @@
+{
+  "module_code": "M30",
+  "vector": 2,
+  "name": "Cod Anti‑Conformism",
+  "purpose": "Linting lingvistic: reguli do/don't și detecție de fraze interzise, cu raport de încălcări.",
+  "tags": ["lint", "language", "style"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json"] }, "schema": { "type": "object", "required": ["forbidden_phrases", "alternatives", "definitions"], "properties": { "forbidden_phrases": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "alternatives": { "type": "json" }, "definitions": { "type": "json" } } }, "example": { "forbidden_phrases": ["we are the best","unbeatable","world‑class"], "alternatives": {}, "definitions": {} } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "rules", "type": "json", "required": true }, { "name": "violations", "type": "string", "required": false } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M30-T1", "name": "Rules + violations", "input": { "custom": { "forbidden_phrases": ["a","b","c"], "alternatives": {}, "definitions": {} } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

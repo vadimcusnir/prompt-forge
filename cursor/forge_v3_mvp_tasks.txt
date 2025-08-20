@@ -1,0 +1,751 @@
+Here is the full Domain Parameter Framework for PROMPTFORGE™:
+
+🧠 DOMAIN PARAMETER – INDUSTRY NOMENCLATURE
+
+This parameter controls the contextual application of any prompt module. Each industry implies specific constraints, jargon, risks, KPIs, and audience behavior.
+
+✅ PRIMARY INDUSTRIES (CORE 25)
+#	Industry	Description
+1	SaaS	Cloud-based platforms with recurring revenue models
+2	FinTech	Financial technologies: payments, lending, investment
+3	E-Commerce	Online retail, marketplaces, D2C brands
+4	Consulting	B2B services, strategic advisory, transformation experts
+5	Education	EdTech platforms, online courses, coaching, LMS
+6	Healthcare	Clinics, health-tech apps, telemedicine, patient systems
+7	Legal	Law firms, compliance tools, legal tech
+8	Marketing	Agencies, content ops, branding, SEO
+9	Media & Publishing	Editorials, content platforms, newsrooms
+10	Real Estate	Agencies, listings, smart contracts, proptech
+11	HR & Recruitment	Talent platforms, assessments, ATS, onboarding
+12	Non-Profit / NGO	Advocacy, fundraising, transparency-critical organizations
+13	Government	Public infrastructure, civic tech, regulatory communication
+14	Blockchain & Web3	Tokens, DAOs, DeFi, NFT-based platforms
+15	AI & ML	Model development, deployment platforms, MLOps
+16	Cybersecurity	Tools, consultancies, SOC, audits
+17	Manufacturing	Industrial systems, IIoT, factory ops
+18	Logistics & Supply Chain	Transport, warehousing, tracking, fleet
+19	Travel & Hospitality	Hotels, bookings, tourism platforms
+20	Gaming	Studios, engines, in-game economies, eSports
+21	Fashion	D2C brands, retail, seasonal campaigns
+22	Beauty & Wellness	Spas, skincare brands, influencer-led brands
+23	Spiritual & Transformational	Conscious branding, personal evolution, rituals
+24	Architecture & Urbanism	Smart cities, planning, spatial systems
+25	Agriculture & Food Systems	AgTech, food traceability, supply chains
+🧬 EXTENSIBLE SEGMENTS (OPTIONAL)
+
+personal_branding
+
+solopreneurship
+
+creator_economy
+
+internal_comms
+
+thought_leadership
+
+ritualized_education
+
+public_disruption
+
+These are cross-industry overlays, not stand-alone domains, but they change tone, format, and symbolic architecture.
+
+📦 FOR EACH DOMAIN, DEFINE:
+Element	Description
+Jargon set	Key terms used internally by operators of the industry
+Primary KPIs	The metrics that define success
+Compliance constraints	Legal, ethical, reputational red flags
+Audience persona	Who reads, acts, signs off
+Prompt style impact	Should prompts be formal, narrative, visual, audit-compliant?
+Risk tolerance	Can you use polarizing rhetoric or must you stay within guardrails?
+📍 EXAMPLE SNAPSHOTS:
+🔹 FinTech
+
+Jargon: AML, KYC, API-led, sandboxing, regulatory arbitrage
+
+KPIs: CAC, KYC time, approval rate, fraud %
+
+Guardrails: FCA/SEC compliance, no false promise, no unverified claims
+
+Prompt Tone: formal, risk-aware, layered logic
+
+Application types: onboarding flows, regulatory SOPs, trust reversal prompts
+
+🔹 Education
+
+Jargon: LMS, completion rate, cohort-based, async/sync
+
+KPIs: engagement rate, TTE (time to execution), retention
+
+Style: gamified, narrative, emotional + rational
+
+Application types: microlearning, curriculum builder, daily content prompts
+
+🔹 Consulting
+
+Jargon: value ladder, transformation matrix, OKRs, advisory scope
+
+KPIs: ROI per engagement, decision speed, exec buy-in
+
+Style: audit-like, business-ritual tone, high-authority structure
+
+Application types: objection handling, scope-of-work prompts, strategic decks
+
+🧱 SCHEMA FORMAT (for internal system)
+{
+  "industry": "FinTech",
+  "jargon": ["KYC", "AML", "regtech", "sandboxing"],
+  "kpis": ["fraud_rate", "KYC_completion_time", "user_retention"],
+  "compliance_notes": "SEC/FCA sensitive, avoid speculative language",
+  "default_output_format": "spec",
+  "risk_level": "medium",
+  "style_bias": "analytical, layered, formal"
+}
+
+💡 NEXT STEPS
+
+Build JSON config per domain → for smart prompt adaptation
+
+Allow domain-switching to auto-adjust prompt tone + guardrails
+
+Train GPT on domain-specific input: “Generate Risk & Trust prompt for Web3 DAO vs for HR SaaS”
+
+
+
+
+
+
+
+🧱 SCALE PARAMETER – ORGANIZATIONAL CONTEXT NOMENCLATURE
+
+This parameter defines how large, mature, or complex the entity is that will apply the prompt. It directly influences the language, implementation scope, required KPIs, and formatting precision.
+
+✅ CORE SCALE TIERS (7 Total)
+#	Scale Tier	Description
+1	Personal Brand	Individual experts, creators, coaches, freelancers operating solo
+2	Solo Business	One-person company or independent consultant with productized services
+3	Startup	Small, agile team in early-stage growth (pre-seed to Series A)
+4	Boutique Agency	Small agency or studio (3–20 people), often niche-focused
+5	SMB	Small/Medium Business with operational maturity and limited structure
+6	Corporate	Mid- to large-sized company with layered departments, structured ops
+7	Enterprise	Large-scale, multi-division organizations with complex chains of approval
+🧩 EACH SCALE CONTROLS:
+Parameter	Effect on Prompt
+Output granularity	High for enterprise, low for personal brand
+Tone of voice	Conversational for solo, formal/institutional for corporate
+System dependencies	Solo = lightweight, Enterprise = must include APIs, workflows
+Compliance/guardrails	More intense for larger orgs
+Implementation path	Solo = direct execution, Corporate = delegation layers
+📦 FORMAT LOGIC BY SCALE
+🔹 1. Personal Brand
+
+Use metaphors, rhetorical hooks
+
+Prompt output is lightweight (text, PDF)
+
+KPI = visibility, resonance, engagement
+
+Examples: “Position your story”, “Authority carousel”
+
+🔹 2. Solo Business
+
+Add structure: SOPs, checklists
+
+Still fast to implement
+
+KPI = time-to-execute, clarity, conversion rate
+
+Prompt example: “Lead Gen SOP + auto-responder in Notion”
+
+🔹 3. Startup
+
+Prompt must include edge-case handling
+
+Format = .md, .json, .airtable, .notion, .zapier blueprint
+
+KPI = growth, velocity, ops clarity
+
+Guardrails: MVP-friendly, but scale-aware
+
+🔹 4. Boutique Agency
+
+Prompt includes multi-client use
+
+Output format = repeatable templates
+
+KPI = team adoption, template reuse rate
+
+Prompt: “Scalable content workflow across 5 clients”
+
+🔹 5. SMB
+
+SOPs must be formalized, include reporting
+
+Format: .docx, .xlsx, .pdf, .json
+
+KPI = cost per task, repeatability
+
+Guardrails: clearer compliance
+
+🔹 6. Corporate
+
+Language must be precise, depersonalized
+
+Prompt includes approval process, data security clauses
+
+Format: .json, .csv, .ics, .yaml
+
+KPI = alignment, internal adoption, system readiness
+
+🔹 7. Enterprise
+
+Prompt must be modular, API-integrated
+
+Includes stakeholders, roles, escalation paths
+
+Format: multi-artifact export + telemetry logging
+
+KPI = resilience, observability, failover planning
+
+📐 SCHEMA FORMAT (for internal logic)
+{
+  "scale": "Startup",
+  "output_format": "md + json",
+  "tone": "agile, tactical",
+  "dependencies": ["Notion", "Zapier"],
+  "kpi_bias": ["execution speed", "clarity", "scalability"],
+  "risk_tolerance": "medium",
+  "guardrails": ["must include fallback", "no hard compliance required"]
+}
+
+🧠 Strategic Use of scale
+
+Every prompt generated through PROMPTFORGE adapts its:
+
+structure
+
+style
+
+format
+
+risk profile
+
+stakeholder complexity
+
+Example: Same SOP generated for Personal Brand vs Enterprise → completely different execution plan, tone, and constraints.
+
+✅ Verdict
+
+The Scale parameter turns each prompt from a generic template into a context-aware execution artifact.
+It ensures every output is deployable, realistic, and psychologically calibrated to the decision-making power and resources of the operator.
+
+
+
+
+
+
+
+
+
+
+⚡️ URGENCY PARAMETER – EXECUTION PRESSURE NOMENCLATURE
+
+The urgency parameter defines how fast the outcome of the prompt must be implemented. It influences the scope, format, fallback logic, decision aggressiveness, and the level of abstraction vs action in the generated output.
+
+✅ STANDARD URGENCY LEVELS (5 total)
+#	Urgency Tier	Description
+1	Low	No immediate pressure; prompts are exploratory or strategic
+2	Planned	Scheduled execution within a normal cycle (2–6 weeks)
+3	Sprint	Fast delivery needed (3–7 days); tactical and focused
+4	Pilot	Rapid prototyping, small-scale live execution, learn fast
+5	Crisis	Immediate deployment needed; risk mitigation, failover, or public response
+🧩 EACH URGENCY LEVEL AFFECTS:
+Aspect	Behavior
+Output structure	Low urgency = strategic planning, Crisis = direct commands
+Fallback logic	Pilot/Crisis require automatic alternatives
+Tone	Low = analytical, Sprint = energetic, Crisis = assertive, binary
+Artifacts format	Crisis = .txt + .json + alert.md, Sprint = .checklist + .md
+Time-to-implement	Enforced deadlines injected into the prompt logic
+Risk tolerance	High urgency tolerates imperfect data, but needs action now
+📦 URGENCY SCENARIOS
+🔹 1. Low
+
+Tone: reflective, visionary
+
+Prompt style: exploratory frameworks, latent maps
+
+KPIs: long-term clarity, alignment, idea density
+
+Use case: thought leadership, knowledge architecture, research module
+
+🔹 2. Planned
+
+Tone: balanced, instructional
+
+Prompt style: planning prompts, calendarized SOPs
+
+KPIs: execution by date, team readiness
+
+Use case: GTD prompts, onboarding series, launch prep
+
+🔹 3. Sprint
+
+Tone: precise, no fluff
+
+Prompt style: checklists, short-loop workflows
+
+KPIs: execution time, click-to-output, minimal blockers
+
+Use case: quick campaign, feature rollout, weekly deliverables
+
+🔹 4. Pilot
+
+Tone: experimental, lean, proactive
+
+Prompt style: first-version SOPs, MVP flows
+
+KPIs: error detection, hypothesis validation, iteration loop
+
+Use case: rapid deployment of an idea into testable action
+
+🔹 5. Crisis
+
+Tone: directive, non-negotiable
+
+Prompt style: fallback systems, emergency comms, failover SOPs
+
+KPIs: time-to-containment, public sentiment delta, MTTR
+
+Use case: brand reputation rescue, data leak protocol, hostile media frame counter
+
+📐 SCHEMA FORMAT (for internal use)
+{
+  "urgency": "Crisis",
+  "tone": "assertive",
+  "kpi_focus": ["time_to_action", "containment_rate"],
+  "output_format": ["checklist", "markdown", "json"],
+  "fallback_required": true,
+  "deadline": "24h",
+  "guardrails": ["no ambiguity", "include escalation path"]
+}
+
+🎯 Strategic Importance of urgency
+
+Controls how GPT structures output
+
+Decides what level of abstraction vs action is used
+
+Forces scope compression and linguistic tension into the prompt
+
+For example:
+
+A "Risk & Trust Reversal" prompt with urgency: crisis will auto-generate hard guarantees, disclaimers, refund logic, and psychological safety messaging — while urgency: planned will focus on A/B testability, stakeholder alignment, and opt-in frameworks.
+
+✅ Verdict
+
+Urgency is not about speed.
+It’s about pressure calibration and operational tension in decision-making.
+This parameter ensures that every prompt knows not just what to deliver — but when, how hard, and with what level of compromise.
+
+
+
+
+
+
+
+
+
+🧠 COMPLEXITY PARAMETER – EXECUTIONAL DEPTH NOMENCLATURE
+
+The complexity parameter defines the depth of logic, technical layering, and abstraction level required in the generated prompt. It governs the cognitive sophistication expected from the output and its applicability to different levels of expertise.
+
+✅ STANDARD COMPLEXITY LEVELS (4 total)
+#	Complexity Level	Description
+1	Foundational	Simple instructions for beginners or general use
+2	Standard	Professional-level structure with logical flow
+3	Advanced	Multi-step logic, strategy layers, and fallback scenarios
+4	Expert	Multi-agent orchestration, symbolic layers, abstract variables, AI integration
+🧩 EACH COMPLEXITY LEVEL AFFECTS:
+Element	Description
+Prompt format	From linear instruction → to recursive system prompt
+Number of roles/steps	More complexity = more actors, loops, constraints
+Language used	Beginner = direct & instructive; Expert = abstract & symbolic
+Output format	Foundational = text; Expert = JSON + YAML + diagram
+KPI density	Higher complexity = more KPIs and validations embedded
+Fallback logic	Present only in Advanced / Expert levels
+🧠 LAYERED DESCRIPTIONS
+🔹 1. Foundational
+
+Use: entry-level users, rapid ideation, prototyping
+
+Prompt type: instruction → output
+
+Tone: simple, instructional, accessible
+
+Format: plain text
+
+Example: “Generate 5 content ideas for Instagram”
+
+🔹 2. Standard
+
+Use: freelancers, marketers, small business owners
+
+Prompt type: structured, guided format (e.g. SOP, carousels)
+
+Tone: tactical, actionable
+
+Format: markdown, checklist
+
+Example: “Create a content funnel with 3 nurture emails and 1 CTA page”
+
+🔹 3. Advanced
+
+Use: teams, agencies, consultants, GPT developers
+
+Prompt type: modular SOP with fallback scenarios and roles
+
+Tone: strategic, systemic
+
+Format: .json, .md, .pdf (multi-output)
+
+Example: “Develop a SOP for pre-launch visibility scoring with fail-safes, KPI tracking, and feedback loops”
+
+🔹 4. Expert
+
+Use: AI strategists, prompt engineers, custom GPT builders, ops architects
+
+Prompt type: recursive, symbolic, parameterized systems
+
+Tone: abstract, ontological, formalized logic
+
+Format: .yaml, .graphml, .json, .md, .ics
+
+Example: “Generate a prompt system that maps symbolic brand identity into visual output, integrates telemetry, and includes role-based fallback plans for a multi-agent GPT”
+
+📐 SCHEMA FORMAT (internal use)
+{
+  "complexity": "Advanced",
+  "steps": 7,
+  "roles": ["creator", "reviewer", "approver"],
+  "fallbacks": true,
+  "output_format": ["json", "markdown"],
+  "validation_required": true,
+  "kpi_density": "high",
+  "integration_level": "partial"
+}
+
+🧬 STRATEGIC USE OF complexity
+
+Directly controls how deep GPT thinks
+
+Higher complexity = higher implementation cost, but greater strategic value
+
+Prevents under-delivery by calibrating the expected depth of reasoning, scope, and system design
+
+✅ Verdict
+
+The complexity parameter is a mental depth selector.
+It transforms PROMPTFORGE from a tool that “generates prompts” into a precision engine of thought structuring.
+
+It defines how deeply the prompt must simulate expertise, how many cognitive layers it must hold, and what kind of artifacts it should produce.
+
+
+
+
+
+
+
+⚙️ RESOURCES PARAMETER – OPERATIONAL CAPACITY NOMENCLATURE
+
+The resources parameter defines what kind of manpower, tooling, time, and budget are available to implement the prompt’s outcome.
+It controls the realistic scope, format size, and dependency footprint of the output.
+
+✅ STANDARD RESOURCE TIERS (6 total)
+#	Tier	Description
+1	Minimal	Almost no budget, limited time, 1-person execution
+2	Solo Operator	One expert or founder implementing everything themselves
+3	Lean Team	2–5 people with clear roles and partial automation
+4	Agency Stack	Team + tools + production capacity (content, code, design)
+5	Full Stack Org	Dev, ops, product, marketing — integrated across departments
+6	Enterprise Budget	Large-scale resources, procurement-ready, external partners possible
+🧩 EACH TIER AFFECTS:
+Factor	Prompt Behavior
+Output size	Minimal → short & focused; Enterprise → full specs
+Dependency list	More resources = more tooling assumed (e.g. CRM, BI, LMS)
+Implementation model	Solo = action-based; Enterprise = workflow-based
+Tool recommendations	Lean teams = Notion, Zapier; Enterprise = Salesforce, GA4, Jira
+Export type	Solo = text, checklist; Org = bundle, spec, multi-format
+📦 RESOURCE TIERS IN ACTION
+🔹 1. Minimal
+
+Time: <1h
+
+Tools: none or free only (Google Docs, Canva)
+
+Output: plain text, checklist
+
+Use: proof of concept, personal prototype
+
+🔹 2. Solo Operator
+
+Tools: Notion, Figma, Descript, Zapier (basic)
+
+Output: .md, .json, .txt
+
+Use: coaches, freelancers, early founders
+
+🔹 3. Lean Team
+
+Roles: writer + designer + implementer
+
+Tools: Airtable, Webflow, Slack, automation stack
+
+Output: modular SOPs, scripts, content pipelines
+
+Use: marketing teams, AI agencies, digital studios
+
+🔹 4. Agency Stack
+
+Tools: ClickUp, GPT agents, client dashboards, analytics
+
+Output: branded bundles, workflows, PDF exports
+
+Use: deliverables for clients, reusable assets
+
+🔹 5. Full Stack Org
+
+Departments: product, marketing, sales, CS
+
+Tools: CRM, ERP, internal API, analytics dashboards
+
+Output: SOPs + implementation flows + diagrams
+
+Use: coordination across roles and systems
+
+🔹 6. Enterprise Budget
+
+Capacity: multi-vendor, cross-team integration
+
+Tools: Salesforce, HubSpot, GA4, AI copilots, legal review
+
+Output: formalized specs, fallback plans, telemetry, QA-ready
+
+Use: scale, risk management, compliance-sensitive operations
+
+📐 SCHEMA FORMAT (for internal systems)
+{
+  "resources": "Lean Team",
+  "max_people": 5,
+  "tooling": ["Notion", "Zapier", "Slack"],
+  "output_format": ["markdown", "json", "workflow diagram"],
+  "deployment_mode": "semi-automated",
+  "implementation_window": "1–2 weeks",
+  "risk_tolerance": "medium"
+}
+
+🧠 Strategic Role of resources
+
+Prevents over-engineering for under-resourced teams
+
+Adjusts expectations and format complexity
+
+Enables context-aware fallback logic (e.g., “if solo → suggest GPT-automated variant”)
+
+✅ Verdict
+
+The resources parameter transforms prompts from “idealistic” to implementable.
+It’s the bridge between vision and capacity, defining what version of the idea can survive reality.
+
+
+
+
+
+
+
+🧩 APPLICATION PARAMETER – USE CASE NOMENCLATURE
+
+The application parameter defines the intended use case of the prompt output.
+It tells the system what the user wants to do with the prompt outcome, and shapes the structure, tone, depth, and format accordingly.
+
+✅ STANDARD APPLICATION TYPES (7 total)
+#	Type	Description
+1	Training	Used for internal team development, onboarding, or education
+2	Audit	Used to evaluate current assets, systems, or strategies
+3	Implementation	Used to deploy or execute a strategy, SOP, or campaign
+4	Strategy Design	Used to map, plan, or architect future action
+5	Crisis Response	Used in high-pressure, time-sensitive, risk-heavy scenarios
+6	Experimentation	Used to test, simulate, or prototype an idea with fast feedback
+7	Documentation	Used to record, explain, or deliver instructions to others
+🧠 IMPACT ON PROMPT STRUCTURE
+Element	Effect
+Tone & language	Crisis = direct; Training = instructional; Audit = precise
+Output format	Audit = tables/checklists; Implementation = playbooks/specs
+Validation focus	Experiment = hypothesis + results; Strategy = assumptions
+Fallback logic	Implementation & Crisis require fallback paths
+KPI framing	Each application defines what success looks like differently
+📦 APPLICATION SNAPSHOTS
+🔹 1. Training
+
+Tone: clear, educational, progressive
+
+Output: tutorial, sequence of micro-tasks, onboarding modules
+
+KPI: understanding, retention, application speed
+
+Use: “Train junior copywriters on storytelling structure”
+
+🔹 2. Audit
+
+Tone: diagnostic, neutral, structured
+
+Output: scorecard, checklist, flagged sections
+
+KPI: clarity index, error rate, coverage %
+
+Use: “Audit your current sales emails against trust principles”
+
+🔹 3. Implementation
+
+Tone: directive, outcome-driven
+
+Output: execution-ready blueprint or spec
+
+KPI: time-to-launch, reduction in friction
+
+Use: “Launch funnel with prewritten triggers and fallback logic”
+
+🔹 4. Strategy Design
+
+Tone: visionary but structured
+
+Output: map, matrix, framework
+
+KPI: alignment, roadmap clarity
+
+Use: “Design your positioning around a dominant narrative axis”
+
+🔹 5. Crisis Response
+
+Tone: decisive, short, emotionally aware
+
+Output: alert, template, response package
+
+KPI: containment time, risk mitigation
+
+Use: “Respond to hostile press with layered message sequence”
+
+🔹 6. Experimentation
+
+Tone: exploratory, flexible
+
+Output: test protocol, feedback collection, variable mapping
+
+KPI: hypothesis validated, iteration speed
+
+Use: “Prototype three alternative CTA flows and test with users”
+
+🔹 7. Documentation
+
+Tone: formal, systematic, reference-ready
+
+Output: handbook, guide, SOP
+
+KPI: usability, handoff success rate
+
+Use: “Create a reusable SOP for publishing video carousels via Notion + GPT”
+
+📐 SCHEMA FORMAT (for internal use)
+{
+  "application": "Audit",
+  "tone": "diagnostic",
+  "kpi_focus": ["coverage", "clarity", "error_rate"],
+  "format": ["checklist", "scorecard", "flagged report"],
+  "fallback": false,
+  "guardrails": ["neutral tone", "non-punitive language"]
+}
+
+🎯 Strategic Use of application
+
+This parameter anchors the real-world goal behind each prompt.
+It transforms prompts from abstract text blocks into surgical tools for specific workflows.
+
+Each application tells the system:
+
+what to prioritize,
+
+how to frame risk,
+
+who the user is serving,
+
+what kind of failure is acceptable.
+
+✅ Verdict
+
+The application parameter defines the why behind the prompt.
+It aligns structure with intention — turning content into functional action.
+
+
+
+
+
+
+
+🧾 OUTPUT FORMAT PARAMETER – ARTIFACT STRUCTURE NOMENCLATURE
+
+The output format defines the form, container, and structure of the deliverable the prompt should produce.
+It controls how information is packaged, what kind of tools or systems can receive it, and what level of fidelity the response should reach.
+
+✅ STANDARD OUTPUT FORMATS (9 total)
+#	Format	Description
+1	Plain Text (txt)	Minimal instruction or idea list, for fast comprehension
+2	Markdown (md)	Structured but readable text, with sections, bullets, titles
+3	Checklist	Action-oriented, step-by-step execution format
+4	Spec (Specification)	Technical breakdown of process or structure (e.g. SOP, API doc)
+5	Playbook	Multi-step guide with roles, context, and decisions
+6	JSON Schema	Machine-readable, used for programmatic integration or APIs
+7	YAML Configuration	Lightweight structured config, common in DevOps & prompts
+8	Diagram or Map	Visual or structural blueprint (flowchart, architecture)
+9	Bundle (Multi-Format)	Combined output with text + code + visual + telemetry files
+🧠 FORMAT USE CASES
+Format	Ideal for
+txt	Quick ideas, social copy, lightweight prompts
+md	Educational prompts, content, reports, carousels
+checklist	Execution SOPs, onboarding steps, QA reviews
+spec	SOPs, APIs, product briefs, GPT agent logic
+playbook	Campaigns, strategy sequences, sales systems
+json	AI integration, workflows, prompt-as-code
+yaml	Prompt configs, chatbot flows, LangChain setup
+diagram	Process maps, system architecture, symbolic maps
+bundle	Enterprise-grade deliverables (pdf + json + md + telemetry)
+📐 SCHEMA FORMAT EXAMPLE
+{
+  "output_format": "playbook",
+  "structure": ["title", "goal", "roles", "steps", "KPI", "fallbacks"],
+  "style": "actionable, layered",
+  "export": ["md", "pdf"],
+  "integration_ready": false
+}
+
+🧩 FORMAT DIFFERENCES
+Attribute	Low Complexity	Medium	High / Systemic
+Format	txt, md	checklist, playbook	json, spec, diagram, bundle
+Tool compatibility	Manual use	Notion, Docs	Zapier, LangChain, Make.com
+Scalability	Low	Medium	High
+Version control	Optional	Recommended	Required
+🎯 STRATEGIC ROLE
+
+This parameter governs how PROMPTFORGE speaks to the ecosystem:
+
+AI agents (JSON, YAML)
+
+Humans (Markdown, Playbook, Checklist)
+
+Systems (Specs, Diagrams, Bundles)
+
+It also enforces discipline in prompt writing by aligning with expected artifacts, not just ideas.
+
+✅ Verdict
+
+The output format parameter defines the shape of execution.
+It makes the difference between a good idea and a shippable asset.
+In PROMPTFORGE™, this is what allows every prompt to become an operational object.
+

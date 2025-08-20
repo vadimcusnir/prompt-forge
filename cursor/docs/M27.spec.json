@@ -1,0 +1,19 @@
+{
+  "module_code": "M27",
+  "vector": 4,
+  "name": "Schwartz Ladder",
+  "purpose": "Mesaje pe stadii de conștiință (aware→most aware) cu assets și probe per nivel.",
+  "tags": ["schwartz", "ladder", "copy"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] }, "schema": { "type": "object", "required": ["stage_map", "message", "proofs"], "properties": { "stage_map": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "message": { "type": "string" }, "proofs": { "type": "array", "minItems": 3, "items": { "type": "string" } } } }, "example": { "stage_map": ["unaware","problem aware","solution aware","product aware","most aware"], "message": "X", "proofs": ["p1","p2","p3"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "ladder", "type": "json", "required": true }, { "name": "copy", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M27-T1", "name": "Ladder + copy", "input": { "custom": { "stage_map": ["a","b","c","d","e"], "message": "m", "proofs": ["1","2","3"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

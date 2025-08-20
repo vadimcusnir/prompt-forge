@@ -1,0 +1,29 @@
+{
+  "project": "PROMPTFORGE_v3",
+  "module": "ComingSoonHomepage",
+  "config": {
+    "domain": "MKT",
+    "scale": "solo",
+    "urgency": "normal",
+    "complexity": "medium",
+    "resources": "standard",
+    "application": "content_ops",
+    "output": "bundle"
+  },
+  "db_schema": {
+    "table": "waitlist_signups",
+    "fields": {
+      "id": "uuid primary key default gen_random_uuid()",
+      "org_id": "uuid references public.orgs(id)",
+      "email": "text not null unique",
+      "name": "text",
+      "created_at": "timestamptz default now()"
+    },
+    "rls": true
+  },
+  "flags": {
+    "env_toggle": "COMING_SOON",
+    "api_toggle": "/api/toggle-coming-soon"
+  },
+  "timestamp": "2025-08-19T09:23:30.622330"
+}

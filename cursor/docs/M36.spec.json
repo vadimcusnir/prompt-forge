@@ -1,0 +1,19 @@
+{
+  "module_code": "M36",
+  "vector": 5,
+  "name": "Semiotic Brand Architecture",
+  "purpose": "Triadă simbol→poveste→produs cu hărți, frazare și coduri vizuale pentru memorabilitate ridicată.",
+  "tags": ["semiotics", "branding", "architecture"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "pdf"] }, "schema": { "type": "object", "required": ["symbols", "narratives", "offers"], "properties": { "symbols": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "narratives": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "offers": { "type": "array", "minItems": 1, "items": { "type": "string" } } } }, "example": { "symbols": ["arc","mask","flame","key","tower"], "narratives": ["rebirth","ordeal","ascension"], "offers": ["Pro plan"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "brand_map", "type": "markdown", "required": true }, { "name": "visual_codes", "type": "string", "required": false } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M36-T1", "name": "Brand map + visual codes", "input": { "custom": { "symbols": ["a","b","c","d","e"], "narratives": ["n1","n2","n3"], "offers": ["o1"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

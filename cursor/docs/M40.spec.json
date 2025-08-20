@@ -1,0 +1,19 @@
+{
+  "module_code": "M40",
+  "vector": 3,
+  "name": "Voice System (Vocea/Fabrica/Auto/Revenue)",
+  "purpose": "Sistem din 4 layere interconectate cu handoffs, owners și metrice pentru trecerea de la voce la venit în 30–60 zile.",
+  "tags": ["voice", "system", "kpi"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["layer_kpi", "resources", "sla"], "properties": { "layer_kpi": { "type": "object" }, "resources": { "type": "string" }, "sla": { "type": "string" } } }, "example": { "layer_kpi": { "voice": "posts/week" }, "resources": "2 FTE", "sla": "weekly" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "plan", "type": "markdown", "required": true }, { "name": "owners", "type": "string", "required": true }, { "name": "metrics", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M40-T1", "name": "Plan + owners + metrics", "input": { "custom": { "layer_kpi": {}, "resources": "r", "sla": "s" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

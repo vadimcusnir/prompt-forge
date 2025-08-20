@@ -1,0 +1,19 @@
+{
+  "module_code": "M17",
+  "vector": 3,
+  "name": "Preseturi Sora (shot‑by‑shot)",
+  "purpose": "Prompturi video pe cadru, cu timing și mișcări de cameră, export pentru Sora.",
+  "tags": ["sora", "video", "prompt"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["md", "json", "bundle"] }, "schema": { "type": "object", "required": ["storyboard", "look_and_feel", "constraints"], "properties": { "storyboard": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "look_and_feel": { "type": "string" }, "constraints": { "type": "array", "minItems": 1, "items": { "type": "string" } } } }, "example": { "storyboard": ["s1","s2","s3"], "look_and_feel": "gritty", "constraints": ["no real faces"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "shots", "type": "array", "required": true }, { "name": "audio_notes", "type": "markdown", "required": false }, { "name": "export", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M17-T1", "name": "Shots + export", "input": { "custom": { "storyboard": ["a","b","c"], "look_and_feel": "cinematic", "constraints": ["no defamation"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

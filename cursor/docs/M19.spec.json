@@ -1,0 +1,19 @@
+{
+  "module_code": "M19",
+  "vector": 3,
+  "name": "Rescriere postări sub‑performante",
+  "purpose": "Diagnostichează motivele sub‑performanței și generează două variante pentru test A/B.",
+  "tags": ["rewrite", "ab-test", "social"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] }, "schema": { "type": "object", "required": ["post", "platform", "why_fail", "target"], "properties": { "post": { "type": "string" }, "platform": { "type": "string" }, "why_fail": { "type": "string" }, "target": { "type": "string" } } }, "example": { "post": "...", "platform": "LinkedIn", "why_fail": "weak hook", "target": "CTR" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "hypothesis", "type": "markdown", "required": true }, { "name": "variantA", "type": "markdown", "required": true }, { "name": "variantB", "type": "markdown", "required": true }, { "name": "test_plan", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M19-T1", "name": "Variant A/B", "input": { "custom": { "post": "x", "platform": "y", "why_fail": "z", "target": "ctr" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

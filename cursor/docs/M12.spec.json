@@ -1,0 +1,31 @@
+{
+  "module_code": "M12",
+  "vector": 1,
+  "name": "Diagnostic de Vizibilitate (8 piloni)",
+  "purpose": "Chestionar → scor → raport → email, cu praguri și acțiuni recomandate.",
+  "tags": ["diagnostic", "visibility", "survey"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "pdf"] },
+    "schema": {
+      "type": "object",
+      "required": ["items", "scoring", "thresholds"],
+      "properties": {
+        "items": { "type": "array", "minItems": 8, "items": { "type": "string" } },
+        "scoring": { "type": "object", "description": "map item→weight" },
+        "thresholds": { "type": "object", "description": "boundaries for actions" }
+      }
+    },
+    "example": { "items": ["p1","p2","p3","p4","p5","p6","p7","p8"], "scoring": {}, "thresholds": {} }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "report", "type": "markdown", "required": true }, { "name": "email", "type": "markdown", "required": true }, { "name": "score_breakdown", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M12-T1", "name": "Raport și email", "input": { "custom": { "items": ["a","b","c","d","e","f","g","h"], "scoring": {}, "thresholds": {} } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

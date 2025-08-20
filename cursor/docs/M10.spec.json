@@ -1,0 +1,31 @@
+{
+  "module_code": "M10",
+  "vector": 6,
+  "name": "Zero‑Party Data OS",
+  "purpose": "Colectează date zero‑party etic și personalizează în timp real, cu consimțământ și politici de utilizare clar definite.",
+  "tags": ["zpd", "consent", "personalization"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["forms", "incentive", "personalization_goals"],
+      "properties": {
+        "forms": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "incentive": { "type": "string", "minLength": 3 },
+        "personalization_goals": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "example": { "forms": ["welcome_survey"], "incentive": "10% discount", "personalization_goals": ["homepage modules", "email content"] }
+  },
+  "outputs": { "artifact_type": "json", "fields": [ { "name": "schemas", "type": "json", "required": true }, { "name": "questions", "type": "array", "required": true }, { "name": "rules", "type": "json", "required": true }, { "name": "personalization", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M10-T1", "name": "Generează schema și rules", "input": { "custom": { "forms": ["f1"], "incentive": "perk", "personalization_goals": ["g1"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

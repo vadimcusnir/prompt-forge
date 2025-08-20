@@ -1,0 +1,222 @@
+{
+  "module_code": "M07",
+  "vector": "Strategic",
+  "name": "Opportunity Map",
+  "purpose": "Mapează vectori de creștere în 7D și recomandă prioritizarea execuțională pe termen 30/90/180 zile.",
+  "tags": [
+    "growth",
+    "strategy",
+    "marketing"
+  ],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": {
+      "required": [
+        "domain",
+        "output"
+      ],
+      "output_must_be_one_of": [
+        "text",
+        "plan",
+        "bundle"
+      ]
+    },
+    "schema": {
+      "type": "object",
+      "required": [
+        "goal",
+        "audience"
+      ],
+      "properties": {
+        "goal": {
+          "type": "string",
+          "minLength": 8,
+          "description": "Obiectiv măsurabil de creștere",
+          "example": "Creștere MQL +30% în Q4"
+        },
+        "audience": {
+          "type": "string",
+          "enum": [
+            "B2B",
+            "B2C"
+          ],
+          "example": "B2B"
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Limitări/riscuri cunoscute",
+          "example": [
+            "buget < 5k",
+            "fără paid ads"
+          ]
+        },
+        "time_horizon": {
+          "type": "string",
+          "enum": [
+            "30d",
+            "90d",
+            "180d"
+          ],
+          "default": "90d"
+        },
+        "diversity_budget": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.2
+        }
+      }
+    },
+    "example": {
+      "goal": "Creștere MQL +30%",
+      "audience": "B2B",
+      "constraints": [
+        "buget < 5k"
+      ],
+      "time_horizon": "90d"
+    }
+  },
+  "outputs": {
+    "artifact_type": "md",
+    "fields": [
+      {
+        "name": "title",
+        "type": "markdown",
+        "required": true,
+        "example": "Opportunity Map — FinTech (Q4)"
+      },
+      {
+        "name": "context",
+        "type": "markdown",
+        "required": true
+      },
+      {
+        "name": "opportunities",
+        "type": "array",
+        "required": true,
+        "example": [
+          {
+            "name": "SEO cluster X",
+            "impact": "high",
+            "effort": "medium"
+          }
+        ]
+      },
+      {
+        "name": "risks",
+        "type": "array",
+        "required": true
+      },
+      {
+        "name": "prioritization",
+        "type": "json",
+        "required": true,
+        "example": {
+          "method": "RICE",
+          "table": [
+            {
+              "name": "SEO",
+              "RICE": 42
+            }
+          ]
+        }
+      },
+      {
+        "name": "next_actions",
+        "type": "array",
+        "required": true,
+        "example": [
+          {
+            "owner": "PMM",
+            "due": "2025-09-15",
+            "priority": "P1"
+          }
+        ]
+      },
+      {
+        "name": "metrics",
+        "type": "json",
+        "required": true,
+        "example": {
+          "north_star": "MQL",
+          "leading": [
+            "CTR blog",
+            "signup rate"
+          ]
+        }
+      },
+      {
+        "name": "open_questions",
+        "type": "array",
+        "required": false
+      }
+    ],
+    "example": "# Opportunity Map\n\n## Context\n...\n"
+  },
+  "kpi": {
+    "score_min": 80,
+    "weights": {
+      "clarity": 0.25,
+      "execution": 0.25,
+      "ambiguity": 0.25,
+      "business_fit": 0.25
+    },
+    "tta_text_s": 60,
+    "tta_sop_s": 300
+  },
+  "tests": [
+    {
+      "id": "T1",
+      "name": "Spec complet",
+      "input": {
+        "custom": {
+          "goal": "Creștere MQL +30%",
+          "audience": "B2B",
+          "constraints": [],
+          "time_horizon": "90d"
+        }
+      },
+      "assert": {
+        "schema_ok": true,
+        "output_spec_complete": true,
+        "kpi_min": 80,
+        "no_promises": true,
+        "facts_grounded": true,
+        "contains": [
+          "Opportunity",
+          "RICE"
+        ]
+      }
+    }
+  ],
+  "guardrails": {
+    "no_promises": true,
+    "no_unfounded_claims": true,
+    "privacy_safe": true,
+    "confidentiality": true,
+    "respect_style": true,
+    "style_rules": [
+      "clar, fără superlative absolute",
+      "ton strategic, non‑vânzare"
+    ]
+  },
+  "deps": [],
+  "evaluation_hooks": [
+    "clarity",
+    "execution",
+    "ambiguity",
+    "business_fit"
+  ],
+  "telemetry_keys": [
+    "run_id",
+    "model",
+    "tokens_in",
+    "tokens_out",
+    "scores",
+    "policy_hits"
+  ]
+}

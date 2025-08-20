@@ -1,0 +1,19 @@
+{
+  "module_code": "M20",
+  "vector": 2,
+  "name": "Manifest Voice (zilnic 20:00)",
+  "purpose": "Generator de text manifest cu telemetrie și programare zilnică.",
+  "tags": ["manifest", "scheduler", "content"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["md", "json"] }, "schema": { "type": "object", "required": ["arc", "cta", "theme"], "properties": { "arc": { "type": "string" }, "cta": { "type": "string" }, "theme": { "type": "string" } } }, "example": { "arc": "resolve→promise", "cta": "Reply", "theme": "discipline" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "text", "type": "markdown", "required": true }, { "name": "slug", "type": "string", "required": true }, { "name": "metrics_hook", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M20-T1", "name": "Text + slug + metrics", "input": { "custom": { "arc": "a", "cta": "b", "theme": "c" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

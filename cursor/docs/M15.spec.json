@@ -1,0 +1,31 @@
+{
+  "module_code": "M15",
+  "vector": 1,
+  "name": "CUSNIR.TEMPLAR™ (Lansare T‑30→T+14)",
+  "purpose": "Checklist ritualic de lansare cu timeline, owners, riscuri și export ICS.",
+  "tags": ["launch", "timeline", "ics"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["calendar", "moments", "kpi"],
+      "properties": {
+        "calendar": { "type": "string" },
+        "moments": { "type": "array", "items": { "type": "string" }, "minItems": 5 },
+        "kpi": { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+      }
+    },
+    "example": { "calendar": "Q4", "moments": ["T-30","T-14","T-7","T-1","T+7"], "kpi": ["readiness 100%","zero SPOF"] }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "timeline", "type": "markdown", "required": true }, { "name": "tasks", "type": "markdown", "required": true }, { "name": "ics", "type": "string", "required": false } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M15-T1", "name": "Timeline + tasks", "input": { "custom": { "calendar": "Q1", "moments": ["a","b","c","d","e"], "kpi": ["r1","r2"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

@@ -1,0 +1,19 @@
+{
+  "module_code": "M43",
+  "vector": 7,
+  "name": "Politica de Transparență",
+  "purpose": "Texte standard de transparență și plasarea lor; auto‑inserție contextuală.",
+  "tags": ["transparency", "policy", "comms"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["scenarii", "formula_scurta", "locatii_afisare"], "properties": { "scenarii": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "formula_scurta": { "type": "string" }, "locatii_afisare": { "type": "array", "minItems": 1, "items": { "type": "string" } } } }, "example": { "scenarii": ["ad","affiliate"], "formula_scurta": "Acest conținut este sponsorizat.", "locatii_afisare": ["header","footer"] } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "policy_texts", "type": "markdown", "required": true }, { "name": "placement", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M43-T1", "name": "Policy + placement", "input": { "custom": { "scenarii": ["s1","s2"], "formula_scurta": "f", "locatii_afisare": ["l1"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

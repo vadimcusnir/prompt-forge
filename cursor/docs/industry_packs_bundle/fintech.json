@@ -1,0 +1,69 @@
+{
+  "slug": "fintech",
+  "title": "FinTech Pack",
+  "price_eur_per_year": 1990,
+  "min_plan": "pro",
+  "modules": [
+    "M07",
+    "M13",
+    "M31",
+    "M33",
+    "M44",
+    "M50"
+  ],
+  "domain_preset": {
+    "jargon": [
+      "KYC",
+      "AML",
+      "regtech",
+      "sandboxing"
+    ],
+    "kpis": [
+      "fraud_rate",
+      "KYC_time",
+      "approval_rate"
+    ],
+    "compliance_notes": "SEC/FCA sensitive; claims must be verifiable; no forward-looking statements without sources",
+    "style_bias": "analytical, layered, formal; audit-like phrasing",
+    "default_output_format": "spec",
+    "risk_level": "high"
+  },
+  "defaults_7d": {
+    "scale": "enterprise",
+    "urgency": "sprint",
+    "complexity": "advanced",
+    "resources": "full_stack_org",
+    "application": "implementation",
+    "output": [
+      "spec",
+      "json",
+      "playbook"
+    ]
+  },
+  "export_requirements": [
+    "spec",
+    "json"
+  ],
+  "evaluator_lints": [
+    "Flag unverifiable financial claims",
+    "Ensure every risk/guarantee cites an authoritative source",
+    "Require datestamps on regulatory references"
+  ],
+  "guardrails": [
+    "No advice implying regulatory approval",
+    "Surface data lineage (src_hash, author, date) in artifacts"
+  ],
+  "ui": {
+    "upsell_banner_copy": "Activ\u0103 FinTech Mode: KYC/AML presets, audit-grade exports (.spec + .json).",
+    "paywall_feature": "industryPack_fintech"
+  },
+  "stripe": {
+    "floor_eur": 1490,
+    "product_id": "",
+    "price_id_monthly": "",
+    "price_id_annual": ""
+  },
+  "supabase": {
+    "gating_sql_note": "SELECT 1 FROM org_industry_packs WHERE org_id=$1 AND pack_slug='fintech';"
+  }
+}

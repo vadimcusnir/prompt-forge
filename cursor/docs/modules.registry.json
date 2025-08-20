@@ -1,0 +1,510 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2025-08-20T00:00:00Z"
+  },
+  "modules": [
+    {
+      "module_code": "M01",
+      "name": "AI‑IDEI.SOPFORGE™",
+      "primary_vector": 1,
+      "vectors": [1, 6, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M01.spec.json",
+      "endpoint": "/api/modules/m01/run"
+    },
+    {
+      "module_code": "M02",
+      "name": "AI‑IDEI.LATENTMAP™",
+      "primary_vector": 2,
+      "vectors": [2, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M02.spec.json",
+      "endpoint": "/api/modules/m02/run"
+    },
+    {
+      "module_code": "M03",
+      "name": "Codul 7:1™",
+      "primary_vector": 2,
+      "vectors": [2, 6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M03.spec.json",
+      "endpoint": "/api/modules/m03/run"
+    },
+    {
+      "module_code": "M04",
+      "name": "Dicționarul Semiotic 8VULTUS™",
+      "primary_vector": 2,
+      "vectors": [2, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M04.spec.json",
+      "endpoint": "/api/modules/m04/run"
+    },
+    {
+      "module_code": "M05",
+      "name": "ORAKON Memory Grid",
+      "primary_vector": 4,
+      "vectors": [4, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M05.spec.json",
+      "endpoint": "/api/modules/m05/run"
+    },
+    {
+      "module_code": "M06",
+      "name": "Agentic GPT Sales (Hunter/Closer)",
+      "primary_vector": 2,
+      "vectors": [2],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M06.spec.json",
+      "endpoint": "/api/modules/m06/run"
+    },
+    {
+      "module_code": "M07",
+      "name": "Risk & Trust Reversal",
+      "primary_vector": 2,
+      "vectors": [2, 7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M07.spec.json",
+      "endpoint": "/api/modules/m07/run"
+    },
+    {
+      "module_code": "M08",
+      "name": "Status‑Tier Loyalty",
+      "primary_vector": 2,
+      "vectors": [2, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M08.spec.json",
+      "endpoint": "/api/modules/m08/run"
+    },
+    {
+      "module_code": "M09",
+      "name": "Post‑Purchase Subscription Engine",
+      "primary_vector": 1,
+      "vectors": [1, 6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M09.spec.json",
+      "endpoint": "/api/modules/m09/run"
+    },
+    {
+      "module_code": "M10",
+      "name": "Zero‑Party Data OS",
+      "primary_vector": 6,
+      "vectors": [6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M10.spec.json",
+      "endpoint": "/api/modules/m10/run"
+    },
+    {
+      "module_code": "M11",
+      "name": "Funnel Nota Doi",
+      "primary_vector": 1,
+      "vectors": [1],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M11.spec.json",
+      "endpoint": "/api/modules/m11/deploy"
+    },
+    {
+      "module_code": "M12",
+      "name": "Diagnostic Vizibilitate (8 piloni)",
+      "primary_vector": 1,
+      "vectors": [1],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M12.spec.json",
+      "endpoint": "/api/modules/m12/run"
+    },
+    {
+      "module_code": "M13",
+      "name": "Pricing Psychology",
+      "primary_vector": 4,
+      "vectors": [4],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M13.spec.json",
+      "endpoint": "/api/modules/m13/run"
+    },
+    {
+      "module_code": "M14",
+      "name": "Authority Content→Commerce",
+      "primary_vector": 1,
+      "vectors": [1, 2],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M14.spec.json",
+      "endpoint": "/api/modules/m14/run"
+    },
+    {
+      "module_code": "M15",
+      "name": "GTD de Lançare Ritualică",
+      "primary_vector": 1,
+      "vectors": [1, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M15.spec.json",
+      "endpoint": "/api/modules/m15/run"
+    },
+    {
+      "module_code": "M16",
+      "name": "HeyGen AI Clone",
+      "primary_vector": 3,
+      "vectors": [3],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M16.spec.json",
+      "endpoint": "/api/modules/m16/run"
+    },
+    {
+      "module_code": "M17",
+      "name": "Sora Shot-by-Shot",
+      "primary_vector": 3,
+      "vectors": [3, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M17.spec.json",
+      "endpoint": "/api/modules/m17/run"
+    },
+    {
+      "module_code": "M18",
+      "name": "Carusele RFA",
+      "primary_vector": 2,
+      "vectors": [2, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M18.spec.json",
+      "endpoint": "/api/modules/m18/run"
+    },
+    {
+      "module_code": "M19",
+      "name": "Rescriere după algoritm",
+      "primary_vector": 3,
+      "vectors": [3, 7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M19.spec.json",
+      "endpoint": "/api/modules/m19/run"
+    },
+    {
+      "module_code": "M20",
+      "name": "Manifest Voice",
+      "primary_vector": 2,
+      "vectors": [2],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M20.spec.json",
+      "endpoint": "/api/modules/m20/run"
+    },
+    {
+      "module_code": "M21",
+      "name": "AI în Moodle",
+      "primary_vector": 1,
+      "vectors": [1, 3],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M21.spec.json",
+      "endpoint": "/api/modules/m21/run"
+    },
+    {
+      "module_code": "M22",
+      "name": "Lead Gen SOP (Make + Notion + Telegram)",
+      "primary_vector": 1,
+      "vectors": [1],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M22.spec.json",
+      "endpoint": "/api/modules/m22/deploy"
+    },
+    {
+      "module_code": "M23",
+      "name": "Podcast → Carte",
+      "primary_vector": 1,
+      "vectors": [1, 3],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M23.spec.json",
+      "endpoint": "/api/modules/m23/run"
+    },
+    {
+      "module_code": "M24",
+      "name": "PR Personal",
+      "primary_vector": 7,
+      "vectors": [7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M24.spec.json",
+      "endpoint": "/api/modules/m24/run"
+    },
+    {
+      "module_code": "M25",
+      "name": "Knowledge Security SOP",
+      "primary_vector": 6,
+      "vectors": [6, 7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M25.spec.json",
+      "endpoint": "/api/modules/m25/apply"
+    },
+    {
+      "module_code": "M26",
+      "name": "JTBD Matrix",
+      "primary_vector": 4,
+      "vectors": [4],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M26.spec.json",
+      "endpoint": "/api/modules/m26/run"
+    },
+    {
+      "module_code": "M27",
+      "name": "Schwartz Ladder",
+      "primary_vector": 4,
+      "vectors": [4],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M27.spec.json",
+      "endpoint": "/api/modules/m27/run"
+    },
+    {
+      "module_code": "M28",
+      "name": "Obiecții → Contraargumente",
+      "primary_vector": 2,
+      "vectors": [2, 4],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M28.spec.json",
+      "endpoint": "/api/modules/m28/run"
+    },
+    {
+      "module_code": "M29",
+      "name": "Indoctrinare Soft",
+      "primary_vector": 2,
+      "vectors": [2, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M29.spec.json",
+      "endpoint": "/api/modules/m29/run"
+    },
+    {
+      "module_code": "M30",
+      "name": "Cod Anti-Conformism",
+      "primary_vector": 2,
+      "vectors": [2],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M30.spec.json",
+      "endpoint": "/api/modules/m30/run"
+    },
+    {
+      "module_code": "M31",
+      "name": "Closed‑Loop Telemetry",
+      "primary_vector": 6,
+      "vectors": [6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M31.spec.json",
+      "endpoint": "/api/modules/m31/deploy"
+    },
+    {
+      "module_code": "M32",
+      "name": "Cohort Experiments",
+      "primary_vector": 6,
+      "vectors": [6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M32.spec.json",
+      "endpoint": "/api/modules/m32/run"
+    },
+    {
+      "module_code": "M33",
+      "name": "Lead Scoring Model",
+      "primary_vector": 6,
+      "vectors": [6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M33.spec.json",
+      "endpoint": "/api/modules/m33/run"
+    },
+    {
+      "module_code": "M34",
+      "name": "K‑Factors & bucle de recomandare",
+      "primary_vector": 6,
+      "vectors": [6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M34.spec.json",
+      "endpoint": "/api/modules/m34/run"
+    },
+    {
+      "module_code": "M35",
+      "name": "Content Heatmap",
+      "primary_vector": 6,
+      "vectors": [6],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M35.spec.json",
+      "endpoint": "/api/modules/m35/run"
+    },
+    {
+      "module_code": "M36",
+      "name": "Semiotic Brand Architecture",
+      "primary_vector": 5,
+      "vectors": [5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M36.spec.json",
+      "endpoint": "/api/modules/m36/run"
+    },
+    {
+      "module_code": "M37",
+      "name": "Ritual de Inițiere pentru The Architect",
+      "primary_vector": 5,
+      "vectors": [5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M37.spec.json",
+      "endpoint": "/api/modules/m37/run"
+    },
+    {
+      "module_code": "M38",
+      "name": "Blueprint Antișcoală",
+      "primary_vector": 3,
+      "vectors": [3, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M38.spec.json",
+      "endpoint": "/api/modules/m38/run"
+    },
+    {
+      "module_code": "M39",
+      "name": "Promptoscopie™",
+      "primary_vector": 3,
+      "vectors": [3, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M39.spec.json",
+      "endpoint": "/api/modules/m39/run"
+    },
+    {
+      "module_code": "M40",
+      "name": "Voice System KPI",
+      "primary_vector": 3,
+      "vectors": [3, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M40.spec.json",
+      "endpoint": "/api/modules/m40/run"
+    },
+    {
+      "module_code": "M41",
+      "name": "Agent de Criză PR",
+      "primary_vector": 7,
+      "vectors": [7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M41.spec.json",
+      "endpoint": "/api/modules/m41/run"
+    },
+    {
+      "module_code": "M42",
+      "name": "Contra‑cadru mediatic",
+      "primary_vector": 7,
+      "vectors": [7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M42.spec.json",
+      "endpoint": "/api/modules/m42/run"
+    },
+    {
+      "module_code": "M43",
+      "name": "Politica de Transparență",
+      "primary_vector": 7,
+      "vectors": [7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M43.spec.json",
+      "endpoint": "/api/modules/m43/run"
+    },
+    {
+      "module_code": "M44",
+      "name": "Ethical Guardrails GPT",
+      "primary_vector": 7,
+      "vectors": [7],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M44.spec.json",
+      "endpoint": "/api/modules/m44/apply"
+    },
+    {
+      "module_code": "M45",
+      "name": "Simulator de Contrafactuale",
+      "primary_vector": 6,
+      "vectors": [6, 4],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M45.spec.json",
+      "endpoint": "/api/modules/m45/run"
+    },
+    {
+      "module_code": "M46",
+      "name": "Librărie Swipe Files",
+      "primary_vector": 3,
+      "vectors": [3],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M46.spec.json",
+      "endpoint": "/api/modules/m46/deploy"
+    },
+    {
+      "module_code": "M47",
+      "name": "Curriculum INTELIGENȚIA™ (5 săpt.)",
+      "primary_vector": 3,
+      "vectors": [3],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M47.spec.json",
+      "endpoint": "/api/modules/m47/run"
+    },
+    {
+      "module_code": "M48",
+      "name": "Playbook Internaționalizare (EN/RO)",
+      "primary_vector": 3,
+      "vectors": [3],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M48.spec.json",
+      "endpoint": "/api/modules/m48/run"
+    },
+    {
+      "module_code": "M49",
+      "name": "Assistant GPT pentru Nota Doi",
+      "primary_vector": 1,
+      "vectors": [1],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M49.spec.json",
+      "endpoint": "/api/modules/m49/run"
+    },
+    {
+      "module_code": "M50",
+      "name": "Sistemul CUSNIR.OS™",
+      "primary_vector": 1,
+      "vectors": [1, 5],
+      "status": "draft",
+      "semver": "0.1.0",
+      "spec_path": "/cursor/docs/M50.spec.json",
+      "endpoint": "/api/modules/m50/sync"
+    }
+  ]
+}
+
+

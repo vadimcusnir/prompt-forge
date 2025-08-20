@@ -1,0 +1,32 @@
+{
+  "module_code": "M07",
+  "vector": 2,
+  "name": "Risk & Trust Reversal",
+  "purpose": "Arhitectură de garanții cuantificate (guarantee stack) pentru oferte high‑ticket, cu termeni și FAQ.",
+  "tags": ["pricing", "risk", "guarantees"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["md", "pdf", "bundle"] },
+    "schema": {
+      "type": "object",
+      "required": ["price", "perceived_risk", "proofs", "guarantees"],
+      "properties": {
+        "price": { "type": "string" },
+        "perceived_risk": { "type": "string" },
+        "proofs": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
+        "guarantees": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "example": { "price": "$25k", "perceived_risk": "delivery uncertainty", "proofs": ["case study", "testimonial", "audit"], "guarantees": ["milestone refunds"] }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "claims", "type": "markdown", "required": true }, { "name": "proofs", "type": "array", "required": true }, { "name": "guarantees", "type": "markdown", "required": true }, { "name": "terms", "type": "markdown", "required": true }, { "name": "faq", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 85 },
+  "tests": [ { "id": "M07-T1", "name": "Conține guarantees și terms", "input": { "custom": { "price": "$10k", "perceived_risk": "ROI doubt", "proofs": ["cs1","cs2","cs3"], "guarantees": ["30‑day opt‑out"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 85, "contains": ["guarantees", "terms"] } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true, "no_promises": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

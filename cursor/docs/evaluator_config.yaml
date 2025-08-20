@@ -1,0 +1,42 @@
+version: "1.0.0"
+defaults:
+  thresholds:
+    clarity_min: 80
+    execution_min: 80
+    ambiguity_max: 20
+    business_fit_min: 75
+  weights:
+    clarity: 0.30
+    execution: 0.35
+    ambiguity_inv: 0.15
+    business_fit: 0.20
+
+overrides:
+  healthcare:
+    thresholds:
+      clarity_min: 85
+      execution_min: 85
+      ambiguity_max: 15
+      business_fit_min: 80
+  fintech:
+    thresholds:
+      execution_min: 85
+      business_fit_min: 80
+  cybersecurity:
+    thresholds:
+      ambiguity_max: 12
+    weights:
+      execution: 0.40
+      ambiguity_inv: 0.20
+      clarity: 0.25
+      business_fit: 0.15
+  education:
+    thresholds:
+      clarity_min: 78
+      execution_min: 78
+      business_fit_min: 72
+    weights:
+      clarity: 0.35
+      execution: 0.30
+      ambiguity_inv: 0.15
+      business_fit: 0.20

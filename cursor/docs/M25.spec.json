@@ -1,0 +1,19 @@
+{
+  "module_code": "M25",
+  "vector": 6,
+  "name": "Knowledge Security SOP",
+  "purpose": "Clasificare, DLP, redactions, ACL și audit trail pentru informații sensibile.",
+  "tags": ["security", "dlp", "classification"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "json", "md"] }, "schema": { "type": "object", "required": ["classification", "access", "redlines"], "properties": { "classification": { "type": "array", "items": { "type": "string" }, "minItems": 2 }, "access": { "type": "object" }, "redlines": { "type": "string" } } }, "example": { "classification": ["PII","confidential"], "access": {}, "redlines": "policy" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "labels", "type": "json", "required": true }, { "name": "acl", "type": "json", "required": true }, { "name": "redlines", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M25-T1", "name": "Labels + ACL", "input": { "custom": { "classification": ["a","b"], "access": {}, "redlines": "x" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

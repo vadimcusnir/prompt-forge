@@ -1,0 +1,41 @@
+{
+  "module_code": "M06",
+  "vector": 2,
+  "name": "Agentic GPT Sales (Hunter/Closer/Nurturer)",
+  "purpose": "Triadă agentică pentru vânzări (Hunter/Closer/Nurturer) cu playbook conversațional și handoffs.",
+  "tags": ["sales", "playbook", "agents"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "bundle", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["offers", "icp", "objectives", "channel"],
+      "properties": {
+        "offers": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "icp": { "type": "string", "minLength": 3 },
+        "objectives": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "channel": { "type": "string", "enum": ["email", "linkedin", "phone", "mixed"], "default": "email" }
+      }
+    },
+    "example": { "offers": ["Demo Call", "Pilot"], "icp": "SaaS 2-10M ARR", "objectives": ["SQL%", "reply rate"], "channel": "linkedin" }
+  },
+  "outputs": {
+    "artifact_type": "bundle",
+    "fields": [
+      { "name": "playbook", "type": "json", "required": true },
+      { "name": "openers", "type": "array", "required": true },
+      { "name": "diagnostic", "type": "markdown", "required": true },
+      { "name": "closing", "type": "markdown", "required": true },
+      { "name": "handoff", "type": "markdown", "required": true }
+    ]
+  },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M06-T1", "name": "Generează playbook și openers", "input": { "custom": { "offers": ["Pilot"], "icp": "B2B SaaS", "objectives": ["reply rate"], "channel": "email" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80, "contains": ["playbook", "openers"] } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true, "no_promises": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

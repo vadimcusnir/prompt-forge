@@ -1,0 +1,31 @@
+{
+  "module_code": "M14",
+  "vector": 1,
+  "name": "Authority Content→Commerce",
+  "purpose": "Leagă harta editorială de oferte: calendar, mapping și dovezi pentru ATC↑.",
+  "tags": ["content", "commerce", "editorial"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] },
+    "schema": {
+      "type": "object",
+      "required": ["pillars", "assets", "offers"],
+      "properties": {
+        "pillars": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
+        "assets": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
+        "offers": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "example": { "pillars": ["P1","P2","P3"], "assets": ["blog","video","email"], "offers": ["Pro plan"] }
+  },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "editorial", "type": "markdown", "required": true }, { "name": "mapping", "type": "json", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M14-T1", "name": "Calendar + mapping", "input": { "custom": { "pillars": ["A","B","C"], "assets": ["x","y","z"], "offers": ["Offer"] } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

@@ -1,0 +1,39 @@
+{
+  "module_code": "M04",
+  "vector": 5,
+  "name": "Dicționarul Semiotic 8VULTUS™",
+  "purpose": "Mapează simbol → funcție retorică → do/don't → teste memetice, ca bază pentru branding semiotic.",
+  "tags": ["semiotics", "memetics", "branding"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": {
+    "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["json", "md"] },
+    "schema": {
+      "type": "object",
+      "required": ["brand_system", "symbol_set", "domain"],
+      "properties": {
+        "brand_system": { "type": "string", "minLength": 3 },
+        "symbol_set": { "type": "array", "items": { "type": "string" }, "minItems": 5 },
+        "domain": { "type": "string" }
+      }
+    },
+    "example": { "brand_system": "NOVA", "symbol_set": ["arc", "sigil", "glyph", "mask", "flame"], "domain": "SaaS" }
+  },
+  "outputs": {
+    "artifact_type": "json",
+    "fields": [
+      { "name": "entries", "type": "array", "required": true },
+      { "name": "memetic_tests", "type": "array", "required": true }
+    ]
+  },
+  "kpi": { "score_min": 85 },
+  "tests": [
+    { "id": "M04-T1", "name": "Minim 5 simboluri", "input": { "custom": { "brand_system": "X", "symbol_set": ["a","b","c","d","e"], "domain": "fintech" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 85 } }
+  ],
+  "guardrails": { "no_unfounded_claims": true, "privacy_safe": true, "respect_style": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

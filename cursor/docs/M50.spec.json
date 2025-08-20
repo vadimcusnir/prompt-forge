@@ -1,0 +1,19 @@
+{
+  "module_code": "M50",
+  "vector": 1,
+  "name": "CUSNIR.OS™ (Rețea sinaptică de asistenți)",
+  "purpose": "Ontologie comună, orchestrare pe bus și evaluare inter‑agenți; registry + contracts + benchmarks.",
+  "tags": ["orchestration", "ontology", "benchmarks"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["agents", "protocol", "ontologie", "bus"], "properties": { "agents": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "protocol": { "type": "string" }, "ontologie": { "type": "string" }, "bus": { "type": "string" } } }, "example": { "agents": ["m06","m33"], "protocol": "langgraph", "ontologie": "pf-1", "bus": "events" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "agents_registry", "type": "json", "required": true }, { "name": "contracts", "type": "markdown", "required": true }, { "name": "benchmarks", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M50-T1", "name": "Registry + contracts + benchmarks", "input": { "custom": { "agents": ["a","b"], "protocol": "p", "ontologie": "o", "bus": "b" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

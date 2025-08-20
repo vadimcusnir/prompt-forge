@@ -1,0 +1,3097 @@
+
+
+
+
+
+Mai jos ai descrierea tehnică a front‑end‑ului și a UI/UX‑ului extrase „din cod”, cu referințe la fișiere și fluxuri efective.
+
+────────────────────────────────────────────────────────
+
+I. Stack & setup (din package.json, app/layout.tsx, app/globals.css, components.json)
+Framework: Next.js (App Router), React 18, TypeScript strict (tsconfig.json cu paths: "@/*").
+UI Kit: shadcn/ui + Radix primitives (directorul components/ui/*; components.json – stil “new-york”, aliasuri @/components, @/lib, etc).
+CSS: Tailwind v4 + PostCSS (postcss.config.mjs). Temă dark glassmorphic cu variabile CSS în app/globals.css (tokens: --background, --card, --border, --primary, --accent, etc.).
+Iconografie: lucide-react.
+Fonturi: Montserrat (heading) + Open Sans (body) prin next/font (app/layout.tsx).
+Animații: utilitare custom în app/globals.css (animate-fade-in, animate-slide-up, animate-bounce-subtle, loading-shimmer).
+Responsive: hook useIsMobile() (media query ≤768px) în components/ui/use-mobile.tsx.
+
+II. Structură directoare (din arhivă)
+app/ – layout + pagina principală și un endpoint API:
+app/layout.tsx – setarea fonturilor, mod dark, import CSS global.
+app/page.tsx – containerul orchestral UI (state + Tabs + secțiuni).
+app/globals.css – tema, utilitare glass, glow, shimmer, animații.
+app/api/gpt-editor/route.ts – endpoint placeholder pentru editare GPT (mock, încă fără apel real la OpenAI).
+
+components/ – componente Smart:
+ModuleGrid + ModuleCard (selectoare modul)
+(components/module-grid.tsx, components/module-card.tsx)
+PromptGenerator (generare prompt pe baza 7D)
+(components/prompt-generator.tsx)
+GPTEditor (optimizare prompt)
+(components/gpt-editor.tsx)
+TestEngine (simulare test/scorare)
+(components/test-engine.tsx)
+HistoryPanel (istoric sesiune local)
+(components/history-panel.tsx)
+ExportManager (export JSON din client)
+(components/export-manager.tsx)
+KeyboardShortcuts (overlay scurtături)
+(components/keyboard-shortcuts.tsx)
+loading-states.tsx (scheletoni vizuali).
+lib/ – logică de domeniu front‑end:
+modules.ts – catalogul M01.. (nume, descriere, spec, output, KPI, guardrails, vectors).
+prompt-generator.ts – compune promptul industrial (secțiuni, KPI, guardrails, telemetry).
+gpt-editor.ts – simulate editor (returnează editedPrompt, improvements, confidence).
+test-engine.ts – simulate test (scoruri, validare, recomandări).
+history-manager.ts – istoric în localStorage (filtre, export/import JSON).
+utils.ts – cn() (clsx + tailwind-merge).
+types/promptforge.ts – tipuri + VECTORS (nume + culori pentru 7 vectori).
+public/ – assets placeholder.
+
+III. Model de date UI (din types/promptforge.ts, folosit în app/page.tsx)
+SessionConfig: { vector, domain, scale, urgency, resources, complexity, application, outputFormat }.
+GeneratedPrompt: { id, hash, timestamp, moduleId, config, prompt }.
+VECTORS: 7 etichete (ex: V1: Systems & Agents, V5: Semiotic Branding) cu clase de culoare Tailwind.
+
+IV. Layout principal & navigație (din app/page.tsx)
+Header sticky: branding “PROMPTFORGE™ v3.0”, badge‑uri dinamice (număr module, „7 Semantic Vectors”, vector popular).
+„Session Configuration” (card): selectoare pentru 7D‑like (dinamic în state):
+Domain: SaaS | FinTech | E‑commerce | Consulting | Personal Brand | Education
+Scale: Startup | Corporate | Personal Brand | Enterprise
+Urgency: Pilot | Sprint | Enterprise | Crisis
+Complexity: Standard | Advanced | Expert
+Resources: Solo | Team | Large Budget | Minimal
+Application: Training | Audit | Implementation | Crisis Response
+Output: Technical Spec | Playbook | Checklist | JSON
+
+Module Selection (card):
+Filtru vector (V1…V7), căutare, grid/list, card pe modul cu name, description, spec, output, guardrails, kpi.
+
+Workflow Tabs:
+Generator – PromptGenerator
+GPT Editor – GPTEditor
+Test Engine – TestEngine
+History – HistoryPanel
+Export – ExportManager
+
+KeyboardShortcuts:
+Ctrl+G Generate, Ctrl+H History, Ctrl+E Export, Ctrl+K Overlay, Ctrl+Shift+Delete Clear.
+
+V. Fluxuri UX (din app/page.tsx + componente)
+Selectezi Modul → Configurezi sesiunea → Generezi Prompt
+PromptGenerator cheamă generatePrompt(moduleId, config) → produce un prompt structurat industrial (vezi VI), calculează hash + timestamp; validează structură minimă; toastează succes; salvează în History.
+
+Optimizezi Promptul (Editor)
+GPTEditor folosește în prezent simulateGPTEditing() (mock); butoane: „Optimizează”, „Copy”, „Download”. Primești: editedPrompt, improvements[], confidence, processingTime. Endpoint real existent: POST /api/gpt-editor (încă mock) pentru integrare ulterioară.
+
+Testezi Promptul (Test Engine)
+runPromptTest() (simulat) → scoruri:
+structure, kpiCompliance, clarity, executability, overall + validation (are titlu/context/KPI/output/guardrails/telemetry/failsafes, isExecutable, issues[]).
+Moduri: quick | comprehensive | deep, opțiuni: validateKPIs, checkGuardrails, simulateFailures.
+Rezultat: status success | warning | error + recomandări.
+
+Istoric
+historyManager (singleton) persistă în localStorage („prompt”, „edit”, „test”), filtrează, exportă/importă JSON (components/history-panel.tsx).
+
+Export
+ExportManager: export client‑side JSON pentru: current | session | all. Nu există încă generare server‑side a bundle‑ului (.txt/.md/.json/.pdf/.zip); exportul real este lăsat pentru API viitor.
+
+VI. Structura promptului generat (din lib/prompt-generator.ts)
+Promptul e compus în secțiuni standardizate, gata de audit:
+# <ModuleName> – Industrial Generated Prompt
+## SESSION CONTEXT (hash, timestamp, domain, scale, urgency, application)
+## OBJECTIVE (descriere modul, adaptare la context)
+## INPUT REQUIREMENTS (cerințe din modul + adaptări pe domain/scale/urgency/application)
+## EXECUTION STEPS (pași operaționali)
+## RESOURCES & CONSTRAINTS (complexity, resources)
+## REQUIRED OUTPUT FORMAT (format din modul + outputFormat selectat)
+## VALIDATION KPIs (KPI din modul + metrici suplimentare)
+## GUARDRAILS (din modul + constrângeri de conformitate)
+## TELEMETRY (run_id, start_ts, module, context, success_criteria)
+## FAIL‑SAFES (fallbackuri definite)
+→ validatePromptStructure() verifică prezența secțiunilor cheie (titlu, context, KPI, output, guardrails) și dă un scor de structură.
+
+VII. Design language & micro‑interacțiuni (din app/globals.css + componente)
+Glassmorphism (clase: .glass-effect, .glass-strong), glow pe accent/primary/success, shimmer pentru skeleton.
+Tokens pentru charturi (--chart-1..5), sidebar, card, popover; contrast ridicat.
+Feedback: toasturi shadcn (hooks/use-toast.ts), badge‑uri dinamice, progresbar în test.
+A11y: Radix/shadcn pe controale, focus vizibil, tipografie clară (Open Sans + Montserrat).
+Responsive: griduri adaptabile în ModuleGrid, useIsMobile (ajustări de UI sub 768px).
+
+VIII. Ce este „mock” vs. „real” (gap tehnic extras din cod)
+Real: generare prompt + validare, structură UI, istoric local, export JSON client‑side.
+
+Mock / de înlocuit:
+/api/gpt-editor – endpoint existent dar răspuns placeholder (nu apelează modelul).
+Nu există încă: /api/gpt-test (rulare model + scoring server‑side), /api/export/bundle (artefacte .txt/.md/.json/.pdf + manifest/checksum), gating entitlements, persistare în DB/cloud.
+TestEngine rulează local, simulat (timere + heuristici).
+
+IX. Interfețe & stări cheie (din app/page.tsx)
+State top‑level: selectedModule, vectorFilter, config (7D‑like), generatedPrompts[] (ultimele 10), currentPrompt, editResults[], testResults[].
+Evenimente: onPromptGenerated, onEditComplete, onTestComplete, onRestoreEntry (restituie un prompt din istoric ca stare curentă), scurtături globale.
+Metadate istoric: validationScore, kpiCompliance, structureScore, clarityScore, testMode, improvements[], sessionHash.
+
+X. Componente critice și rol (map minim)
+ModuleGrid + ModuleCard: selecție, filtrare, inspectare specificații modul.
+PromptGenerator: generează conținut prompt industrial, face validare minimă, toastează succes/eroare.
+GPTEditor: optimizează prompt (mock), oferă copy/download, raportează confidence.
+TestEngine: simulează execuție + scorare; bare de progres, status bar, recomandări.
+HistoryPanel: listă, filtre, export/import JSON, metrics rapide (avg score, modul/vector frecvent).
+ExportManager: compune rapoarte JSON („current”, „session”, „all”).
+
+Concluzie executivă
+Ai un MVP FE complet funcțional pentru generare/optimizare/testare/istoric/export JSON, fără backend real pentru test & bundle. UI/UX‑ul este industrial, clar, auditabil, gata de conectat la API‑urile de producție (GPT live, Export Bundle, Entitlements).
+
+
+
+
+
+
+
+
+
+
+Frontend (UI, paywalls, UX) UI compact Editor + Test + Export + Istoric Livrabile: components/Editor.tsx, TestEngine.tsx, ExportDialog.tsx; afișezi scor + dif vs SPEC. Gate: butoanele care cer entitlement afișează paywall nativ (Creator→Pro la Test real, Export PDF/JSON; Enterprise pentru API/Bundle). Upsell Product‑Led Livrabile: components/paywall/* + bannere de Pack (ex. FinTech) la schimbarea domain. Gate: încercarea acțiunii „aha” (Run GPT Test real / Export PDF/JSON) → CTA upgrade.
+
+
+
+
+
+
+
+
+
+
+
+E un mini‑brief de backlog (epic + acceptance criteria) pentru MVP Frontend + Product‑Led Upsell. Practic, definești livrabilele FE, punctele de paywall (entitlements) și momentele‑cheie de upsell în UI.
+
+Ce conține (pe scurt)
+Scope UI: „Editor + Test + Export + Istoric” — scheletul nucleului.
+Deliverables: components/Editor.tsx, TestEngine.tsx, ExportDialog.tsx.
+UX de gating: butoanele care cer entitlement declanșează paywall nativ (Creator→Pro pentru Test real, Export PDF/JSON; Enterprise pentru API/Bundle).
+PLG Upsell: components/paywall/* + bannere de Pack (ex. FinTech) când se schimbă domain. Upsell apare fix la acțiunile „aha”: Run GPT Test real / Export PDF/JSON.
+Compară cu ceea ce ai deja în FE (din repo)
+
+Aliniat:
+Ai deja ecrane/zone pentru Editor, Test, Export, History (nume actuale pot diferi).
+„Test → scor vizibil” există (chiar dacă scorul e simulat).
+Intenția de paywall la acțiunile „aha” e 1:1 cu ce ți‑am descris.
+
+Diferențe / lipsuri concrete:
+
+Dif vs SPEC
+– Cerința spune „afișezi scor + dif vs SPEC”.
+– În FE curent nu ai încă un DiffViewer (Monaco/CodeMirror diff) între prompt și SPEC‑ul modulului. Adaugă o zonă „SPEC vs Prompt (diff)”.
+
+Nomenclatura componente
+– Brief: Editor.tsx, TestEngine.tsx, ExportDialog.tsx.
+– În cod: probabil GPTEditor.tsx, TestEngine.tsx (ok), ExportManager.tsx (nu Dialog).
+– Propun: păstrezi ExportDialog.tsx ca wrapper UI peste logica existentă din ExportManager.
+
+Paywall nativ pe entitlement
+– Brief: gate pe butoane (Test real, Export PDF/JSON, API/Bundle).
+– În cod: nu ai încă hook de entitlements și paywall centralizat.
+– Trebuie: useEntitlements() + withEntitlementGate(neededFlag), plus components/paywall/*.
+
+Bannere de Pack la schimbarea domain
+– Brief: bannere FinTech/Edu etc.
+– În cod: lipsește hook‑ul „onDomainChange → showPackBanner(…)”.
+– Adaugă: useDomainChange() + PackBanner.tsx (dismiss‑able + CTA).
+
+Export PDF/JSON & Bundle
+– Brief: gating clar pe Pro (PDF/JSON) și Enterprise (.zip + API).
+– În cod: exportul e client‑side JSON; lipsește Export Dialog cu stări (trial/watermark, entitlement check) și integrarea cu endpointurile reale.
+
+Mapare 1‑la‑1 (brief → implementare)
+Editor.tsx → GPTEditor.tsx (păstrează numele sau creează alias).
+TestEngine.tsx → TestEngine.tsx (completează scorare pe API real).
+ExportDialog.tsx → nou component care acoperă ExportManager + gating + stări PDF/JSON/ZIP.
+components/paywall/* → nou: PaywallModal.tsx, PaywallInline.tsx, PaywallCTA.tsx + withEntitlementGate.
+Diff vs SPEC → nou: SpecDiff.tsx (Monaco diff), afișat în tabul Test/Editor.
+
+Fă acum în 7 pași (execută fără discuții)
+Entitlements FE: scrie useEntitlements() + cache; expune flags.canUseGptTestReal, canExportPDF/JSON, canExportBundleZip, hasAPI.
+Gate HOC: withEntitlementGate(requiredFlag, fallback=<PaywallModal/Inline>) și înlocuiește butoanele „Run Test real / Export PDF/JSON / Export Bundle / API Key”.
+Paywall UI: creează components/paywall/* cu 2 moduri: modal (blocking) și inline (în locul butonului).
+Spec Diff: adaugă SpecDiff.tsx (Monaco diff) între module.spec și prompt (sau între output actual și REQUIRED OUTPUT FORMAT).
+Export Dialog: ExportDialog.tsx cu opțiuni marcate (txt/md gratuite; pdf/json → Pro; zip → Enterprise). Arată watermark „Trial”.
+Bannere Pack: PackBanner.tsx + useDomainChange() → la schimbarea domain, arată bannerul potrivit (ex. FinTech) cu CTA activare.
+Telemetrie PLG: loghează gate_hit, paywall_view, paywall_cta_click, upgrade_success pentru fiecare acțiune „aha”.
+
+Criterii de acceptare (DONE)
+Butoanele „Run GPT Test real” și „Export PDF/JSON” deschid paywall dacă lipsesc entitlements; „Export .zip / API” cer Enterprise.
+
+Diff vs SPEC vizibil și stabil.
+Bannere de Pack apar la schimbarea domain (o singură dată / sesiune, dismiss‑able).
+Export PDF aplică watermark în trial; JSON/PDF/ZIP blocat corect pe plan.
+Telemetrie PLG emite evenimente pe toate hit‑urile de gate + CTA.
+
+
+
+
+
+
+Entitlements FE: API + hook + cache + invalidare + utilitare + gate UI. Totul e aliniat cu blueprintul tău: compun entitlements org ⊕ user din view‑ul efectiv și expun fix flag‑urile cerute: canUseGptTestReal, canExportPDF, canExportJSON, canExportBundleZip, hasAPI. Gatingul este 1:1 cu standardul tău (Test real → Pro; PDF/JSON → Pro; .zip/API → Enterprise).
+
+0) Ce implementezi acum (overview)
+
+API route /api/entitlements (Next.js App Router) → citește entitlements_effective_user (fallback la org) și returnează un obiect flags.
+
+Hook useEntitlements() (TanStack Query) → cache cu TTL, revalidare pe focus, BroadcastChannel pentru invalidare cross‑tab.
+
+Helperi: useEntitlement(flag), invalidateEntitlements().
+
+UI gate: EntitlementGate (component) + withEntitlementGate() (HOC) pentru butoane/zone protejate.
+
+Teste: stub Vitest pentru hook și gate.
+
+Notă: calculele „effective entitlements” sunt OR logic peste surse (plan | addon | pack | license) și sunt deja definite în blueprint (view‑uri entitlements_effective_user / entitlements_effective_org). Tu doar le consumi curat în FE, fără service role în browser.
+
+1) Tipuri comune
+
+/lib/entitlements/types.ts
+
+// Strong typing pentru flag-urile cheie din blueprint
+export type EntitlementFlag =
+  | "canUseGptTestReal"
+  | "canExportPDF"
+  | "canExportJSON"
+  | "canExportBundleZip"
+  | "hasAPI"
+  | (string & {}); // extensibil
+
+export type EntitlementsResponse = {
+  orgId: string;
+  userId?: string | null;
+  source: "effective_user" | "effective_org" | "none";
+  flags: Record<EntitlementFlag, boolean>;
+  fetchedAt: string; // ISO
+};
+
+2) API route (server) — agregator sigur
+
+/app/api/entitlements/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+// IMPORTANT: folosește SERVICE ROLE doar pe server
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE!
+);
+
+// flags canonice din blueprint
+const KNOWN: string[] = [
+  "canUseGptTestReal",
+  "canExportPDF",
+  "canExportJSON",
+  "canExportBundleZip",
+  "hasAPI"
+];
+
+function normalizeFlags(rows: Array<{ flag: string; enabled: boolean }>) {
+  const out: Record<string, boolean> = Object.fromEntries(KNOWN.map(k => [k, false]));
+  for (const r of rows) {
+    if (typeof r.flag === "string") out[r.flag] = !!r.enabled;
+  }
+  return out;
+}
+
+/**
+ * GET /api/entitlements?orgId=...&userId=...
+ * Răspunde cu { flags: { ... }, source, fetchedAt }
+ * Cache-Control privat: 30s + SWR 60s
+ */
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const orgId = searchParams.get("orgId");
+  const userId = searchParams.get("userId");
+
+  if (!orgId) {
+    return NextResponse.json({ error: "ORG_ID_REQUIRED" }, { status: 400 });
+  }
+
+  // 1) încearcă „effective_user”
+  let flags = {} as Record<string, boolean>;
+  let source: "effective_user" | "effective_org" | "none" = "none";
+
+  if (userId) {
+    const { data: uRows, error: uErr } = await supabase
+      .from("entitlements_effective_user")
+      .select("flag, enabled")
+      .eq("org_id", orgId)
+      .eq("user_id", userId);
+
+    if (uErr) {
+      // nu expune detalii interne în client
+      console.error("entitlements_effective_user error:", uErr);
+    } else if (uRows && uRows.length) {
+      flags = normalizeFlags(uRows as any);
+      source = "effective_user";
+    }
+  }
+
+  // 2) fallback „effective_org”
+  if (source === "none") {
+    const { data: oRows, error: oErr } = await supabase
+      .from("entitlements_effective_org")
+      .select("flag, enabled")
+      .eq("org_id", orgId);
+
+    if (oErr) {
+      console.error("entitlements_effective_org error:", oErr);
+    } else if (oRows && oRows.length) {
+      flags = normalizeFlags(oRows as any);
+      source = "effective_org";
+    }
+  }
+
+  const body = {
+    orgId,
+    userId,
+    source,
+    flags,
+    fetchedAt: new Date().toISOString()
+  };
+
+  const res = NextResponse.json(body, { status: 200 });
+  // privat pentru user; revalidare agresivă la focus în FE
+  res.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+  return res;
+}
+
+
+De ce așa: consumi view‑urile „effective” definite în schemă (org ⊕ user) și returnezi doar flag‑urile canonice folosite de gate‑urile UI: Test real, Export PDF/JSON, Bundle .zip, API. Exact gatingul comercial din standard.
+
+3) Cache + invalidare cross‑tab
+
+/lib/entitlements/cache.ts
+
+// Broadcast cross-tab + chei de Query
+export const ENTITLEMENTS_QUERY_KEY = (orgId?: string, userId?: string | null) =>
+  ["entitlements", orgId ?? "no-org", userId ?? "no-user"] as const;
+
+const CH_NAME = "pf:entitlements";
+let ch: BroadcastChannel | null = null;
+
+export function broadcastInvalidateEntitlements(payload?: { orgId?: string; userId?: string | null }) {
+  try {
+    if (!("BroadcastChannel" in globalThis)) return;
+    ch = ch ?? new BroadcastChannel(CH_NAME);
+    ch.postMessage({ type: "invalidate", ...payload });
+  } catch {}
+}
+
+export function subscribeEntitlementsInvalidation(cb: (msg: MessageEvent) => void) {
+  try {
+    if (!("BroadcastChannel" in globalThis)) return () => {};
+    ch = ch ?? new BroadcastChannel(CH_NAME);
+    const handler = (e: MessageEvent) => cb(e);
+    ch.addEventListener("message", handler);
+    return () => ch?.removeEventListener("message", handler);
+  } catch { return () => {}; }
+}
+
+4) Hook-ul principal useEntitlements()
+
+/lib/entitlements/useEntitlements.ts
+
+import { useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { EntitlementsResponse, EntitlementFlag } from "./types";
+import { ENTITLEMENTS_QUERY_KEY, subscribeEntitlementsInvalidation } from "./cache";
+
+export type UseEntitlementsArgs = {
+  orgId?: string;
+  userId?: string | null;
+  // opțiuni de cache
+  staleTimeMs?: number;   // default 5 min
+  cacheTimeMs?: number;   // default 30 min
+  enabled?: boolean;      // default true
+};
+
+async function fetchEntitlements(orgId?: string, userId?: string | null): Promise<EntitlementsResponse> {
+  if (!orgId) return { orgId: "", userId: userId ?? null, source: "none", flags: {}, fetchedAt: new Date().toISOString() };
+  const url = `/api/entitlements?orgId=${encodeURIComponent(orgId)}${userId ? `&userId=${encodeURIComponent(userId)}` : ""}`;
+  const res = await fetch(url, { method: "GET", credentials: "include" });
+  if (!res.ok) throw new Error(`ENTITLEMENTS_HTTP_${res.status}`);
+  return res.json();
+}
+
+export function useEntitlements({
+  orgId,
+  userId = null,
+  staleTimeMs = 5 * 60_000,
+  cacheTimeMs = 30 * 60_000,
+  enabled = true
+}: UseEntitlementsArgs) {
+  const queryKey = ENTITLEMENTS_QUERY_KEY(orgId, userId);
+
+  const q = useQuery({
+    queryKey,
+    queryFn: () => fetchEntitlements(orgId, userId),
+    enabled: enabled && !!orgId,
+    staleTime: staleTimeMs,
+    gcTime: cacheTimeMs,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    retry: (count, err: any) => {
+      // nu insista pe 403/401
+      if (String(err?.message ?? "").includes("ENTITLEMENTS_HTTP_403")) return false;
+      return count < 2;
+    }
+  });
+
+  // Broadcast invalidări cross-tab
+  const client = useQueryClient();
+  useEffect(() => {
+    const unsub = subscribeEntitlementsInvalidation((e) => {
+      const { type, orgId: o, userId: u } = (e.data || {}) as any;
+      if (type === "invalidate" && (!o || o === orgId)) {
+        client.invalidateQueries({ queryKey: ENTITLEMENTS_QUERY_KEY(o ?? orgId, u ?? userId) });
+      }
+    });
+    return unsub;
+  }, [client, orgId, userId]);
+
+  // helperi
+  const flags = useMemo(() => {
+    const base = q.data?.flags ?? {};
+    const pick = (k: EntitlementFlag) => !!base[k];
+    return {
+      // expune direct flag-urile cerute
+      canUseGptTestReal: pick("canUseGptTestReal"),
+      canExportPDF:      pick("canExportPDF"),
+      canExportJSON:     pick("canExportJSON"),
+      canExportBundleZip:pick("canExportBundleZip"),
+      hasAPI:            pick("hasAPI"),
+      // utilitar generic
+      has: (k: EntitlementFlag) => pick(k)
+    };
+  }, [q.data?.flags]);
+
+  return {
+    loading: q.isLoading,
+    error: q.error as Error | null,
+    refetch: q.refetch,
+    fetchedAt: q.data?.fetchedAt ?? null,
+    source: q.data?.source ?? "none",
+    flags
+  };
+}
+
+// Shortcut pentru un singur flag
+export function useEntitlement(flag: EntitlementFlag, args: UseEntitlementsArgs) {
+  const { flags, ...rest } = useEntitlements(args);
+  return { allowed: flags.has(flag), flags, ...rest };
+}
+
+5) Invalidare după upgrade / schimbări plan
+
+/lib/entitlements/invalidate.ts
+
+import { QueryClient } from "@tanstack/react-query";
+import { ENTITLEMENTS_QUERY_KEY } from "./cache";
+import { broadcastInvalidateEntitlements } from "./cache";
+
+export function invalidateEntitlements(client: QueryClient, orgId?: string, userId?: string | null) {
+  client.invalidateQueries({ queryKey: ENTITLEMENTS_QUERY_KEY(orgId, userId) });
+  broadcastInvalidateEntitlements({ orgId, userId });
+}
+
+
+Apelează invalidateEntitlements() după:
+
+checkout success (Stripe webhook → FE confirm),
+
+activare Industry Pack,
+
+adăugare addon per user.
+Exact aceste surse modifică entitlements în schema ta.
+
+6) Gate UI (component & HOC)
+
+/components/EntitlementGate.tsx
+
+"use client";
+import { ReactNode } from "react";
+import { useEntitlement } from "@/lib/entitlements/useEntitlements";
+import type { EntitlementFlag } from "@/lib/entitlements/types";
+
+export function EntitlementGate({
+  flag,
+  orgId,
+  userId,
+  fallback,
+  children
+}: {
+  flag: EntitlementFlag;
+  orgId?: string;
+  userId?: string | null;
+  fallback: ReactNode; // PaywallInline / button CTA etc.
+  children: ReactNode;
+}) {
+  const { allowed, loading } = useEntitlement(flag, { orgId, userId });
+  if (loading) return null; // sau skeleton
+  return allowed ? <>{children}</> : <>{fallback}</>;
+}
+
+
+/lib/entitlements/withEntitlementGate.tsx
+
+"use client";
+import type { ComponentType } from "react";
+import { EntitlementGate } from "@/components/EntitlementGate";
+import type { EntitlementFlag } from "./types";
+
+export function withEntitlementGate<P extends object>(
+  Wrapped: ComponentType<P>,
+  opts: { flag: EntitlementFlag; fallback: JSX.Element; orgId?: string; userId?: string | null }
+) {
+  return function GateWrapper(props: P) {
+    return (
+      <EntitlementGate flag={opts.flag} orgId={opts.orgId} userId={opts.userId} fallback={opts.fallback}>
+        <Wrapped {...props} />
+      </EntitlementGate>
+    );
+  };
+}
+
+
+Exemple de folosire (exact pe gate‑urile tale):
+
+// 1) Test GPT real → Pro
+<EntitlementGate
+  flag="canUseGptTestReal"
+  orgId={orgId}
+  userId={userId}
+  fallback={<PaywallInline tier="pro" message="Activează Pro pentru Test GPT real" />}>
+  <Button onClick={runGptTest}>Run GPT Test (real)</Button>
+</EntitlementGate>
+
+// 2) Export PDF/JSON → Pro
+<EntitlementGate
+  flag="canExportPDF"
+  orgId={orgId}
+  userId={userId}
+  fallback={<PaywallInline tier="pro" message="Activează Pro pentru Export PDF/JSON" />}>
+  <ExportDialog />
+</EntitlementGate>
+
+// 3) Bundle .zip / API → Enterprise
+<EntitlementGate
+  flag="canExportBundleZip"
+  orgId={orgId}
+  userId={userId}
+  fallback={<PaywallInline tier="enterprise" message="Activează Enterprise pentru bundle .zip & API" />}>
+  <Button onClick={exportBundleZip}>Export Bundle (.zip)</Button>
+</EntitlementGate>
+
+<EntitlementGate
+  flag="hasAPI"
+  orgId={orgId}
+  userId={userId}
+  fallback={<PaywallInline tier="enterprise" message="Activează Enterprise pentru API" />}>
+  <ApiKeysPanel />
+</EntitlementGate>
+
+
+Aceste gate‑uri corespund 1:1 regulilor din blueprint (Test real, PDF/JSON, Bundle .zip, API).
+
+7) Teste (Vitest) — sanitate pentru hook
+
+/tests/useEntitlements.test.tsx
+
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { useEntitlements } from "@/lib/entitlements/useEntitlements";
+
+function setup(fetchImpl: any) {
+  vi.stubGlobal("fetch", fetchImpl);
+  const qc = new QueryClient();
+  const wrapper = ({ children }: any) => (
+    <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+  );
+  return { qc, wrapper };
+}
+
+describe("useEntitlements", () => {
+  beforeEach(() => vi.unstubAllGlobals());
+
+  it("expune flag-urile cerute", async () => {
+    const { wrapper } = setup(async () =>
+      new Response(JSON.stringify({
+        orgId: "o1", source: "effective_user", fetchedAt: new Date().toISOString(),
+        flags: {
+          canUseGptTestReal: true, canExportPDF: true, canExportJSON: true,
+          canExportBundleZip: false, hasAPI: false
+        }
+      }), { status: 200 })
+    );
+
+    const { result } = renderHook(() => useEntitlements({ orgId: "o1", userId: "u1" }), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.flags.canUseGptTestReal).toBe(true);
+    expect(result.current.flags.canExportPDF).toBe(true);
+    expect(result.current.flags.canExportJSON).toBe(true);
+    expect(result.current.flags.canExportBundleZip).toBe(false);
+    expect(result.current.flags.hasAPI).toBe(false);
+  });
+});
+
+8) Integrează în 3 pași
+
+Instalează TanStack Query (dacă nu e deja) și învelește app‑ul:
+
+pnpm add @tanstack/react-query
+
+// app/providers.tsx
+"use client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const qc = new QueryClient();
+export default function Providers({ children }: { children: React.ReactNode }) {
+  return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+}
+// app/layout.tsx
+import Providers from "./providers";
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (<html lang="ro"><body><Providers>{children}</Providers></body></html>);
+}
+
+
+Copiază fișierele din secțiunile 1–6 exact în proiect (păstrează căile).
+
+Leagă gate‑urile în butoanele „Run Test real”, „Export PDF/JSON”, „Export .zip”, „API”.
+
+9) Securitate + performanță (implicite)
+
+Server‑side only pentru acces la DB (service role rămâne în API route).
+
+RLS în DB asigură că userul vede doar ce aparține organizației sale (view‑urile effective deja îți dau OR‑ul corect).
+
+Cache FE: 5 min stale, 30 min gc; revalidare pe focus și reconectare; BroadcastChannel pentru invalidare după upgrade/activare pack.
+
+Zero PII în răspuns — expui doar booleeni de gating, conform regulilor tale de telemetrie/compliance.
+
+
+
+
+
+
+Gate HOC complet, cu tot ce‑ți trebuie ca să înlocuiești butoanele:
+
+Run Test real → canUseGptTestReal
+
+Export PDF/JSON → canExportPDF (dialog deschis), iar în dialog dezactivezi opțiunea JSON dacă canExportJSON=false
+
+Export Bundle (.zip) → canExportBundleZip
+
+API Key → hasAPI
+
+Mai jos ai HOC‑ul, o variantă multi‑flag, un GateButton gata de folosit, plus PaywallInline/Modal stub (shadcn). Totul este „client‑only” și funcționează peste useEntitlements() implementat deja.
+
+1) HOC: withEntitlementGate (single flag)
+
+/lib/entitlements/withEntitlementGate.tsx
+
+"use client";
+
+import React, { useEffect } from "react";
+import { useEntitlement } from "@/lib/entitlements/useEntitlements";
+import type { EntitlementFlag } from "@/lib/entitlements/types";
+
+type FallbackRender = (args: { flag: EntitlementFlag; orgId?: string; userId?: string | null }) => React.ReactNode;
+
+export type WithEntitlementGateOptions = {
+  flag: EntitlementFlag;
+  orgId?: string;
+  userId?: string | null;
+  /** Ce afișezi când nu ai entitlement: <PaywallInline /> sau funcție. */
+  fallback: React.ReactNode | FallbackRender;
+  /**
+   * Ce afișezi când se încarcă entitlement-ul:
+   *  - "disabled" → randăm componenta target cu prop-ul disabled (dacă îl are)
+   *  - ReactNode → randăm nodul (skeleton, spinner etc.)
+   *  - null (implicit) → nu randăm nimic până la încărcare
+   */
+  loadingFallback?: "disabled" | React.ReactNode | null;
+  /** Telemetrie: se cheamă o singură dată la primul gate hit vizibil. */
+  onGateHit?: (payload: { flag: EntitlementFlag; orgId?: string; userId?: string | null }) => void;
+};
+
+export function withEntitlementGate<P extends Record<string, any>>(
+  Wrapped: React.ComponentType<P>,
+  opts: WithEntitlementGateOptions
+) {
+  const GateWrapper: React.FC<P & { orgId?: string; userId?: string | null }> = (props) => {
+    const orgId = props.orgId ?? opts.orgId;
+    const userId = props.userId ?? opts.userId;
+    const { allowed, loading } = useEntitlement(opts.flag, { orgId, userId });
+
+    useEffect(() => {
+      if (!loading && !allowed && opts.onGateHit) {
+        opts.onGateHit({ flag: opts.flag, orgId, userId });
+      }
+    }, [loading, allowed, orgId, userId]);
+
+    if (loading) {
+      if (opts.loadingFallback === "disabled") {
+        // dacă Wrapped acceptă disabled, îl trecem; altfel, doar randăm componenta
+        return <Wrapped {...(props as P)} disabled />;
+      }
+      if (opts.loadingFallback) return <>{opts.loadingFallback}</>;
+      return null;
+    }
+
+    if (!allowed) {
+      const node =
+        typeof opts.fallback === "function"
+          ? (opts.fallback as FallbackRender)({ flag: opts.flag, orgId, userId })
+          : opts.fallback;
+      return <>{node}</>;
+    }
+
+    return <Wrapped {...(props as P)} />;
+  };
+
+  GateWrapper.displayName = `withEntitlementGate(${Wrapped.displayName ?? Wrapped.name ?? "Component"})`;
+  return GateWrapper;
+}
+
+2) Variantă multi‑flag (opțional): withEntitlementsGate
+
+Caz util pentru „vrei ANY/ALL pe mai multe drepturi” (ex. un panou care cere ALL: hasAPI și canExportBundleZip).
+
+/lib/entitlements/withEntitlementsGate.tsx
+
+"use client";
+
+import React, { useEffect, useMemo } from "react";
+import { useEntitlements } from "@/lib/entitlements/useEntitlements";
+import type { EntitlementFlag } from "@/lib/entitlements/types";
+
+type Mode = "any" | "all";
+type FallbackRender = (args: { flags: EntitlementFlag[]; orgId?: string; userId?: string | null }) => React.ReactNode;
+
+export function withEntitlementsGate<P extends Record<string, any>>(
+  Wrapped: React.ComponentType<P>,
+  opts: {
+    flags: EntitlementFlag[];
+    mode?: Mode; // default: "all"
+    orgId?: string;
+    userId?: string | null;
+    fallback: React.ReactNode | FallbackRender;
+    loadingFallback?: "disabled" | React.ReactNode | null;
+    onGateHit?: (payload: { flags: EntitlementFlag[]; orgId?: string; userId?: string | null }) => void;
+  }
+) {
+  const GateWrapper: React.FC<P & { orgId?: string; userId?: string | null }> = (props) => {
+    const orgId = props.orgId ?? opts.orgId;
+    const userId = props.userId ?? opts.userId;
+    const { flags: f, loading } = useEntitlements({ orgId, userId });
+    const mode: Mode = opts.mode ?? "all";
+
+    const allowed = useMemo(() => {
+      if (!f) return false;
+      const checks = opts.flags.map((k) => f.has(k));
+      return mode === "all" ? checks.every(Boolean) : checks.some(Boolean);
+    }, [f, opts.flags, mode]);
+
+    useEffect(() => {
+      if (!loading && !allowed && opts.onGateHit) {
+        opts.onGateHit({ flags: opts.flags, orgId, userId });
+      }
+    }, [loading, allowed, orgId, userId]);
+
+    if (loading) {
+      if (opts.loadingFallback === "disabled") return <Wrapped {...(props as P)} disabled />;
+      if (opts.loadingFallback) return <>{opts.loadingFallback}</>;
+      return null;
+    }
+
+    if (!allowed) {
+      const node =
+        typeof opts.fallback === "function"
+          ? (opts.fallback as FallbackRender)({ flags: opts.flags, orgId, userId })
+          : opts.fallback;
+      return <>{node}</>;
+    }
+
+    return <Wrapped {...(props as P)} />;
+  };
+
+  GateWrapper.displayName = `withEntitlementsGate(${Wrapped.displayName ?? Wrapped.name ?? "Component"})`;
+  return GateWrapper;
+}
+
+3) GateButton: buton generic gata de folosit
+
+/components/gates/GateButton.tsx
+
+"use client";
+
+import * as React from "react";
+import { Button, type ButtonProps } from "@/components/ui/button";
+import { useEntitlement } from "@/lib/entitlements/useEntitlements";
+import type { EntitlementFlag } from "@/lib/entitlements/types";
+
+export function GateButton({
+  flag,
+  orgId,
+  userId,
+  fallback,
+  loadingVariant = "disabled",
+  children,
+  ...btn
+}: ButtonProps & {
+  flag: EntitlementFlag;
+  orgId?: string;
+  userId?: string | null;
+  fallback: React.ReactNode;            // PaywallInline recomandat
+  loadingVariant?: "disabled" | "skeleton" | "none";
+}) {
+  const { allowed, loading } = useEntitlement(flag, { orgId, userId });
+
+  if (loading) {
+    if (loadingVariant === "disabled") return <Button {...btn} disabled>{children}</Button>;
+    if (loadingVariant === "skeleton") return <div className="h-9 w-40 animate-pulse rounded-md bg-muted" />;
+    return null;
+  }
+
+  if (!allowed) return <>{fallback}</>;
+
+  return <Button {...btn}>{children}</Button>;
+}
+
+4) Paywall UI (stub): Inline & Modal
+
+/components/paywall/PaywallInline.tsx
+
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { ShieldAlert } from "lucide-react";
+
+export function PaywallInline({
+  tier,
+  message,
+  onUpgrade
+}: {
+  tier: "pro" | "enterprise";
+  message: string;
+  onUpgrade?: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-md border p-3">
+      <ShieldAlert className="h-4 w-4" />
+      <div className="text-sm">
+        <div className="font-medium">Funcție disponibilă pe planul {tier.toUpperCase()}.</div>
+        <div className="text-muted-foreground">{message}</div>
+      </div>
+      <div className="ml-auto">
+        <Button size="sm" onClick={onUpgrade}>Upgrade</Button>
+      </div>
+    </div>
+  );
+}
+
+
+/components/paywall/PaywallModal.tsx (exemplu cu shadcn Dialog)
+
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+
+export function PaywallModal({
+  trigger,
+  tier,
+  title = "Upgrade necesar",
+  description,
+  onUpgrade
+}: {
+  trigger: React.ReactNode;  // de ex. <Button>Run Test (real)</Button>
+  tier: "pro" | "enterprise";
+  title?: string;
+  description?: string;
+  onUpgrade?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const handleUpgrade = () => {
+    onUpgrade?.();
+    setOpen(false);
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            Funcția selectată este disponibilă pe planul {tier.toUpperCase()}.
+            {description ? <div className="mt-2">{description}</div> : null}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Închide</Button>
+          <Button onClick={handleUpgrade}>Upgrade la {tier.toUpperCase()}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+5) Înlocuiește butoanele cerute (exemple plug‑and‑play)
+5.1 Run Test (real) — canUseGptTestReal (Pro)
+import { withEntitlementGate } from "@/lib/entitlements/withEntitlementGate";
+import { PaywallInline } from "@/components/paywall/PaywallInline";
+
+function RunTestButton(props: { onClick: () => void; disabled?: boolean }) {
+  return <Button onClick={props.onClick} disabled={props.disabled}>Run GPT Test (real)</Button>;
+}
+
+export const RunTestButtonGated = withEntitlementGate(RunTestButton, {
+  flag: "canUseGptTestReal",
+  fallback: <PaywallInline tier="pro" message="Rulezi test pe modelul live, vezi scor real și KPI." />
+});
+
+// …în UI:
+<RunTestButtonGated onClick={runGptTest} orgId={orgId} userId={userId} />
+
+5.2 Export PDF/JSON — canExportPDF (dialogul se deschide) + UI din dialog ține cont de canExportJSON
+import { withEntitlementGate } from "@/lib/entitlements/withEntitlementGate";
+import { PaywallInline } from "@/components/paywall/PaywallInline";
+
+function ExportDialogTrigger(props: { onOpen: () => void; disabled?: boolean }) {
+  return <Button onClick={props.onOpen} disabled={props.disabled}>Export (PDF / JSON)</Button>;
+}
+
+export const ExportDialogTriggerGated = withEntitlementGate(ExportDialogTrigger, {
+  flag: "canExportPDF",
+  fallback: <PaywallInline tier="pro" message="Descarci rapoarte brand-uite PDF și payload JSON validat." />
+});
+
+// În dialog, dezactivezi opțiunea JSON dacă flag-ul lipsește:
+import { useEntitlements } from "@/lib/entitlements/useEntitlements";
+
+function ExportDialogContent({ orgId, userId }: { orgId: string; userId?: string | null }) {
+  const { flags } = useEntitlements({ orgId, userId });
+  const allowJSON = flags.canExportJSON;
+
+  return (
+    <div>
+      <label className="flex items-center gap-2">
+        <input type="checkbox" defaultChecked disabled /* TXT obligatoriu */ />
+        TXT/MD
+      </label>
+      <label className="flex items-center gap-2">
+        <input type="checkbox" defaultChecked /* PDF permis de deschiderea dialogului */ />
+        PDF
+      </label>
+      <label className="flex items-center gap-2">
+        <input type="checkbox" disabled={!allowJSON} />
+        JSON { !allowJSON && <span className="text-xs text-muted-foreground">(Pro necesar)</span> }
+      </label>
+    </div>
+  );
+}
+
+5.3 Export Bundle (.zip) — canExportBundleZip (Enterprise)
+import { GateButton } from "@/components/gates/GateButton";
+import { PaywallInline } from "@/components/paywall/PaywallInline";
+
+<GateButton
+  flag="canExportBundleZip"
+  orgId={orgId}
+  userId={userId}
+  onClick={exportBundleZip}
+  fallback={<PaywallInline tier="enterprise" message="Primești bundle .zip cu manifest, checksum și toate artefactele." />}
+>
+  Export Bundle (.zip)
+</GateButton>
+
+5.4 API Key Panel — hasAPI (Enterprise)
+import { withEntitlementGate } from "@/lib/entitlements/withEntitlementGate";
+import { PaywallInline } from "@/components/paywall/PaywallInline";
+
+function ApiKeysPanel() { /* … */ return <div>API Keys & Rate Limits</div>; }
+
+export const ApiKeysPanelGated = withEntitlementGate(ApiKeysPanel, {
+  flag: "hasAPI",
+  fallback: <PaywallInline tier="enterprise" message="Activezi API /run/{module} și white‑label." />
+});
+
+// …în UI:
+<ApiKeysPanelGated orgId={orgId} userId={userId} />
+
+6) Telemetrie (opțional)
+
+Dacă vrei să contorizezi „gate hits”:
+
+// /lib/telemetry/ui.ts
+export function logGateHit(evt: { type: "ui.gate_hit"; flag: string; orgId?: string; userId?: string | null }) {
+  try { navigator.sendBeacon("/api/telemetry", JSON.stringify(evt)); } catch {}
+}
+
+
+Și pasezi în opțiunile HOC:
+
+onGateHit: ({ flag, orgId, userId }) => logGateHit({ type: "ui.gate_hit", flag, orgId, userId })
+
+7) Bune practici & A11y
+
+Nu te baza doar pe UI. Gătuiește și pe server în rutele /api/gpt-test, /api/export/bundle, /api/api-keys (verifică entitlements).
+
+Loading: pentru acțiuni critice folosește loadingFallback="disabled"—utilizatorul vede butonul, dar fără acțiune până la rezoluția drepturilor.
+
+Focus management: la fallback Modal, mută focusul pe DialogTitle și închide cu Esc.
+
+i18n: ține copy‑ul din Paywall în fișier separat, ca să poți localiza repede.
+
+8) Checklist „gata de lipit”
+
+ Copiază fișierele din secțiunile 1–4 în proiect.
+
+ Înlocuiește butoanele cu RunTestButtonGated, ExportDialogTriggerGated, GateButton (.zip) și ApiKeysPanelGated.
+
+ În Export Dialog, citește flags.canExportJSON ca să (de)activezi opțiunea JSON.
+
+ (Opțional) Folosește withEntitlementsGate pentru ecrane care cer mai multe drepturi simultan.
+
+
+
+
+
+pachetul complet Paywall UI cu 2 moduri: inline (în locul butonului) și modal (blocking). Folosești shadcn/ui (Button, Dialog). Totul e tipat, accesibil și gata de legat la Gate HOC/entitlements.
+
+components/paywall/types.ts
+
+export type Tier = "pro" | "enterprise";
+
+export type PaywallContext =
+  | "gpt_test"
+  | "export_pdf_json"
+  | "export_bundle_zip"
+  | "api_access";
+
+export type PaywallCopy = {
+  title: string;
+  subtitle?: string;
+  bullets?: string[];
+  ctaLabel: string;
+  legalNote?: string;
+};
+
+
+components/paywall/copy.ts
+
+import type { Tier, PaywallContext, PaywallCopy } from "./types";
+
+const bulletsBase: Record<Tier, string[]> = {
+  pro: [
+    "Test pe model live + scoruri reale",
+    "Export PDF brand-uit (cu watermark în trial)",
+    "Export JSON al promptului/artefactelor",
+    "Istoric în cloud + Evaluator AI"
+  ],
+  enterprise: [
+    "Tot ce oferă PRO",
+    "Export bundle .zip + manifest + checksum",
+    "Acces API /run/{module} + rate limits",
+    "White‑label & multi‑seat"
+  ]
+};
+
+const titles: Record<PaywallContext, string> = {
+  gpt_test: "Test GPT real disponibil pe planul PRO",
+  export_pdf_json: "Export PDF/JSON disponibil pe planul PRO",
+  export_bundle_zip: "Export bundle .zip disponibil pe planul ENTERPRISE",
+  api_access: "Acces API disponibil pe planul ENTERPRISE"
+};
+
+const subtitles: Partial<Record<PaywallContext, string>> = {
+  gpt_test: "Rulezi promptul pe modelul live, vezi scoruri și KPI reale.",
+  export_pdf_json: "Descarci rapoarte PDF + payload JSON validat pentru integrare.",
+  export_bundle_zip: "Primești pachet complet cu manifest, telemetry și checksum.",
+  api_access: "Automatizezi rulările prin API securizat, cu rate‑limit."
+};
+
+const cta: Record<Tier, string> = {
+  pro: "Upgrade la PRO",
+  enterprise: "Upgrade la ENTERPRISE"
+};
+
+const legal: Partial<Record<Tier, string>> = {
+  pro: "În perioada de trial, PDF‑ul include watermark “Trial — not for redistribution”.",
+  enterprise: "Contract enterprise, API keys și .zip disponibile după activare."
+};
+
+export function getPaywallCopy(tier: Tier, ctx: PaywallContext): PaywallCopy {
+  return {
+    title: titles[ctx],
+    subtitle: subtitles[ctx],
+    bullets: bulletsBase[tier],
+    ctaLabel: cta[tier],
+    legalNote: legal[tier]
+  };
+}
+
+
+components/paywall/PaywallFeatureList.tsx
+
+"use client";
+
+import { Check } from "lucide-react";
+
+export function PaywallFeatureList({ items }: { items?: string[] }) {
+  if (!items?.length) return null;
+  return (
+    <ul className="mt-3 space-y-2">
+      {items.map((t, i) => (
+        <li key={i} className="flex items-start gap-2 text-sm">
+          <Check aria-hidden className="mt-0.5 h-4 w-4" />
+          <span>{t}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+
+components/paywall/PaywallCTA.tsx
+
+"use client";
+
+import { Button } from "@/components/ui/button";
+import type { Tier } from "./types";
+
+export function PaywallCTA({
+  tier,
+  label,
+  onUpgrade
+}: {
+  tier: Tier;
+  label: string;
+  onUpgrade?: (tier: Tier) => void;
+}) {
+  return (
+    <Button data-testid="paywall-cta" size="sm" onClick={() => onUpgrade?.(tier)}>
+      {label}
+    </Button>
+  );
+}
+
+
+components/paywall/PaywallInline.tsx
+
+"use client";
+
+import { ShieldAlert } from "lucide-react";
+import { PaywallFeatureList } from "./PaywallFeatureList";
+import { PaywallCTA } from "./PaywallCTA";
+import { getPaywallCopy } from "./copy";
+import type { Tier, PaywallContext } from "./types";
+
+export function PaywallInline({
+  tier,
+  context,
+  onUpgrade,
+  className
+}: {
+  tier: Tier;
+  context: PaywallContext;
+  onUpgrade?: (tier: Tier) => void;
+  className?: string;
+}) {
+  const copy = getPaywallCopy(tier, context);
+
+  return (
+    <div
+      role="note"
+      data-testid="paywall-inline"
+      className={
+        "flex items-start gap-3 rounded-md border p-3 bg-background/60 " +
+        (className || "")
+      }
+    >
+      <ShieldAlert aria-hidden className="h-4 w-4 mt-0.5" />
+      <div className="flex-1">
+        <div className="text-sm font-medium">{copy.title}</div>
+        {copy.subtitle ? (
+          <div className="text-xs text-muted-foreground mt-1">{copy.subtitle}</div>
+        ) : null}
+        <PaywallFeatureList items={copy.bullets} />
+        {copy.legalNote ? (
+          <div className="text-[11px] text-muted-foreground/90 mt-2">{copy.legalNote}</div>
+        ) : null}
+      </div>
+      <div className="ml-3 shrink-0">
+        <PaywallCTA tier={tier} label={copy.ctaLabel} onUpgrade={onUpgrade} />
+      </div>
+    </div>
+  );
+}
+
+
+components/paywall/PaywallModal.tsx
+
+"use client";
+
+import { useEffect, useId, useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { PaywallFeatureList } from "./PaywallFeatureList";
+import { getPaywallCopy } from "./copy";
+import type { Tier, PaywallContext } from "./types";
+
+export function PaywallModal({
+  tier,
+  context,
+  trigger,
+  onUpgrade,
+  defaultOpen = false,
+  onOpenChange
+}: {
+  tier: Tier;
+  context: PaywallContext;
+  trigger?: React.ReactNode; // ex: <Button>Run Test (real)</Button>
+  onUpgrade?: (tier: Tier) => void;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const copy = getPaywallCopy(tier, context);
+  const [open, setOpen] = useState(defaultOpen);
+  const titleId = useId();
+  const descId = useId();
+
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
+      <DialogContent role="alertdialog" aria-labelledby={titleId} aria-describedby={descId}>
+        <DialogHeader>
+          <DialogTitle id={titleId}>{copy.title}</DialogTitle>
+          {copy.subtitle ? (
+            <DialogDescription id={descId}>{copy.subtitle}</DialogDescription>
+          ) : null}
+        </DialogHeader>
+
+        <div className="mt-2">
+          <PaywallFeatureList items={copy.bullets} />
+        </div>
+
+        {copy.legalNote ? (
+          <div className="text-[11px] text-muted-foreground/90 mt-2">{copy.legalNote}</div>
+        ) : null}
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Închide
+          </Button>
+          <Button data-testid="paywall-upgrade" onClick={() => onUpgrade?.(tier)}>
+            {copy.ctaLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
+components/paywall/PaywallEntry.tsx
+
+"use client";
+
+import { PaywallInline } from "./PaywallInline";
+import { PaywallModal } from "./PaywallModal";
+import type { Tier, PaywallContext } from "./types";
+
+/**
+ * Wrapper unificat: inline (înlocuiește butonul) sau modal (blocking).
+ */
+export function PaywallEntry({
+  mode,
+  tier,
+  context,
+  onUpgrade,
+  trigger
+}: {
+  mode: "inline" | "modal";
+  tier: Tier;
+  context: PaywallContext;
+  onUpgrade?: (tier: Tier) => void;
+  trigger?: React.ReactNode; // necesar pentru modal
+}) {
+  if (mode === "inline") {
+    return <PaywallInline tier={tier} context={context} onUpgrade={onUpgrade} />;
+  }
+  return <PaywallModal tier={tier} context={context} trigger={trigger} onUpgrade={onUpgrade} />;
+}
+
+
+components/paywall/index.ts
+
+export * from "./types";
+export * from "./copy";
+export * from "./PaywallFeatureList";
+export * from "./PaywallCTA";
+export * from "./PaywallInline";
+export * from "./PaywallModal";
+export * from "./PaywallEntry";
+
+
+Integrează imediat (exemple rapide)
+
+Înlocuiești butonul „Run Test (real)” cu Paywall inline (când entitlement lipsește):
+
+<PaywallEntry
+  mode="inline"
+  tier="pro"
+  context="gpt_test"
+  onUpgrade={() => openStripeCheckout("pro")}
+/>
+
+
+Transformi un buton blocat în modal (blocking) cu trigger:
+
+<PaywallEntry
+  mode="modal"
+  tier="pro"
+  context="export_pdf_json"
+  trigger={<Button>Export (PDF/JSON)</Button>}
+  onUpgrade={() => openStripeCheckout("pro")}
+/>
+
+
+Enterprise gates:
+
+<PaywallEntry
+  mode="inline"
+  tier="enterprise"
+  context="export_bundle_zip"
+  onUpgrade={() => openSalesFlow("enterprise")}
+/>
+
+<PaywallEntry
+  mode="modal"
+  tier="enterprise"
+  context="api_access"
+  trigger={<Button>API Keys</Button>}
+  onUpgrade={() => openSalesFlow("enterprise")}
+/>
+
+
+Telemetrie (opțional): pasezi handlerul în onOpenChange (modal) sau trimiți beacon când randarea paywall‑ului are loc (inline). Eviți PII; loghezi doar tipul și contextul (ui.gate_hit, ui.paywall_view, ui.paywall_cta_click).
+
+A11y: modalul folosește alertdialog + id‑uri pentru titlu/descriere; inline are role="note". Fără focus‑trap custom (shadcn/Dialog se ocupă). Copiile sunt scurte, explicite, fără promisiuni nerealiste.
+
+
+
+
+
+SpecDiff.tsx complet, cu Monaco Diff Editor, lazy‑load fără SSR, toolbar cu toggle‑uri (side‑by‑side, word‑wrap, whitespace), swap stânga/dreapta, copy, contorizare modificări. Îl folosești pentru:
+
+module.spec vs prompt (markdown).
+
+output actual vs REQUIRED OUTPUT FORMAT (json / text).
+
+1) Instalează dependențele (o singură dată)
+pnpm add @monaco-editor/react monaco-editor
+
+2) Adaugă componenta components/diff/SpecDiff.tsx
+"use client";
+
+/**
+ * SpecDiff.tsx — Monaco Diff Editor pentru PROMPTFORGE™
+ * - compari module.spec vs prompt (markdown)
+ * - compari output actual vs REQUIRED OUTPUT FORMAT (json/text)
+ * Next.js: SSR oprit prin dynamic import.
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { Button } from "@/components/ui/button"; // shadcn
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Copy, SwapHorizontal, WrapText, EyeOff, Columns } from "lucide-react";
+
+// Import dinamic pentru a evita SSR
+const DiffEditor = dynamic(async () => (await import("@monaco-editor/react")).DiffEditor, { ssr: false });
+
+export type SpecDiffProps = {
+  /**
+   * Conținutul din stânga (original/spec).
+   */
+  left: string;
+  /**
+   * Conținutul din dreapta (prompt / output actual).
+   */
+  right: string;
+  /**
+   * Titluri pentru panoul de sus.
+   */
+  leftTitle?: string;
+  rightTitle?: string;
+  /**
+   * Limbaje (Monaco): 'markdown' | 'json' | 'yaml' | 'plaintext' etc.
+   * Poți seta diferit pentru fiecare parte.
+   */
+  originalLanguage?: string;
+  modifiedLanguage?: string;
+  /**
+   * Înălțime editor.
+   */
+  height?: number | string;
+  /**
+   * Afișează initial side‑by‑side (true) sau inline (false).
+   */
+  defaultSideBySide?: boolean;
+  /**
+   * Afișează whitespace în dif (implicit: ignoră spațiile finale).
+   */
+  defaultIgnoreTrimWhitespace?: boolean;
+  /**
+   * Word wrap implicit.
+   */
+  defaultWordWrap?: "off" | "on";
+  /**
+   * Temă monaco.
+   */
+  theme?: "vs-dark" | "light";
+  /**
+   * Arată bara de acțiuni (toggle-uri).
+   */
+  showToolbar?: boolean;
+  /**
+   * Callback când editorul e gata (primești referința pentru linii schimbate).
+   */
+  onReady?: (api: {
+    getLineChanges: () => { added: number; removed: number; changed: number; total: number };
+    swap: () => void;
+  }) => void;
+};
+
+type Counts = { added: number; removed: number; changed: number; total: number };
+
+export default function SpecDiff({
+  left,
+  right,
+  leftTitle = "SPEC (original)",
+  rightTitle = "PROMPT / OUTPUT (modificat)",
+  originalLanguage = "markdown",
+  modifiedLanguage = "markdown",
+  height = "60vh",
+  defaultSideBySide = true,
+  defaultIgnoreTrimWhitespace = true,
+  defaultWordWrap = "off",
+  theme,
+  showToolbar = true,
+  onReady
+}: SpecDiffProps) {
+  // Stări UI
+  const [sideBySide, setSideBySide] = useState<boolean>(defaultSideBySide);
+  const [ignoreTrimWhitespace, setIgnoreTrimWhitespace] = useState<boolean>(defaultIgnoreTrimWhitespace);
+  const [wordWrap, setWordWrap] = useState<"off" | "on">(defaultWordWrap);
+  const [leftText, setLeftText] = useState(left);
+  const [rightText, setRightText] = useState(right);
+
+  // Detectează tema dacă nu e dată via prop (respectă .dark din document)
+  const resolvedTheme = useMemo<"vs-dark" | "light">(() => {
+    if (theme) return theme;
+    if (typeof document !== "undefined" && document.documentElement.classList.contains("dark")) return "vs-dark";
+    return "light";
+  }, [theme]);
+
+  // Refs pentru acces la editor & monaco
+  const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
+
+  const handleMount = useCallback((editor: any, monaco: any) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+    if (onReady) {
+      onReady({
+        getLineChanges: () => computeCounts(editor),
+        swap: swapSides
+      });
+    }
+  }, [onReady]);
+
+  useEffect(() => { setLeftText(left); }, [left]);
+  useEffect(() => { setRightText(right); }, [right]);
+
+  const computeCounts = (ed?: any): Counts => {
+    const diffEditor = ed ?? editorRef.current;
+    if (!diffEditor?.getLineChanges) return { added: 0, removed: 0, changed: 0, total: 0 };
+    const changes = diffEditor.getLineChanges() as Array<any> | null;
+    if (!changes || !changes.length) return { added: 0, removed: 0, changed: 0, total: 0 };
+
+    // Heuristic: fiecare entry poate avea modificări/ștergeri/adăugări
+    let added = 0, removed = 0, changed = 0;
+    for (const c of changes) {
+      const originalDelta = (c.originalEndLineNumber ?? 0) - (c.originalStartLineNumber ?? 0) + 1;
+      const modifiedDelta = (c.modifiedEndLineNumber ?? 0) - (c.modifiedStartLineNumber ?? 0) + 1;
+      if (originalDelta === 0 && modifiedDelta > 0) added += modifiedDelta;
+      else if (modifiedDelta === 0 && originalDelta > 0) removed += originalDelta;
+      else changed += Math.max(originalDelta, modifiedDelta);
+    }
+    const total = changes.length;
+    return { added, removed, changed, total };
+  };
+
+  const [counts, setCounts] = useState<Counts>({ added: 0, removed: 0, changed: 0, total: 0 });
+
+  const refreshCounts = useCallback(() => {
+    const c = computeCounts(editorRef.current);
+    setCounts(c);
+  }, []);
+
+  const swapSides = useCallback(() => {
+    setLeftText((prev) => {
+      const L = prev;
+      setRightText(Lr => {
+        const R = Lr;
+        // după swap, recalculăm
+        setTimeout(refreshCounts, 50);
+        return L;
+      });
+      return rightText;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rightText]);
+
+  // Copiere rapidă
+  const copyLeft = useCallback(async () => {
+    try { await navigator.clipboard.writeText(leftText); } catch {}
+  }, [leftText]);
+  const copyRight = useCallback(async () => {
+    try { await navigator.clipboard.writeText(rightText); } catch {}
+  }, [rightText]);
+
+  // Recalculează când opțiunile se schimbă
+  useEffect(() => {
+    const t = setTimeout(refreshCounts, 120);
+    return () => clearTimeout(t);
+  }, [leftText, rightText, sideBySide, ignoreTrimWhitespace, wordWrap, refreshCounts]);
+
+  return (
+    <div className="rounded-md border overflow-hidden">
+      {/* Header cu titluri + statistici */}
+      <div className="flex items-center justify-between border-b bg-muted/40 px-3 py-2">
+        <div className="flex items-center gap-4">
+          <div className="text-xs">
+            <div className="font-medium">{leftTitle}</div>
+            <div className="text-muted-foreground">originalLanguage: {originalLanguage}</div>
+          </div>
+          <div className="text-xs">
+            <div className="font-medium">{rightTitle}</div>
+            <div className="text-muted-foreground">modifiedLanguage: {modifiedLanguage}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <BadgeStat label="Changed" value={counts.changed} />
+          <BadgeStat label="Added" value={counts.added} />
+          <BadgeStat label="Removed" value={counts.removed} />
+          <BadgeStat label="Hunks" value={counts.total} />
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      {showToolbar && (
+        <Toolbar
+          sideBySide={sideBySide}
+          setSideBySide={setSideBySide}
+          wordWrap={wordWrap}
+          setWordWrap={setWordWrap}
+          ignoreTrimWhitespace={ignoreTrimWhitespace}
+          setIgnoreTrimWhitespace={setIgnoreTrimWhitespace}
+          onSwap={swapSides}
+          onCopyLeft={copyLeft}
+          onCopyRight={copyRight}
+        />
+      )}
+
+      {/* Monaco Diff */}
+      <div className="relative">
+        <DiffEditor
+          height={typeof height === "number" ? `${height}px` : height}
+          theme={resolvedTheme}
+          original={leftText}
+          modified={rightText}
+          originalLanguage={originalLanguage}
+          modifiedLanguage={modifiedLanguage}
+          options={{
+            readOnly: true,
+            renderSideBySide: sideBySide,
+            ignoreTrimWhitespace,
+            automaticLayout: true,
+            wordWrap: wordWrap,
+            scrollBeyondLastLine: false,
+            renderIndicators: true,
+            minimap: { enabled: false },
+            renderOverviewRuler: false,
+            diffAlgorithm: "advanced",
+            renderMarginRevertIcon: false,
+            stickyScroll: { enabled: true }
+          }}
+          onMount={handleMount}
+          onChange={() => refreshCounts()}
+        />
+      </div>
+    </div>
+  );
+}
+
+function BadgeStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+function Toolbar(props: {
+  sideBySide: boolean;
+  setSideBySide: (v: boolean) => void;
+  wordWrap: "off" | "on";
+  setWordWrap: (v: "off" | "on") => void;
+  ignoreTrimWhitespace: boolean;
+  setIgnoreTrimWhitespace: (v: boolean) => void;
+  onSwap: () => void;
+  onCopyLeft: () => void;
+  onCopyRight: () => void;
+}) {
+  const {
+    sideBySide, setSideBySide,
+    wordWrap, setWordWrap,
+    ignoreTrimWhitespace, setIgnoreTrimWhitespace,
+    onSwap, onCopyLeft, onCopyRight
+  } = props;
+
+  return (
+    <div className="flex items-center gap-2 border-b bg-background px-3 py-2">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={() => setSideBySide(!sideBySide)}>
+              <Columns className="h-4 w-4 mr-2" />
+              {sideBySide ? "Side‑by‑side" : "Inline"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Afișează difurile unul lângă altul sau în linie</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={() => setWordWrap(wordWrap === "on" ? "off" : "on")}>
+              <WrapText className="h-4 w-4 mr-2" />
+              {wordWrap === "on" ? "Wrap: ON" : "Wrap: OFF"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Comută word‑wrap</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={() => setIgnoreTrimWhitespace(!ignoreTrimWhitespace)}>
+              <EyeOff className="h-4 w-4 mr-2" />
+              {ignoreTrimWhitespace ? "Ignore WS" : "Show WS"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Ignoră/afișează spațiile la capăt de linie</TooltipContent>
+        </Tooltip>
+
+        <div className="mx-2 h-5 w-px bg-border" />
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={onSwap}>
+              <SwapHorizontal className="h-4 w-4 mr-2" /> Swap
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Inversează stânga/dreapta</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={onCopyLeft}>
+              <Copy className="h-4 w-4 mr-2" /> Copy LEFT
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Copiază conținutul original</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={onCopyRight}>
+              <Copy className="h-4 w-4 mr-2" /> Copy RIGHT
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Copiază conținutul modificat</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+}
+
+3) Folosește componenta în două scenarii
+
+A. SPEC vs PROMPT (markdown)
+
+<SpecDiff
+  left={selectedModule.spec}                // SPEC oficial al modulului
+  right={currentPrompt}                     // Promptul curent din editor
+  leftTitle="SPEC (modul)"
+  rightTitle="PROMPT (editor)"
+  originalLanguage="markdown"
+  modifiedLanguage="markdown"
+/>
+
+
+B. OUTPUT vs REQUIRED OUTPUT FORMAT (json/text)
+
+<SpecDiff
+  left={selectedModule.requiredOutputFormat} // șablon/contract JSON sau text
+  right={lastModelOutput}                    // output actual
+  leftTitle="REQUIRED OUTPUT FORMAT"
+  rightTitle="OUTPUT (model)"
+  originalLanguage="json"                    // sau "plaintext"/"markdown"
+  modifiedLanguage="json"
+  defaultSideBySide={false}
+/>
+
+4) Integrează în UI (exemplu rapid)
+
+În tabul GPT Editor adaugă „SPEC vs PROMPT”.
+
+În tabul Test Engine sau Export adaugă „OUTPUT vs REQUIRED”.
+
+<Tabs defaultValue="editor">
+  <TabsList>
+    <TabsTrigger value="editor">Editor</TabsTrigger>
+    <TabsTrigger value="spec">Spec vs Prompt</TabsTrigger>
+    <TabsTrigger value="format">Output vs Required</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="spec">
+    <SpecDiff
+      left={module.spec}
+      right={prompt}
+      leftTitle="SPEC (modul)"
+      rightTitle="PROMPT (editor)"
+      originalLanguage="markdown"
+      modifiedLanguage="markdown"
+    />
+  </TabsContent>
+
+  <TabsContent value="format">
+    <SpecDiff
+      left={module.requiredOutputFormat}
+      right={testResult?.output ?? ""}
+      leftTitle="REQUIRED OUTPUT FORMAT"
+      rightTitle="OUTPUT (model)"
+      originalLanguage="json"
+      modifiedLanguage="json"
+      defaultSideBySide={false}
+    />
+  </TabsContent>
+</Tabs>
+
+5) Detalii de calitate
+
+Performanță: automaticLayout activ, fără minimap/overview pentru consum redus; lazy‑load prin dynamic(..., { ssr:false }).
+
+A11y: butoane cu icon + text; tooltips; alertări non‑intruzive; focus vizibil (shadcn).
+
+Stabilitate: dacă tema UI schimbă .dark, treci theme="vs-dark". Poți conecta la contextul de temă dacă îl ai.
+
+Telemetrie: expune onReady → citești getLineChanges() și trimiți ui.diff_stats (added/removed/changed/hunks) în rapoarte.
+
+6) Checklist „gata”
+
+Instalezi pachetele.
+
+Copiezi SpecDiff.tsx în components/diff/.
+
+Apelezi componenta în taburile potrivite.
+
+Loghezi diff_stats în Test Engine/Export.
+
+
+
+
+
+
+ExportDialog.tsx complet — dialog shadcn cu opțiuni marcate și gating vizual corect:
+
+TXT / MD: gratuite, mereu disponibile (poți debifa dacă vrei).
+
+PDF / JSON: marcate ca PRO (închise dacă nu ai entitlement); PDF arată watermark „Trial — not for redistribution” când ești în trial.
+
+ZIP (bundle): marcat ca ENTERPRISE (închis fără entitlement).
+
+Integrezi direct cu /api/export/bundle (payload compatibil cu blueprint-ul) și cu useEntitlements().
+
+components/export/ExportDialog.tsx
+"use client";
+
+/**
+ * ExportDialog.tsx — PROMPTFORGE™ v3
+ * Dialog cu opțiuni de export: TXT/MD (free), PDF/JSON (Pro), ZIP (Enterprise)
+ * - Arată watermark "Trial — not for redistribution" când trialActive = true
+ * - Respectă entitlements din useEntitlements()
+ * - Apelează /api/export/bundle cu payload compatibil
+ */
+
+import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, ShieldAlert, FileText, FileJson, FileArchive, FileType, FileDown } from "lucide-react";
+import { useEntitlements } from "@/lib/entitlements/useEntitlements";
+
+type SevenD = {
+  domain: string;
+  scale?: string; urgency?: string; complexity?: string;
+  resources?: string; application?: string; output_format?: string;
+};
+
+type PathsMap = Record<string, string>; // ex: {"prompt.txt":"bundles/org/run/prompt.txt", ...}
+
+export type ExportDialogProps = {
+  // Gate/context
+  orgId: string;
+  userId?: string | null;
+
+  // Trial state (determină watermark pentru PDF)
+  trialActive?: boolean;
+
+  // Date necesare pentru /api/export/bundle
+  runId: string;
+  moduleId: string;
+  parameterSet7D: SevenD;
+  promptText: string;
+  mdReport: string;
+  jsonPayload: any;
+  licenseNotice?: string;
+
+  // UI
+  trigger?: React.ReactNode;           // butonul care deschide dialogul
+  onSuccess?: (args: { paths: PathsMap; checksum: string }) => void;
+  onError?: (err: Error) => void;
+  defaultOpen?: boolean;
+};
+
+type WorkingState = "idle" | "preparing" | "exporting" | "done" | "error";
+
+export default function ExportDialog(props: ExportDialogProps) {
+  const {
+    orgId, userId = null, trialActive = false,
+    runId, moduleId, parameterSet7D, promptText, mdReport, jsonPayload, licenseNotice,
+    trigger, onSuccess, onError, defaultOpen = false
+  } = props;
+
+  const [open, setOpen] = useState<boolean>(defaultOpen);
+  const [state, setState] = useState<WorkingState>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [paths, setPaths] = useState<PathsMap | null>(null);
+  const [checksum, setChecksum] = useState<string | null>(null);
+
+  // Citește drepturile
+  const { flags, loading: entLoading } = useEntitlements({ orgId, userId });
+
+  // Opțiuni selectabile (în funcție de entitlements)
+  const [wantTXT, setWantTXT] = useState<boolean>(true);
+  const [wantMD,  setWantMD]  = useState<boolean>(true);
+  const [wantPDF, setWantPDF] = useState<boolean>(false);
+  const [wantJSON,setWantJSON]= useState<boolean>(false);
+  const [wantZIP, setWantZIP] = useState<boolean>(false);
+
+  // Setează default-urile când se încarcă entitlements
+  useEffect(() => {
+    if (entLoading) return;
+    setWantPDF(flags.canExportPDF);         // doar dacă ai Pro
+    setWantJSON(flags.canExportJSON);       // doar dacă ai Pro (JSON separat)
+    setWantZIP(flags.canExportBundleZip);   // doar Enterprise
+  }, [entLoading, flags.canExportPDF, flags.canExportJSON, flags.canExportBundleZip]);
+
+  const canExport = useMemo(() => ({
+    pdf:  !!flags.canExportPDF,
+    json: !!flags.canExportJSON,
+    zip:  !!flags.canExportBundleZip
+  }), [flags]);
+
+  const atLeastOne = wantTXT || wantMD || (canExport.pdf && wantPDF) || (canExport.json && wantJSON) || (canExport.zip && wantZIP);
+
+  const disabledReason = useMemo(() => {
+    if (state === "exporting" || entLoading) return "Se procesează…";
+    if (!atLeastOne) return "Selectează cel puțin un format.";
+    return null;
+  }, [state, entLoading, atLeastOne]);
+
+  async function doExport() {
+    try {
+      setError(null);
+      setState("preparing");
+
+      // Construiește license notice (adaugă watermark info dacă trial)
+      const license = [
+        licenseNotice ?? "Licensed for the organization that generated this bundle.",
+        trialActive && canExport.pdf ? "Trial — not for redistribution." : null
+      ].filter(Boolean).join(" ");
+
+      // Trimite către API — serverul va aplica oricum gating-ul final
+      setState("exporting");
+      const res = await fetch("/api/export/bundle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orgId, runId, moduleId,
+          // NOTĂ: TXT/MD sunt obligatorii în blueprint; le trimitem oricum conținutul
+          parameterSet7D,
+          promptText,
+          mdReport: addTrialWatermarkIfNeeded(mdReport, trialActive && wantPDF && canExport.pdf),
+          jsonPayload,
+          licenseNotice: license,
+          // meta suplimentară (serverul poate ignora câmpurile necunoscute)
+          requested: {
+            txt: wantTXT, md: wantMD,
+            pdf: wantPDF && canExport.pdf,
+            json: wantJSON && canExport.json,
+            zip: wantZIP && canExport.zip
+          },
+          telemetry: {
+            ui: "ExportDialog",
+            requested_formats: ["txt","md"].concat(
+              (wantPDF && canExport.pdf) ? ["pdf"] : [],
+              (wantJSON && canExport.json) ? ["json"] : [],
+              (wantZIP && canExport.zip) ? ["zip"] : []
+            )
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? `EXPORT_HTTP_${res.status}`);
+      }
+
+      const body = await res.json();
+      setPaths(body.paths ?? null);
+      setChecksum(body.checksum ?? null);
+      setState("done");
+      onSuccess?.({ paths: body.paths, checksum: body.checksum });
+    } catch (e: any) {
+      const msg = e?.message ?? "EXPORT_FAILED";
+      setError(msg);
+      setState("error");
+      onError?.(e);
+    }
+  }
+
+  function addTrialWatermarkIfNeeded(md: string, showWatermark: boolean) {
+    if (!showWatermark) return md;
+    const banner = "\n\n> **Trial — not for redistribution**\n";
+    // adaugă discret la finalul raportului MD (serverul va insera watermark și în PDF)
+    return md.endsWith(banner) ? md : md + banner;
+  }
+
+  // UI — linii pentru formate
+  function FormatRow({
+    id, label, icon, checked, onCheckedChange, disabled, badge
+  }: {
+    id: string;
+    label: React.ReactNode;
+    icon: React.ReactNode;
+    checked: boolean;
+    onCheckedChange: (val: boolean) => void;
+    disabled?: boolean;
+    badge?: React.ReactNode;
+  }) {
+    return (
+      <div className="flex items-center justify-between py-2">
+        <div className="flex items-center gap-3">
+          {icon}
+          <Label htmlFor={id} className="cursor-pointer">{label}</Label>
+          {badge ? <div className="ml-2">{badge}</div> : null}
+        </div>
+        <Checkbox id={id} checked={checked} disabled={disabled} onCheckedChange={(v) => onCheckedChange(Boolean(v))} />
+      </div>
+    );
+  }
+
+  // Rezumat succes
+  const SuccessSummary = () => {
+    if (!paths) return null;
+    const keys = Object.keys(paths);
+    return (
+      <div className="rounded-md border p-3">
+        <div className="text-sm font-medium mb-2 flex items-center gap-2">
+          <FileDown className="h-4 w-4" />
+          Export reușit
+        </div>
+        <ul className="text-xs space-y-1">
+          {keys.map(k => (
+            <li key={k} className="flex items-center justify-between">
+              <span>{k}</span>
+              <code className="text-muted-foreground">{paths[k]}</code>
+            </li>
+          ))}
+        </ul>
+        {checksum ? (
+          <div className="text-[11px] text-muted-foreground mt-2">
+            Checksum canonic (bundle): <code>{checksum}</code>
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Exportă artefactele</DialogTitle>
+          <DialogDescription>
+            Generezi pachetul de livrabile pentru rularea curentă. Alege formatele permise de planul tău.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Info: Trial watermark pentru PDF */}
+        {trialActive && (
+          <Alert className="mt-0">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Trial activ</AlertTitle>
+            <AlertDescription>
+              PDF‑ul va include watermark-ul <strong>„Trial — not for redistribution”</strong>.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-1">
+          <div className="text-xs text-muted-foreground">
+            TXT/MD sunt disponibile tuturor. PDF/JSON necesită <strong>PRO</strong>. Bundle ZIP necesită <strong>ENTERPRISE</strong>.
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Formate */}
+        <div className="space-y-1">
+          <FormatRow
+            id="fmt-txt"
+            label={<span>TXT <span className="text-muted-foreground">/ prompt.txt</span></span>}
+            icon={<FileType className="h-4 w-4" />}
+            checked={wantTXT}
+            onCheckedChange={setWantTXT}
+          />
+          <FormatRow
+            id="fmt-md"
+            label={<span>MD <span className="text-muted-foreground">/ prompt.md</span></span>}
+            icon={<FileText className="h-4 w-4" />}
+            checked={wantMD}
+            onCheckedChange={setWantMD}
+          />
+          <FormatRow
+            id="fmt-pdf"
+            label={<span>PDF <span className="text-muted-foreground">/ prompt.pdf</span></span>}
+            icon={<FileText className="h-4 w-4" />}
+            checked={wantPDF && canExport.pdf}
+            onCheckedChange={setWantPDF}
+            disabled={!canExport.pdf}
+            badge={!canExport.pdf ? <Badge variant="secondary">PRO</Badge> : (trialActive ? <Badge variant="outline">Trial</Badge> : null)}
+          />
+          <FormatRow
+            id="fmt-json"
+            label={<span>JSON <span className="text-muted-foreground">/ prompt.json</span></span>}
+            icon={<FileJson className="h-4 w-4" />}
+            checked={wantJSON && canExport.json}
+            onCheckedChange={setWantJSON}
+            disabled={!canExport.json}
+            badge={!canExport.json ? <Badge variant="secondary">PRO</Badge> : null}
+          />
+          <FormatRow
+            id="fmt-zip"
+            label={<span>ZIP (Bundle) <span className="text-muted-foreground">/ bundle‑&lt;module&gt;-&lt;hash&gt;.zip</span></span>}
+            icon={<FileArchive className="h-4 w-4" />}
+            checked={wantZIP && canExport.zip}
+            onCheckedChange={setWantZIP}
+            disabled={!canExport.zip}
+            badge={!canExport.zip ? <Badge variant="secondary">ENTERPRISE</Badge> : null}
+          />
+        </div>
+
+        {/* Erori sau rezultat */}
+        {state === "error" && error ? (
+          <Alert variant="destructive">
+            <AlertTitle>Eroare la export</AlertTitle>
+            <AlertDescription className="break-words">{error}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {state === "done" ? <SuccessSummary /> : null}
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>Închide</Button>
+          <Button
+            onClick={doExport}
+            disabled={!!disabledReason || state === "exporting"}
+          >
+            {state === "exporting" ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Export în curs…</>) : "Exportă"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+Cum îl folosești (plug‑and‑play)
+import ExportDialog from "@/components/export/ExportDialog";
+import { Button } from "@/components/ui/button";
+
+<ExportDialog
+  orgId={orgId}
+  userId={userId}
+  trialActive={subscription?.trialActive ?? false}
+  runId={runId}
+  moduleId={moduleId}
+  parameterSet7D={sevenD}
+  promptText={prompt}          // textul brut al promptului final
+  mdReport={mdReport}          // raportul MD (rezumat + KPI)
+  jsonPayload={jsonPayload}    // payload JSON (schema din blueprint)
+  licenseNotice="© PromptForge v3 — internal use only."
+  trigger={<Button>Export (PDF/JSON/ZIP)</Button>}
+  onSuccess={({ paths, checksum }) => {
+    toast({ title: "Export reușit", description: `checksum: ${checksum}` });
+  }}
+  onError={(e) => toast({ variant: "destructive", title: "Export eșuat", description: String(e?.message ?? "Eroare") })}
+/>
+
+
+Notă: Dialogul poate fi deschis doar dacă gate-ul „canExportPDF” a permis trigger-ul (recomandat). În interior, opțiunile rămân disable conform entitlement‑urilor:
+
+Fără PRO → PDF/JSON „blocate” cu badge PRO.
+
+Fără ENTERPRISE → ZIP „blocat” cu badge ENTERPRISE.
+
+Trial activ → PDF afișează badge „Trial” și dialogul explică watermark-ul; serverul va aplica watermark și în PDF.
+
+
+
+
+
+Bannere Pack: un hook care detectează schimbarea domain și un banner UI cu CTA de activare + aplicare preset 7D. Totul este tipat, accesibil, cache-uit (TTL 7 zile), cu invalidare cross‑tab și integrare cu entitlements.
+
+1) Tipuri + registru pack‑uri
+
+/lib/packs/types.ts
+
+export type PackTier = "pro" | "enterprise";
+
+export type DomainKey =
+  | "fintech"
+  | "ecommerce"
+  | "education"
+  | "saas"
+  | "consulting"
+  | "personal_brand"
+  | (string & {});
+
+export type SevenD = {
+  domain: string;
+  scale?: string;
+  urgency?: string;
+  complexity?: string;
+  resources?: string;
+  application?: string;
+  output_format?: string;
+};
+
+export type PackDescriptor = {
+  id: string;                 // ex: "pack_fintech"
+  domainKey: DomainKey;       // ex: "fintech"
+  tier: PackTier;             // pro | enterprise
+  title: string;              // titlu banner
+  subtitle?: string;          // scurtă descriere
+  bullets: string[];          // beneficii
+  preset7D?: Partial<SevenD>; // preset aplicabil la 7D
+  ctaLabel?: string;          // ex: "Activează Pack"
+  applyLabel?: string;        // ex: "Aplică preset 7D"
+  accentClass?: string;       // cls Tailwind (opțional)
+};
+
+
+/lib/packs/registry.ts
+
+import type { DomainKey, PackDescriptor } from "./types";
+
+export const PACKS_BY_DOMAIN: Record<DomainKey, PackDescriptor> = {
+  fintech: {
+    id: "pack_fintech",
+    domainKey: "fintech",
+    tier: "pro",
+    title: "FinTech Pack",
+    subtitle: "Preseturi 7D + guardrails pentru conformitate și ton instituțional.",
+    bullets: [
+      "Jargon financiar + template-uri KYC/KYB",
+      "Guardrails: disclaimere, evitarea promisiunilor",
+      "KPI: claritate, risk & trust reversal",
+    ],
+    preset7D: {
+      domain: "fintech",
+      application: "implementation",
+      output_format: "spec",
+      complexity: "advanced",
+      resources: "lean_team",
+    },
+    ctaLabel: "Activează Pack",
+    applyLabel: "Aplică preset 7D",
+    accentClass: "border-emerald-500/60"
+  },
+  ecommerce: {
+    id: "pack_ecommerce",
+    domainKey: "ecommerce",
+    tier: "pro",
+    title: "eCommerce Pack",
+    subtitle: "Funnel + CRO + playbook-uri de produs.",
+    bullets: ["Template-uri PDP/PLP", "Playbook-uri CRO", "Guardrails: claims & evidențe"],
+    preset7D: { domain: "ecommerce", application: "implementation", output_format: "playbook" },
+    ctaLabel: "Activează Pack",
+    applyLabel: "Aplică preset 7D",
+    accentClass: "border-cyan-400/60"
+  },
+  education: {
+    id: "pack_education",
+    domainKey: "education",
+    tier: "pro",
+    title: "Education Pack",
+    subtitle: "Structuri didactice + rubrici de evaluare.",
+    bullets: ["SOP educațional", "Rubrici KPI", "Guardrails etice"],
+    preset7D: { domain: "education", application: "documentation", output_format: "checklist" },
+    ctaLabel: "Activează Pack",
+    applyLabel: "Aplică preset 7D",
+    accentClass: "border-indigo-400/60"
+  },
+  saas: {
+    id: "pack_saas",
+    domainKey: "saas",
+    tier: "pro",
+    title: "SaaS Pack",
+    subtitle: "Specs + onboarding + playbook-uri GTM.",
+    bullets: ["Tech spec", "Onboarding flows", "GTM playbooks"],
+    preset7D: { domain: "saas", application: "strategy_design", output_format: "spec" },
+    ctaLabel: "Activează Pack",
+    applyLabel: "Aplică preset 7D",
+    accentClass: "border-sky-400/60"
+  },
+  consulting: {
+    id: "pack_consulting",
+    domainKey: "consulting",
+    tier: "enterprise",
+    title: "Consulting Pack",
+    subtitle: "White‑label, audituri multi‑client, rapoarte executive.",
+    bullets: ["White‑label", "Templates executive", "Batch audit"],
+    preset7D: { domain: "consulting", application: "audit", output_format: "spec" },
+    ctaLabel: "Activează Pack",
+    applyLabel: "Aplică preset 7D",
+    accentClass: "border-amber-400/60"
+  },
+  personal_brand: {
+    id: "pack_personal_brand",
+    domainKey: "personal_brand",
+    tier: "pro",
+    title: "Personal Brand Pack",
+    subtitle: "Voce + funnel + playbook de vizibilitate.",
+    bullets: ["Voice system", "Content factory", "Lead magnet flow"],
+    preset7D: { domain: "personal_brand", application: "implementation", output_format: "playbook" },
+    ctaLabel: "Activează Pack",
+    applyLabel: "Aplică preset 7D",
+    accentClass: "border-pink-400/60"
+  }
+};
+
+export function getPackByDomain(domain?: string | null): PackDescriptor | null {
+  if (!domain) return null;
+  const key = String(domain).toLowerCase().trim() as DomainKey;
+  return PACKS_BY_DOMAIN[key] ?? null;
+}
+
+2) Hook: detectează schimbarea de domain și decide afișarea bannerului
+
+/hooks/useDomainChange.ts
+
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getPackByDomain } from "@/lib/packs/registry";
+import type { PackDescriptor } from "@/lib/packs/types";
+
+type Args = {
+  domain?: string | null;
+  orgId?: string;
+  userId?: string | null;
+  autoShow?: boolean;     // true => deschide banner la schimbare
+  ttlHours?: number;      // nu re-afișa timp de N ore după dismiss (default 168h)
+  debounceMs?: number;    // întârzie reacția la schimbare (default 250ms)
+};
+
+type UseDomainChange = {
+  pack: PackDescriptor | null;
+  shouldShow: boolean;
+  dismissed: boolean;
+  open: () => void;
+  close: () => void;
+  markSeen: () => void;   // marchează ca văzut (TTL)
+};
+
+const CH = "pf:pack_banner_seen";
+function storageKey(domain: string) { return `pf:pack_banner_seen:${domain.toLowerCase()}`; }
+
+export function useDomainChange({
+  domain,
+  autoShow = true,
+  ttlHours = 24 * 7,
+  debounceMs = 250
+}: Args): UseDomainChange {
+  const [shouldShow, setShouldShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [pack, setPack] = useState<PackDescriptor | null>(null);
+
+  const prevDomainRef = useRef<string | null>(null);
+  const timerRef = useRef<any>(null);
+  const bcRef = useRef<BroadcastChannel | null>(null);
+
+  const ttlMs = useMemo(() => Math.max(1, ttlHours) * 3600 * 1000, [ttlHours]);
+
+  const readTTL = useCallback((d: string) => {
+    if (typeof window === "undefined") return 0;
+    const raw = localStorage.getItem(storageKey(d));
+    if (!raw) return 0;
+    const until = Number(raw);
+    return Number.isFinite(until) ? until : 0;
+  }, []);
+
+  const writeTTL = useCallback((d: string, untilMs: number) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(storageKey(d), String(untilMs));
+    try {
+      bcRef.current?.postMessage({ type: "seen", domain: d, untilMs });
+    } catch {}
+  }, []);
+
+  const shouldSuppress = useCallback((d?: string | null) => {
+    if (!d) return true;
+    const until = readTTL(d);
+    return until > Date.now();
+  }, [readTTL]);
+
+  const evaluate = useCallback((nextDomain?: string | null) => {
+    const p = getPackByDomain(nextDomain ?? undefined);
+    setPack(p);
+    if (!p || shouldSuppress(nextDomain)) {
+      setShouldShow(false);
+      setDismissed(true);
+      return;
+    }
+    setDismissed(false);
+    setShouldShow(!!autoShow);
+  }, [autoShow, shouldSuppress]);
+
+  // Cross-tab sync
+  useEffect(() => {
+    if (!("BroadcastChannel" in globalThis)) return;
+    bcRef.current = new BroadcastChannel(CH);
+    const handler = (e: MessageEvent) => {
+      const { type, domain: d } = (e.data || {}) as any;
+      if (type === "seen" && d && d === domain) {
+        setShouldShow(false);
+        setDismissed(true);
+      }
+    };
+    bcRef.current.addEventListener("message", handler);
+    return () => bcRef.current?.removeEventListener("message", handler);
+  }, [domain]);
+
+  // Debounced domain watcher
+  useEffect(() => {
+    if (prevDomainRef.current === domain) return;
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      prevDomainRef.current = domain ?? null;
+      evaluate(domain);
+    }, debounceMs);
+    return () => clearTimeout(timerRef.current);
+  }, [domain, debounceMs, evaluate]);
+
+  const open = useCallback(() => setShouldShow(true), []);
+  const close = useCallback(() => setShouldShow(false), []);
+
+  const markSeen = useCallback(() => {
+    if (!domain) return;
+    writeTTL(domain, Date.now() + ttlMs);
+    setShouldShow(false);
+    setDismissed(true);
+  }, [domain, ttlMs, writeTTL]);
+
+  return { pack, shouldShow, dismissed, open, close, markSeen };
+}
+
+3) Componentă UI: banner cu CTA „Activează Pack” + „Aplică preset 7D”
+
+/components/PackBanner.tsx
+
+"use client";
+
+import { useState } from "react";
+import type { PackDescriptor, SevenD } from "@/lib/packs/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle2, Building2, ShoppingCart, GraduationCap, Banknote, BadgeCheck, Hand } from "lucide-react";
+import { invalidateEntitlements } from "@/lib/entitlements/invalidate";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/components/ui/use-toast"; // dacă ai hookul; altfel schimbă cu sistemul tău
+
+type Props = {
+  orgId: string;
+  userId?: string | null;
+  pack: PackDescriptor;
+  onApplyPreset?: (preset: Partial<SevenD>) => void;
+  onActivated?: (pack: PackDescriptor) => void;
+  onDismiss?: () => void;
+  className?: string;
+};
+
+export default function PackBanner({
+  orgId, userId = null, pack,
+  onApplyPreset, onActivated, onDismiss, className
+}: Props) {
+  const [busy, setBusy] = useState<"idle" | "activating" | "applying">("idle");
+  const qc = useQueryClient();
+
+  const Icon = iconForDomain(pack.domainKey);
+  const tierBadge = pack.tier === "enterprise"
+    ? <Badge variant="secondary">ENTERPRISE</Badge>
+    : <Badge variant="secondary">PRO</Badge>;
+
+  async function activatePack() {
+    setBusy("activating");
+    try {
+      const res = await fetch("/api/packs/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgId, packId: pack.id, source: "banner" })
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error ?? `PACK_ACTIVATE_HTTP_${res.status}`);
+      }
+      // revalidează entitlements & packs
+      invalidateEntitlements(qc, orgId, userId);
+      toast?.({ title: `${pack.title} activat`, description: "Preseturile și funcțiile au fost deblocate." });
+      onActivated?.(pack);
+    } catch (e: any) {
+      toast?.({ variant: "destructive", title: "Activare eșuată", description: String(e?.message ?? "Eroare") });
+    } finally {
+      setBusy("idle");
+    }
+  }
+
+  function applyPreset() {
+    if (!pack.preset7D) return;
+    setBusy("applying");
+    try {
+      onApplyPreset?.(pack.preset7D);
+      toast?.({ title: "Preset 7D aplicat", description: "Am actualizat setările sesiunii." });
+    } finally {
+      setBusy("idle");
+    }
+  }
+
+  return (
+    <Alert className={`not-prose border ${pack.accentClass ?? "border-foreground/30"} ${className ?? ""}`}>
+      <div className="flex items-start gap-3">
+        <Icon className="h-5 w-5 mt-0.5" />
+        <div className="flex-1">
+          <AlertTitle className="flex items-center gap-2">
+            {pack.title} {tierBadge}
+          </AlertTitle>
+          {pack.subtitle ? (
+            <AlertDescription className="text-sm mt-1">{pack.subtitle}</AlertDescription>
+          ) : null}
+
+          <ul className="mt-2 text-sm space-y-1">
+            {pack.bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 mt-0.5" />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+
+          <Separator className="my-3" />
+
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={activatePack} disabled={busy !== "idle"}>
+              <BadgeCheck className="h-4 w-4 mr-2" />
+              {pack.ctaLabel ?? "Activează Pack"}
+            </Button>
+            {pack.preset7D ? (
+              <Button size="sm" variant="secondary" onClick={applyPreset} disabled={busy !== "idle"}>
+                <Hand className="h-4 w-4 mr-2" />
+                {pack.applyLabel ?? "Aplică preset 7D"}
+              </Button>
+            ) : null}
+            <Button size="sm" variant="ghost" onClick={onDismiss} disabled={busy !== "idle"}>Ascunde</Button>
+          </div>
+        </div>
+      </div>
+    </Alert>
+  );
+}
+
+function iconForDomain(domainKey: string) {
+  switch (domainKey) {
+    case "fintech": return Banknote;
+    case "ecommerce": return ShoppingCart;
+    case "education": return GraduationCap;
+    case "consulting": return Building2;
+    default: return Building2;
+  }
+}
+
+4) API de activare Pack (server)
+
+/app/api/packs/activate/route.ts
+(agregă entitlementul de pack pentru org; respectă RLS – aici e service‑role pe server)
+
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE!);
+
+/**
+ * POST /api/packs/activate
+ * body: { orgId: string, packId: string, source?: string }
+ * efect: setează entitlements: {flag: `pack:${packId}`, value: true}
+ */
+export async function POST(req: NextRequest) {
+  const { orgId, packId } = await req.json();
+  if (!orgId || !packId) {
+    return NextResponse.json({ error: "ORG_ID_AND_PACK_ID_REQUIRED" }, { status: 400 });
+  }
+
+  // Upsert entitlement pack:<id> = true
+  const flag = `pack:${packId}`;
+  const { error } = await supabase
+    .from("entitlements")
+    .upsert({ org_id: orgId, flag, value: true }, { onConflict: "org_id,flag" });
+
+  if (error) {
+    return NextResponse.json({ error: "DB_UPSERT_FAILED" }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true }, { status: 200 });
+}
+
+
+Dacă ții pack‑urile într-un tabel dedicat (ex. org_packs), adaptează upsertul. Important este flagul pack:<id> care devine adevărat pentru org și care declanșează preseturi/beneficii. După activare, apelează invalidateEntitlements() în FE.
+
+5) Integrare: arată bannerul când se schimbă domain
+
+În Session Configuration (cardul cu 7D), prinde domain și folosește hook‑ul:
+
+"use client";
+import { useState } from "react";
+import { useDomainChange } from "@/hooks/useDomainChange";
+import PackBanner from "@/components/PackBanner";
+import type { SevenD } from "@/lib/packs/types";
+
+export default function SessionConfigPanel({ orgId, userId }: { orgId: string; userId?: string | null }) {
+  const [sevenD, setSevenD] = useState<SevenD>({ domain: "saas", application: "training", output_format: "spec" });
+
+  // detectează schimbarea domeniului
+  const { pack, shouldShow, markSeen } = useDomainChange({ domain: sevenD.domain, autoShow: true });
+
+  return (
+    <div className="space-y-3">
+      {/* …controale 7D… */}
+      {/* ex: Domain select → setează sevenD.domain */}
+
+      {/* Banner Pack la schimbarea domain */}
+      {shouldShow && pack ? (
+        <PackBanner
+          orgId={orgId}
+          userId={userId}
+          pack={pack}
+          onApplyPreset={(preset) => setSevenD(prev => ({ ...prev, ...preset, domain: pack.domainKey }))}
+          onActivated={() => markSeen()}
+          onDismiss={() => markSeen()}
+          className="mt-2"
+        />
+      ) : null}
+    </div>
+  );
+}
+
+
+Comportament:
+
+Când utilizatorul schimbă domain → hook-ul verifică dacă există un Pack asociat și dacă bannerul nu a fost „văzut” în ultimele 7 zile.
+
+Bannerul apare o singură dată pe sesiune și nu reapare timp de ttlHours după dismiss/activate (sincronizat cross‑tab).
+
+CTA „Activează Pack” face POST /api/packs/activate și revalidează entitlements; „Aplică preset 7D” setează imediat câmpurile 7D din presetul pack‑ului.
+
+6) Telemetrie (opțional, recomand)
+
+Loghează evenimentele PLG în backend (fără PII):
+
+/lib/telemetry/ui.ts
+
+export function uiBeacon(event: Record<string, any>) {
+  try { navigator.sendBeacon("/api/telemetry", JSON.stringify(event)); } catch {}
+}
+
+
+În SessionConfigPanel și PackBanner, emite:
+
+ui.pack_banner_view (domain, packId)
+
+ui.pack_banner_activate_click
+
+ui.pack_banner_apply_preset_click
+
+ui.pack_banner_dismiss
+
+7) Bune practici
+
+Respectă gate‑urile și pe server (nu te baza doar pe UI) — dacă pack‑ul deblochează micro‑features, verifică pack:<id> în rutele API.
+
+Ține copy‑ul pack‑urilor în registry.ts (ușor de extins).
+
+Ajustează TTL din hook (ttlHours) dacă vrei afișări mai dese/rare.
+
+Păstrează preset7D minim (doar câmpuri utile) ca să nu suprascrii alegeri intenționate ale utilizatorului.
+
+
+
+
+
+Telemetrie PLG completă pentru acțiunile „aha”:
+
+gate_hit (lovirea unui gate/flag)
+
+paywall_view (apariția paywall‑ului)
+
+paywall_cta_click (click pe CTA de upgrade)
+
+upgrade_success (confirmare upgrade după checkout)
+
+Sistemul este anonim (hash pentru org/user), trimite prin sendBeacon cu fallback la fetch, dedupează rapid evenimentele, și leagă „upgrade_success” de contextul care a declanșat paywall‑ul (run test, export, bundle, API).
+
+1) Tipuri & contexte „aha”
+
+/lib/telemetry/plg/types.ts
+
+export type PLGEventName =
+  | "gate_hit"
+  | "paywall_view"
+  | "paywall_cta_click"
+  | "upgrade_success";
+
+export type AhaContext =
+  | "run_test_real"
+  | "export_pdf_json"
+  | "export_bundle_zip"
+  | "api_access";
+
+export type PLGTier = "pro" | "enterprise";
+
+export type PLGBase = {
+  name: PLGEventName;
+  ctx: AhaContext;
+  ts: number;           // Date.now()
+  anonId: string;       // stabil local (localStorage)
+  orgHash?: string;     // hash client pentru orgId (fără PII)
+  userHash?: string;    // hash client pentru userId (fără PII)
+  moduleId?: string;
+  domain?: string;
+  runId?: string;
+  flag?: string;        // ex: canUseGptTestReal
+  meta?: Record<string, any>;
+};
+
+export type PLGEventGateHit = PLGBase & {
+  name: "gate_hit";
+};
+
+export type PLGEventPaywallView = PLGBase & {
+  name: "paywall_view";
+  tier: PLGTier;
+};
+
+export type PLGEventPaywallCTAClick = PLGBase & {
+  name: "paywall_cta_click";
+  tier: PLGTier;
+};
+
+export type PLGEventUpgradeSuccess = PLGBase & {
+  name: "upgrade_success";
+  tier: PLGTier;
+  plan?: string;        // ex: pro-monthly / enterprise-annual
+  source?: "stripe" | "sales";
+};
+
+export type PLGEvent =
+  | PLGEventGateHit
+  | PLGEventPaywallView
+  | PLGEventPaywallCTAClick
+  | PLGEventUpgradeSuccess;
+
+2) Utilitare anonimizare + anonId stabil
+
+/lib/telemetry/plg/anon.ts
+
+const LS_ANON = "pf:anonId";
+
+export function getAnonId(): string {
+  if (typeof window === "undefined") return "ssr";
+  const v = localStorage.getItem(LS_ANON);
+  if (v) return v;
+  const id = cryptoRandomId();
+  localStorage.setItem(LS_ANON, id);
+  return id;
+}
+
+function cryptoRandomId(len = 24) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(x => (x % 16).toString(16)).join("");
+}
+
+export async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  const bytes = Array.from(new Uint8Array(digest));
+  return bytes.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Hash stabil pentru org/user fără PII. Nu folosi SALT din server în FE. */
+export async function hashIdentity(orgId?: string, userId?: string | null) {
+  const base = `${location.origin}|${orgId ?? ""}|${userId ?? ""}`;
+  const hex = await sha256Hex(base);
+  return {
+    orgHash: orgId ? hex.slice(0, 32) : undefined,
+    userHash: userId ? hex.slice(32) : undefined
+  };
+}
+
+3) Client logger + dedupe + intent „upgrade”
+
+/lib/telemetry/plg/client.ts
+
+import type { PLGEvent, AhaContext, PLGTier } from "./types";
+import { getAnonId, hashIdentity } from "./anon";
+
+const QUEUE_ENDPOINT = "/api/telemetry";  // server route
+const onceKeys = new Set<string>();       // dedupe pe sesiune
+const INTENT_LS = "pf:upgrade_intent";    // memorează contextul pentru upgrade_success
+
+function send(payload: PLGEvent) {
+  try {
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    // sendBeacon e non-blocking; fallback la fetch
+    if (navigator.sendBeacon && navigator.sendBeacon(QUEUE_ENDPOINT, blob)) return;
+  } catch {}
+  fetch(QUEUE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), keepalive: true }).catch(() => {});
+}
+
+function keyOnce(name: string, ctx: AhaContext, flag?: string) {
+  return `${name}|${ctx}|${flag ?? "-"}`;
+}
+
+async function buildBase(ctx: AhaContext, orgId?: string, userId?: string | null, extra?: Partial<PLGEvent>) {
+  const anonId = getAnonId();
+  const { orgHash, userHash } = await hashIdentity(orgId, userId);
+  return {
+    name: extra?.name!,
+    ctx,
+    ts: Date.now(),
+    anonId,
+    orgHash,
+    userHash,
+    moduleId: (extra as any)?.moduleId,
+    domain: (extra as any)?.domain,
+    runId: (extra as any)?.runId,
+    flag: (extra as any)?.flag,
+    meta: (extra as any)?.meta
+  } as PLGEvent;
+}
+
+// API public
+
+export async function logGateHit(ctx: AhaContext, flag: string, orgId?: string, userId?: string | null, extra?: Partial<PLGEvent>) {
+  const once = keyOnce("gate_hit", ctx, flag);
+  if (onceKeys.has(once)) return;
+  onceKeys.add(once);
+  const base = await buildBase(ctx, orgId, userId, { ...extra, name: "gate_hit", flag });
+  send(base as any);
+}
+
+export async function logPaywallView(ctx: AhaContext, tier: PLGTier, orgId?: string, userId?: string | null, extra?: Partial<PLGEvent>) {
+  const base = await buildBase(ctx, orgId, userId, { ...extra, name: "paywall_view" });
+  (base as any).tier = tier;
+  send(base as any);
+}
+
+export async function logPaywallCTAClick(ctx: AhaContext, tier: PLGTier, orgId?: string, userId?: string | null, extra?: Partial<PLGEvent>) {
+  rememberUpgradeIntent({ ctx, tier });
+  const base = await buildBase(ctx, orgId, userId, { ...extra, name: "paywall_cta_click" });
+  (base as any).tier = tier;
+  send(base as any);
+}
+
+export async function logUpgradeSuccess(tier: PLGTier, plan?: string, source?: "stripe" | "sales", orgId?: string, userId?: string | null, extra?: Partial<PLGEvent>) {
+  const intent = readUpgradeIntent();
+  const ctx = intent?.ctx ?? "run_test_real";
+  const base = await buildBase(ctx as any, orgId, userId, { ...extra, name: "upgrade_success", meta: { ...extra?.meta, source } });
+  (base as any).tier = tier;
+  (base as any).plan = plan;
+  clearUpgradeIntent();
+  send(base as any);
+}
+
+// Intent (leagă CTA click de upgrade success după redirect)
+export function rememberUpgradeIntent(v: { ctx: AhaContext; tier: PLGTier }) {
+  try { localStorage.setItem(INTENT_LS, JSON.stringify({ ...v, t: Date.now() })); } catch {}
+}
+export function readUpgradeIntent(): { ctx: AhaContext; tier: PLGTier; t: number } | null {
+  try {
+    const raw = localStorage.getItem(INTENT_LS);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+export function clearUpgradeIntent() {
+  try { localStorage.removeItem(INTENT_LS); } catch {}
+}
+
+4) Route server: înregistrează evenimentele
+
+/app/api/telemetry/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js"; // folosit server-side
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE!);
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    // Validează minimal: no PII (nu acceptăm orgId/userId brute)
+    if ("orgId" in body || "userId" in body) {
+      return NextResponse.json({ error: "PII_NOT_ALLOWED" }, { status: 400 });
+    }
+    // Normalizează
+    const row = {
+      ts: new Date(body?.ts ? Number(body.ts) : Date.now()).toISOString(),
+      name: String(body?.name ?? ""),
+      ctx: String(body?.ctx ?? ""),
+      tier: body?.tier ? String(body.tier) : null,
+      anon_id: String(body?.anonId ?? ""),
+      org_hash: body?.orgHash ? String(body.orgHash) : null,
+      user_hash: body?.userHash ? String(body.userHash) : null,
+      module_id: body?.moduleId ? String(body.moduleId) : null,
+      domain: body?.domain ? String(body.domain) : null,
+      run_id: body?.runId ? String(body.runId) : null,
+      flag: body?.flag ? String(body.flag) : null,
+      meta: body?.meta ?? {}
+    };
+
+    // Insert
+    const { error } = await supabase.from("ui_events").insert(row);
+    if (error) return NextResponse.json({ error: "DB_INSERT_FAILED" }, { status: 500 });
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: "BAD_REQUEST" }, { status: 400 });
+  }
+}
+
+
+DDL recomandat (Supabase)
+
+create table if not exists ui_events (
+  id bigserial primary key,
+  ts timestamptz not null,
+  name text not null,
+  ctx text not null,
+  tier text,
+  anon_id text not null,
+  org_hash text,
+  user_hash text,
+  module_id text,
+  domain text,
+  run_id text,
+  flag text,
+  meta jsonb default '{}'::jsonb
+);
+create index on ui_events (ts);
+create index on ui_events (name, ctx);
+create index on ui_events (tier);
+create index on ui_events (org_hash);
+
+5) Instrumentează componentele existente
+5.1 withEntitlementGate → loghează gate_hit
+
+(doar adaugi onGateHit folosind loggerul nou)
+
+import { logGateHit } from "@/lib/telemetry/plg/client";
+// ...
+export function withEntitlementGate<P>(Wrapped: React.ComponentType<P>, opts: WithEntitlementGateOptions) {
+  // ...
+  useEffect(() => {
+    if (!loading && !allowed) {
+      logGateHit(opts.context as AhaContext, opts.flag, opts.orgId, opts.userId, {
+        moduleId: (props as any)?.moduleId,
+        domain: (props as any)?.domain
+      });
+      opts.onGateHit?.({ flag: opts.flag, orgId, userId });
+    }
+  }, [loading, allowed, orgId, userId]);
+  // ...
+}
+
+
+Notă: adaugă în opțiuni context: AhaContext când creezi HOC‑ul (exemple mai jos).
+
+5.2 Paywall UI → paywall_view + paywall_cta_click
+
+components/paywall/PaywallInline.tsx
+
+import { useEffect } from "react";
+import { logPaywallView, logPaywallCTAClick } from "@/lib/telemetry/plg/client";
+
+export function PaywallInline({ tier, context, onUpgrade, className, orgId, userId }: {
+  tier: "pro" | "enterprise"; context: AhaContext;
+  onUpgrade?: (tier: any) => void; className?: string; orgId?: string; userId?: string | null;
+}) {
+  useEffect(() => { logPaywallView(context, tier, orgId, userId); }, [context, tier, orgId, userId]);
+  // ...
+  <PaywallCTA tier={tier} label={copy.ctaLabel} onUpgrade={(t) => { logPaywallCTAClick(context, tier, orgId, userId); onUpgrade?.(t); }} />
+}
+
+
+components/paywall/PaywallModal.tsx
+
+import { logPaywallView, logPaywallCTAClick } from "@/lib/telemetry/plg/client";
+// ...
+useEffect(() => { if (open) logPaywallView(context, tier, orgId, userId); }, [open, context, tier, orgId, userId]);
+// ...
+<Button onClick={() => { logPaywallCTAClick(context, tier, orgId, userId); onUpgrade?.(tier); }}>
+  {copy.ctaLabel}
+</Button>
+
+
+Adaugă props orgId, userId la componentele Paywall pentru context.
+
+5.3 Înlocuiește butoanele cu HOC + context
+// Run Test (real) — aha: run_test_real
+export const RunTestButtonGated = withEntitlementGate(RunTestButton, {
+  flag: "canUseGptTestReal",
+  context: "run_test_real",
+  fallback: <PaywallInline tier="pro" context="run_test_real" orgId={orgId} userId={userId} />,
+  orgId, userId
+});
+
+// Export PDF/JSON — aha: export_pdf_json
+export const ExportDialogTriggerGated = withEntitlementGate(ExportDialogTrigger, {
+  flag: "canExportPDF",
+  context: "export_pdf_json",
+  fallback: <PaywallInline tier="pro" context="export_pdf_json" orgId={orgId} userId={userId} />,
+  orgId, userId
+});
+
+// Bundle ZIP — aha: export_bundle_zip
+<GateButton
+  flag="canExportBundleZip"
+  orgId={orgId} userId={userId}
+  fallback={<PaywallInline tier="enterprise" context="export_bundle_zip" orgId={orgId} userId={userId} />}
+>
+  Export Bundle (.zip)
+</GateButton>
+
+// API — aha: api_access
+<ApiKeysPanelGated
+  orgId={orgId} userId={userId}
+/>
+
+6) Track „upgrade_success” după checkout
+6.1 Pagina de return
+
+/app/upgrade/success/page.tsx
+
+"use client";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { logUpgradeSuccess } from "@/lib/telemetry/plg/client";
+
+export default function UpgradeSuccessPage({ orgId, userId }: { orgId: string; userId?: string | null }) {
+  const params = useSearchParams();
+  const plan = params.get("plan") ?? undefined;         // ex: pro-monthly
+  const tier = (params.get("tier") ?? "pro") as "pro" | "enterprise";
+  const source = (params.get("source") ?? "stripe") as "stripe" | "sales";
+
+  useEffect(() => {
+    logUpgradeSuccess(tier, plan, source, orgId, userId, { meta: { qp: Object.fromEntries(params.entries()) } });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return <div className="p-6 text-sm">Mulțumim. Abonamentul a fost activat.</div>;
+}
+
+6.2 La generarea linkului de checkout
+
+Când deschizi Stripe Checkout (din Paywall CTA), setezi și parametrii tier & source pentru redirect URL (ex.: /upgrade/success?tier=pro&source=stripe&plan=pro-monthly). Funcția rememberUpgradeIntent() din client a salvat contextul „aha”; logUpgradeSuccess îl recuperează și îl atașează.
+
+7) Mini‑dashboard (opțional)
+
+Exemplu query (SQL)
+
+-- Conversia pe funnel PLG (view)
+select
+  date_trunc('day', ts) as day,
+  ctx,
+  count(*) filter (where name='gate_hit') as gate_hits,
+  count(*) filter (where name='paywall_view') as views,
+  count(*) filter (where name='paywall_cta_click') as cta_clicks,
+  count(*) filter (where name='upgrade_success') as upgrades
+from ui_events
+group by 1,2
+order by 1 desc;
+
+8) Checklist „gata de lipit”
+
+ Adaugi fișierele din §1–3 (types.ts, anon.ts, client.ts).
+
+ Creezi route‑ul /api/telemetry din §4 + DDL.
+
+ Instrumentezi HOC, PaywallInline/Modal, RunTest/Export/Bundle/API cu contextul corect (vezi §5).
+
+ Adaugi pagina /upgrade/success + redirecționezi Stripe/Sales acolo (vezi §6).
+
+ Testezi: declanșează fiecare acțiune „aha”, verifică că apar 4 evenimente corespunzătoare în ui_events.
+
+

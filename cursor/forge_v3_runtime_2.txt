@@ -1,0 +1,5 @@
+Content for forge_v3_runtime_2.txt
+DoR: Definition of Ready
+DoD: Definition of Done
+prompt_standard: Standard prompt format
+entitlements: User entitlements

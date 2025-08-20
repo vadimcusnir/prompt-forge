@@ -1,0 +1,1417 @@
+
+
+
+
+
+Licențe & Entitlements pentru PROMPTFORGE™, astfel încât fiecare capabilitate (feature flag) să fie mapată clar pe plan (SKU) și, unde e cazul, pe pachete de industrie. Totul e conform specificațiilor oficiale din standard și schema Supabase/Stripe.
+
+🗂 Entitlements Canonice (feature flags)
+
+canUseAllModules – acces M01–M50
+
+canExportMD – export .md
+
+canExportPDF – export .pdf
+
+canExportJSON – export .json
+
+canUseGptTestReal – rulare Test Engine pe GPT live
+
+hasCloudHistory – istoric prompturi în Supabase (nelimitat)
+
+hasEvaluatorAI – scoruri + feedback din Evaluator AI
+
+hasAPI – acces endpoint public /api/run/{moduleId}
+
+hasWhiteLabel – branding customizat + self-host license
+
+canExportBundleZip – bundle complet (.txt/.md/.json/.pdf + checksum)
+
+hasSeatsGT1 – licență multi-seat (Enterprise)
+
+📦 Mapping pe Planuri (SKU generice)
+Plan	Entitlements implicite
+Free	canUseAllModules=false, canExportMD=false, acces doar subset (M01, M10, M18), fără GPT live, fără export avansat
+Creator	canUseAllModules=true, canExportMD=true, dar fără PDF/JSON, fără GPT live, fără cloud history
+Pro	Include Creator + canExportPDF, canExportJSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI
+Enterprise	Include Pro + hasAPI, hasWhiteLabel, canExportBundleZip, hasSeatsGT1
+🌍 Mapping pe Industry Packs
+
+Industry Packs extind planul de bază (Creator/Pro/Enterprise) cu preseturi de domeniu + subset de module + KPIs.
+
+Exemple
+
+FinTech Pack (1.990€/an)
+
+Modules: M07, M13, M31, M33, M44, M50
+
+Domain preset: jargon (KYC, AML…), KPIs (fraud_rate, KYC_time…), compliance SEC/FCA
+
+Export bundle spec+json obligatoriu (audit-like)
+
+Gating: disponibil doar Pro/Enterprise (nu Free)
+
+E-Commerce Pack (1.490€/an)
+
+Modules: M03, M09, M13, M14, M22, M32
+
+Domain preset: KPIs (CR, AOV, LTV…), guardrails (claritate preț/retur)
+
+Default output: playbook+checklist (implementation focus)
+
+Education Pack (1.490€/an)
+
+Modules: M21, M23, M25, M31, M38, M47
+
+Domain preset: KPIs (completion, engagement, retention), compliance (privacy/plagiat)
+
+Default output: playbook+spec
+
+⚙️ Flux de aplicare în sistem
+
+Stripe → Supabase: webhook actualizează subscriptions.plan_code și generează entitlements efective.
+
+Industry Pack activat: se inserează în org_industry_packs, aplică domain_config preset (jargon, KPIs, compliance, style_bias).
+
+API & UI gating: la fiecare acțiune (export/test/API) se verifică entitlements → dacă flag=FALSE → paywall/upsell.
+
+Audit: entitlements persistate cu source (plan|addon|pack|license) → trasabilitate în DB.
+
+
+
+
+
+
+
+În PROMPTFORGE™ v3, Entitlements Canonice funcționează ca feature flags binare, care controlează capabilitățile UI, API și export. Le detaliez pe fiecare, cu rol, logică de gating și implicații practice:
+
+🗂 Entitlements Canonice (feature flags)
+1. canUseAllModules
+
+Rol: permite accesul la întregul set M01–M50.
+
+False → acces doar la subset free/demo (ex: M01 Persona, M07 Risk Reversal, M14 Landing Page).
+
+True → vizibilitate și rulare completă în editor + API.
+
+Implicație: primul flag care separă Free de Creator/Pro/Enterprise.
+
+2. canExportMD
+
+Rol: permite exportul .md (Markdown), folosit ca format standard lizibil pentru documentație și playbookuri.
+
+False → UI ascunde buton „Export .md” → se poate doar copy-paste.
+
+True → /export/md devine disponibil.
+
+Use case: Creator+ (minim).
+
+3. canExportPDF
+
+Rol: permite export .pdf (raport comercial brand-uit).
+
+False → PDF generat doar ca preview intern (fără download).
+
+True → download PDF activ.
+
+Use case: Pro+.
+
+Implicație: servește ca „premium unlock” pentru livrabile comerciale (consulting, training, enterprise reports).
+
+4. canExportJSON
+
+Rol: permite export .json (artefacte structurale, config, schema).
+
+False → UI/API blochează acces JSON.
+
+True → endpoint /export/json deschis.
+
+Use case: Pro+ (tehnic/dev).
+
+Implicație: necesar pentru integrare cu alte sisteme (automation, CI/CD).
+
+5. canUseGptTestReal
+
+Rol: permite rularea Test Engine pe GPT live (scoruri pe claritate/execution/ambiguity/business_fit).
+
+False → doar test offline (simulat).
+
+True → execuție reală cu cost API, telemetry log + verdict.
+
+Use case: Pro+ (tool de QA și validare).
+
+Implicație: consum tokens → necesită plan plătit.
+
+6. hasCloudHistory
+
+Rol: persistă istoricul prompturilor și bundle-urilor în Supabase (nelimitat).
+
+False → doar localStorage/cache; ștergere după 7 zile.
+
+True → DB cloud + UI timeline + căutare full-text.
+
+Use case: Pro/Enterprise.
+
+Implicație: retention diferențiat (Free: 7 zile; Pro: 90 zile; Enterprise: nelimitat).
+
+7. hasEvaluatorAI
+
+Rol: acces la Evaluator AI (scoring + feedback text explicativ).
+
+False → doar scor numeric simplu.
+
+True → scor + feedback narativ + recomandări automate (tighten, optimize, crisis mode).
+
+Use case: Pro+.
+
+Implicație: layer cognitiv suplimentar → permite auto-repair & coaching AI.
+
+8. hasAPI
+
+Rol: acces endpoint public /api/run/{moduleId} cu key/token.
+
+False → doar UI.
+
+True → integrabil în pipelines externe.
+
+Use case: Enterprise.
+
+Implicație: gating pe planurile care includ integrări automate (Stripe seat billing + audit).
+
+9. hasWhiteLabel
+
+Rol: branding customizat + self-host license.
+
+False → branding PROMPTFORGE™ by default.
+
+True → logo, culori, domeniu propriu, licență whitelabel.
+
+Use case: Enterprise.
+
+Implicație: asociat direct cu contracte B2B high-ticket.
+
+10. canExportBundleZip
+
+Rol: export complet .zip cu toate artefactele: .txt, .md, .json, .pdf, telemetry.json, checksum.txt, manifest.json.
+
+False → doar export individual per format.
+
+True → „Download Bundle” → pachet validat + semnat.
+
+Use case: Enterprise.
+
+Implicație: standard legal (audit, consultanță, QA).
+
+11. hasSeatsGT1
+
+Rol: licență multi-seat (mai mulți useri/org).
+
+False → doar single-user.
+
+True → gestionare seat-uri, invitații, roluri.
+
+Use case: Enterprise.
+
+Implicație: Stripe seat billing, integrat cu Supabase RLS (org_id).
+
+🔑 Observații
+
+Toate aceste flaguri sunt bool per subscription/org.
+
+Sunt mapate în tabelul entitlements (Supabase) și propagate în UI + API prin JWT claims.
+
+Diferențiere: Planurile (Free/Creator/Pro/Enterprise) definesc combinația standard → Packs & Addons adaugă flaguri suplimentare.
+
+Compatibilitate Stripe: fiecare plan → SKU cu set de entitlements default; packs → org_industry_packs.
+
+
+
+
+
+
+Conținut cheie (în folderul ZIP):
+
+licensing/feature_flags.json — definiții oficiale ale entitlements (11 flags).
+
+licensing/plans.json — planurile Free / Creator / Pro / Enterprise cu toate flagurile, allowlist module, exporturi permise și retenție.
+
+licensing/plan_entitlements_matrix.csv — matrice vizuală TRUE/FALSE pe toate entitlements × plan.
+
+licensing/seed_plans_entitlements.sql — seed SQL (creează tabele entitlements, plans, plan_entitlements și inserează datele).
+
+licensing/stripe_products_seed.json — schelet produse & prețuri Stripe (cu placeholder IDs).
+
+
+
+
+📦 Rezumat mapping pe planuri (SKU generice)
+Plan	canUseAllModules	canExportMD	canExportPDF	canExportJSON	canUseGptTestReal	hasCloudHistory	hasEvaluatorAI	hasAPI	hasWhiteLabel	canExportBundleZip	hasSeatsGT1	Module allowlist	Exports	Retenție
+Free	❌	❌	❌	❌	❌	❌	❌	❌	❌	❌	❌	M01,M10,M18	txt	7 zile
+Creator	✅	✅	❌	❌	❌	❌	❌	❌	❌	❌	❌	ALL	txt, md	30 zile
+Pro	✅	✅	✅	✅	✅	✅	✅	❌	❌	❌	❌	ALL	txt, md, json, pdf	90 zile
+Enterprise	✅	✅	✅	✅	✅	✅	✅	✅	✅	✅	✅	ALL	txt, md, json, pdf, bundle	nelimitat
+
+Note:
+
+Free are subset de module: M01, M10, M18 (conform cerinței tale).
+
+Creator deblochează .md, dar nu are cloud history sau GPT live.
+
+Pro adaugă Test Engine live, Evaluator AI, JSON/PDF și Cloud History.
+
+Enterprise adaugă API, WhiteLabel, Bundle ZIP și multi‑seat.
+
+
+
+
+
+# Create Industry Pack JSON configs and a small README, then zip them for download.
+import json, os, zipfile, textwrap, datetime, hashlib
+
+base = "/mnt/data/industry_packs"
+os.makedirs(base, exist_ok=True)
+
+schema = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IndustryPack",
+  "type": "object",
+  "required": ["slug","title","price_eur_per_year","min_plan","modules","domain_preset","export_requirements"],
+  "properties": {
+    "slug": {"type":"string"},
+    "title": {"type":"string"},
+    "price_eur_per_year": {"type":"integer"},
+    "min_plan": {"type":"string", "enum":["creator","pro","enterprise"]},
+    "modules": {"type":"array","items":{"type":"string","pattern":"^M\\d{2}$"}},
+    "domain_preset": {
+      "type":"object",
+      "required":["jargon","kpis","compliance_notes","style_bias","default_output_format","risk_level"],
+      "properties": {
+        "jargon":{"type":"array","items":{"type":"string"}},
+        "kpis":{"type":"array","items":{"type":"string"}},
+        "compliance_notes":{"type":"string"},
+        "style_bias":{"type":"string"},
+        "default_output_format":{"type":"string"},
+        "risk_level":{"type":"string", "enum":["low","medium","high"]}
+      }
+    },
+    "defaults_7d": {
+      "type":"object",
+      "properties": {
+        "scale":{"type":"string"},
+        "urgency":{"type":"string"},
+        "complexity":{"type":"string"},
+        "resources":{"type":"string"},
+        "application":{"type":"string"},
+        "output":{"type":"array","items":{"type":"string"}}
+      }
+    },
+    "export_requirements": {"type":"array","items":{"type":"string"}},
+    "evaluator_lints": {"type":"array","items":{"type":"string"}},
+    "guardrails": {"type":"array","items":{"type":"string"}},
+    "ui": {"type":"object","properties":{
+        "upsell_banner_copy":{"type":"string"},
+        "paywall_feature":{"type":"string"}
+    }},
+    "stripe": {"type":"object","properties":{
+        "floor_eur":{"type":"integer"},
+        "product_id":{"type":"string"},
+        "price_id_monthly":{"type":"string"},
+        "price_id_annual":{"type":"string"}
+    }},
+    "supabase": {"type":"object","properties":{
+        "gating_sql_note":{"type":"string"}
+    }}
+  }
+}
+
+packs = [
+  {
+    "slug":"fintech",
+    "title":"FinTech Pack",
+    "price_eur_per_year":1990,
+    "min_plan":"pro",
+    "modules":["M07","M13","M31","M33","M44","M50"],
+    "domain_preset":{
+      "jargon":["KYC","AML","regtech","sandboxing"],
+      "kpis":["fraud_rate","KYC_time","approval_rate"],
+      "compliance_notes":"SEC/FCA sensitive; claims must be verifiable; no forward-looking statements without sources",
+      "style_bias":"analytical, layered, formal; audit-like phrasing",
+      "default_output_format":"spec",
+      "risk_level":"high"
+    },
+    "defaults_7d":{
+      "scale":"enterprise",
+      "urgency":"sprint",
+      "complexity":"advanced",
+      "resources":"full_stack_org",
+      "application":"implementation",
+      "output":["spec","json","playbook"]
+    },
+    "export_requirements":["spec","json"],
+    "evaluator_lints":[
+      "Flag unverifiable financial claims",
+      "Ensure every risk/guarantee cites an authoritative source",
+      "Require datestamps on regulatory references"
+    ],
+    "guardrails":[
+      "No advice implying regulatory approval",
+      "Surface data lineage (src_hash, author, date) in artifacts"
+    ],
+    "ui":{
+      "upsell_banner_copy":"Activă FinTech Mode: KYC/AML presets, audit-grade exports (.spec + .json).",
+      "paywall_feature":"industryPack_fintech"
+    },
+    "stripe":{"floor_eur":1490,"product_id":"","price_id_monthly":"","price_id_annual":""},
+    "supabase":{"gating_sql_note":"SELECT 1 FROM org_industry_packs WHERE org_id=$1 AND pack_slug='fintech';"}
+  },
+  {
+    "slug":"ecommerce",
+    "title":"E-Commerce Pack",
+    "price_eur_per_year":1490,
+    "min_plan":"pro",
+    "modules":["M03","M09","M13","M14","M22","M32"],
+    "domain_preset":{
+      "jargon":["CR","AOV","LTV","CAC","RFM segmentation"],
+      "kpis":["conversion_rate","average_order_value","lifetime_value","return_rate"],
+      "compliance_notes":"Transparent pricing & returns; consumer protection",
+      "style_bias":"operational, test-driven, crisp CTAs",
+      "default_output_format":"playbook",
+      "risk_level":"medium"
+    },
+    "defaults_7d":{
+      "scale":"smb",
+      "urgency":"sprint",
+      "complexity":"standard",
+      "resources":"lean_team",
+      "application":"implementation",
+      "output":["playbook","checklist","json"]
+    },
+    "export_requirements":["playbook","checklist"],
+    "evaluator_lints":[
+      "Check copy for clear price & returns policy",
+      "Ensure KPI ownership and thresholds per experiment"
+    ],
+    "guardrails":["No dark patterns; explicit opt-in/out"],
+    "ui":{
+      "upsell_banner_copy":"Pornește E‑Commerce Mode: CR/AOV/LTV presets + playbook & checklist auto.",
+      "paywall_feature":"industryPack_ecommerce"
+    },
+    "stripe":{"floor_eur":1490,"product_id":"","price_id_monthly":"","price_id_annual":""},
+    "supabase":{"gating_sql_note":"SELECT 1 FROM org_industry_packs WHERE org_id=$1 AND pack_slug='ecommerce';"}
+  },
+  {
+    "slug":"education",
+    "title":"Education Pack",
+    "price_eur_per_year":1490,
+    "min_plan":"pro",
+    "modules":["M21","M23","M25","M31","M38","M47"],
+    "domain_preset":{
+      "jargon":["LMS","cohort","asynchronous/synchronous","rubric-based grading"],
+      "kpis":["completion_rate","engagement_rate","retention_rate"],
+      "compliance_notes":"Privacy first; anti-plagiarism; academic integrity",
+      "style_bias":"supportive, rubric-driven, transparent feedback",
+      "default_output_format":"playbook",
+      "risk_level":"medium"
+    },
+    "defaults_7d":{
+      "scale":"startup",
+      "urgency":"planned",
+      "complexity":"advanced",
+      "resources":"lean_team",
+      "application":"training",
+      "output":["playbook","spec","json"]
+    },
+    "export_requirements":["playbook","spec"],
+    "evaluator_lints":[
+      "Detect potential plagiarism indicators in examples",
+      "Require anonymization on student data & PII hashing"
+    ],
+    "guardrails":["No storage of PII without consent; disclose model usage to learners"],
+    "ui":{
+      "upsell_banner_copy":"Activează Education Mode: KPI‑uri completion/engagement + playbook & spec.",
+      "paywall_feature":"industryPack_education"
+    },
+    "stripe":{"floor_eur":1490,"product_id":"","price_id_monthly":"","price_id_annual":""},
+    "supabase":{"gating_sql_note":"SELECT 1 FROM org_industry_packs WHERE org_id=$1 AND pack_slug='education';"}
+  }
+]
+
+# write files
+with open(os.path.join(base, "schema.industry-pack.json"), "w") as f:
+    json.dump(schema, f, indent=2)
+
+for pack in packs:
+    with open(os.path.join(base, f"{pack['slug']}.json"), "w") as f:
+        json.dump(pack, f, indent=2)
+
+readme = f"""# Industry Packs (PROMPTFORGE v3)
+Generated: {datetime.datetime.utcnow().isoformat()}Z
+
+Files:
+- `schema.industry-pack.json` — canonical schema
+- `fintech.json` — FinTech Pack (Pro/Enterprise only; audit-grade exports .spec + .json)
+- `ecommerce.json` — E‑Commerce Pack (Pro/Enterprise; playbook + checklist)
+- `education.json` — Education Pack (Pro/Enterprise; playbook + spec)
+
+Import into Supabase:
+1) Create `industry_packs` rows from these JSONs (one row per pack).
+2) Gate usage via `org_industry_packs` and plan entitlements.
+3) Enforce price floor via Stripe config and webhook policy.
+"""
+with open(os.path.join(base, "README.md"), "w") as f:
+    f.write(readme)
+
+
+
+
+
+
+iată mapping-ul complet pentru Industry Packs + fișierele gata de folosit (JSON + schema + README).
+
+📦 Spec canonic Industry Pack (contract)
+
+Câmpuri: slug, title, price_eur_per_year, min_plan, modules[] (Mxx), domain_preset{jargon[],kpis[],compliance_notes,style_bias,default_output_format,risk_level}, defaults_7d{…}, export_requirements[], evaluator_lints[], guardrails[], ui{upsell_banner_copy,paywall_feature}, stripe{floor_eur,…}, supabase{gating_sql_note}.
+
+Gating: pack-urile se atașează peste planurile Pro/Enterprise (nu Free). Enforcement se face la /api/run/{moduleId} prin entitlements + check pack (org_industry_packs).
+
+Export: bundle MD/PDF/JSON + checksum; pack-ul poate impune formate minime (ex. .spec+.json pentru FinTech).
+
+UI: upsell la schimbarea domain (banner/buton) + paywall pe acțiuni (Test GPT real, export bundle, API).
+
+Evaluator AI: scoruri (clarity/execution/ambiguity/alignment/business_fit) + lints specifice domeniului.
+
+Modelare DB: tabele industry_packs, org_industry_packs; flags & gating în entitlements.
+
+🏦 FinTech Pack — 1.990 €/an (Pro/Enterprise)
+
+Modules: M07 (Risk & Trust), M13 (Pricing), M31 (Telemetry), M33 (Lead Scoring), M44 (Ethical Guardrails), M50 (CUSNIR.OS).
+
+Domain preset:
+
+jargon: KYC, AML, regtech, sandboxing;
+
+KPIs: fraud_rate, KYC_time, approval_rate;
+
+compliance: „SEC/FCA sensitive; fără claims neverificate”;
+
+stil: formal, stratificat („audit-like”).
+
+Default 7D: scale=enterprise, urgency=sprint, complexity=advanced, resources=full_stack_org, application=implementation; output: spec/json/playbook.
+
+Export (obligatoriu): .spec + .json (audit trail, dată/autor/sursă).
+
+Evaluator lints: citează reglementări cu dată; marchează afirmații financiare neverificabile; cere provenance (src_hash).
+
+🛒 E‑Commerce Pack — 1.490 €/an (Pro/Enterprise)
+
+Modules: M03 (Campanii 7:1), M09 (Subscription Engine), M13 (Pricing), M14 (Content→Commerce), M22 (Lead Gen SOP), M32 (Cohort Experiments).
+
+Domain preset:
+
+KPIs: CR, AOV, LTV, return_rate;
+
+guardrails: claritate preț/retur;
+
+stil: operațional, test‑driven.
+
+Default output: playbook + checklist (focus implementare).
+
+Evaluator lints: proprietari KPI/threshold-uri pe experimente; detectează dark‑patterns.
+
+🎓 Education Pack — 1.490 €/an (Pro/Enterprise)
+
+Modules: M21 (SOP AI în Moodle), M23 (Podcast→Carte), M25 (Knowledge Security), M31 (Telemetry), M38 (Blueprint Antișcoală), M47 (Curriculum INTELIGENȚIA™).
+
+Domain preset:
+
+KPIs: completion, engagement, retention;
+
+compliance: privacy/plagiat;
+
+stil: suportiv, rubric-driven.
+
+Default output: playbook + spec.
+
+Evaluator lints: semnale anti‑plagiat; anonimizare PII; disclosure folosire model.
+
+🗄️ Supabase — seed & gating (DDL/SQL)
+-- 1) Catalog packs
+insert into industry_packs(slug,title,modules,domain_config,price_eur)
+values
+('fintech','FinTech Pack',  ARRAY['M07','M13','M31','M33','M44','M50'],
+ '{"jargon":["KYC","AML","regtech","sandboxing"],
+   "kpis":["fraud_rate","KYC_time","approval_rate"],
+   "compliance_notes":"SEC/FCA sensitive; verifiable-only",
+   "style_bias":"analytical, layered, formal",
+   "default_output_format":"spec","risk_level":"high"}'::jsonb, 1990),
+('ecommerce','E‑Commerce Pack',ARRAY['M03','M09','M13','M14','M22','M32'],
+ '{"kpis":["CR","AOV","LTV","return_rate"],
+   "compliance_notes":"Transparent pricing & returns",
+   "style_bias":"operational, test-driven",
+   "default_output_format":"playbook","risk_level":"medium"}'::jsonb, 1490),
+('education','Education Pack',ARRAY['M21','M23','M25','M31','M38','M47'],
+ '{"kpis":["completion","engagement","retention"],
+   "compliance_notes":"privacy & anti-plagiarism",
+   "style_bias":"supportive, rubric-driven",
+   "default_output_format":"playbook","risk_level":"medium"}'::jsonb, 1490);
+
+-- 2) Activare în org (după checkout Stripe)
+insert into org_industry_packs(org_id, pack_slug) values (:org,'fintech');
+
+-- 3) Gating la /api/run/{moduleId}
+-- (pseudo) refuză dacă plan < Pro sau pack absent când domain='FinTech'
+-- SELECT * FROM entitlements e WHERE org_id=:org AND flag='plan_code' IN ('pro','enterprise');
+-- SELECT 1 FROM org_industry_packs WHERE org_id=:org AND pack_slug='fintech';
+
+
+Schema/tabelele pentru packs + RLS apar în modelarea v3 (industry_packs/org_industry_packs).
+
+💳 Stripe — SKU & floor
+
+Prețuri: FinTech 1.990 €/an; E‑Commerce/Education 1.490 €/an. Floor minim Industry Pack ≥ 1.490 € (validat în webhook).
+
+Recomandare: floor_eur în config + verificare în stripe_events/webhook, cu respingere dacă < floor.
+
+🔐 Enforcement (rulare / export / API)
+
+/api/run/{moduleId}: verifică plan + entitlement + pack (dacă domain=pack). Răspunsul include hash, timestamp, KPIs, cost; log obligatoriu.
+
+Export Bundle: generează .txt .md .json .pdf telemetry.json checksum.txt (+ .zip Enterprise) și blochează formatele neincluse în entitlement; FinTech: forțează .spec+.json.
+
+Evaluator AI: rulează post‑run cu rubrică 0–100×5, memorează scor/feedback; butoane „Tighten/Optimize for Enterprise/Crisis”.
+
+🧩 UI & upsell
+
+Banner la schimbarea domain ⇒ sugerează pack (ex. “Activează FinTech Mode: KYC/AML presets, audit‑grade exports”).
+
+Paywall pe acțiuni „aha”: Run GPT Test (real), Export .pdf/.json/.bundle, API.
+
+📁 Fișiere gata de import (JSON + schema)
+
+Am generat pentru tine tot setul (schema + 3 pack‑uri) — le poți importa direct în repo/DB:
+
+Descarcă pachetul Industry Packs (zip)
+Conține:
+
+schema.industry-pack.json — schemă canonică,
+
+fintech.json, ecommerce.json, education.json — config‑uri complete,
+
+README.md — pași de import.
+
+
+
+
+
+modelul de licențe & entitlements → planuri → industry packs direct pe blueprintul PROMPTFORGE™ v3 și schema Supabase/Stripe:
+
+🗂 Entitlements Canonice (feature flags)
+
+canUseAllModules – acces complet la M01–M50
+
+canExportMD – export .md
+
+canExportPDF – export .pdf
+
+canExportJSON – export .json
+
+canUseGptTestReal – acces Test Engine cu GPT live
+
+hasCloudHistory – istoric prompturi în Supabase
+
+hasEvaluatorAI – scoruri & feedback Evaluator AI
+
+hasAPI – acces public /api/run/{moduleId}
+
+hasWhiteLabel – branding custom + self-host license
+
+canExportBundleZip – bundle complet (.txt/.md/.json/.pdf + checksum)
+
+hasSeatsGT1 – licență multi-seat (Enterprise)
+
+Acestea sunt binare (true/false) și se atașează fie planului, fie add-on-ului.
+
+📦 Mapping pe Planuri (SKU Generice)
+Plan	Entitlements implicite
+Free	canUseAllModules=false, canExportMD=false, acces doar subset (M01, M10, M18); fără GPT live, fără export avansat
+Creator	canUseAllModules=true, canExportMD=true; dar fără PDF/JSON, fără GPT live, fără cloud history
+Pro	Include Creator + canExportPDF, canExportJSON, canUseGptTestReal, hasCloudHistory, hasEvaluatorAI
+Enterprise	Include Pro + hasAPI, hasWhiteLabel, canExportBundleZip, hasSeatsGT1
+
+→ Stocate în plans.flags ca snapshot JSONB.
+
+🌍 Mapping pe Industry Packs
+
+Industry Packs = extensii verticale (doar Pro/Enterprise), cu subset module + preset de domeniu + KPI.
+
+FinTech Pack (1.990 €/an)
+
+Modules: M07, M13, M31, M33, M44, M50
+
+Domain preset: jargon (KYC, AML, regtech), KPIs (fraud_rate, KYC_time), compliance SEC/FCA
+
+Output obligatoriu: spec+json (audit-like)
+
+Gating: doar Pro/Enterprise
+
+E-Commerce Pack (1.490 €/an)
+
+Modules: M03, M09, M13, M14, M22, M32
+
+Domain preset: KPIs (CR, AOV, LTV), guardrails (claritate preț/retur)
+
+Output default: playbook+checklist (implementation focus)
+
+Education Pack (1.490 €/an)
+
+Modules: M21, M23, M25, M31, M38, M47
+
+Domain preset: KPIs (completion, engagement, retention), compliance (privacy, plagiat)
+
+Output default: playbook+spec
+
+Industry Packs se activează prin org_industry_packs și aplică auto-bias la generare.
+
+🔑 Integrare Stripe & Supabase
+
+Stripe: SKU per plan (free, creator, pro, enterprise) + SKU per industry pack (fintech_core, ecommerce_core etc.).
+
+Supabase:
+
+plans = snapshot flags
+
+subscriptions = Stripe sync (plan, seats, trial)
+
+entitlements = derivate (plan|addon|license)
+
+industry_packs + org_industry_packs = mapare industrie
+
+Webhook Stripe → upsert în entitlements și org_industry_packs
+
+
+
+
+
+design complet, executabil pentru fluxul de aplicare Licențe & Entitlements în PROMPTFORGE™ v3 (Stripe → Supabase → API/UI), cu: modele de date, webhook logic (idempotent), funcții SQL de calcul, gating server & UI, audit și scenarii edge. Totul este compatibil cu migrațiile pe care le-ai primit deja.
+
+⚙️ Arhitectură “end‑to‑end”
+
+Surse de adevăr
+
+Stripe = billing & events (plan, addon, industry pack).
+
+Supabase = state & gating (subscriptions, entitlements, packs, audit).
+
+JWT = claim‑uri runtime (org_id, plan_code).
+
+Regulă de compoziție
+
+Entitlements efective = PLAN ⊕ ADDONS ⊕ PACKS ⊕ LICENSE
+(⊕ = OR logic pe fiecare flag)
+
+Gating la execuție
+
+Orice acțiune (run/test/export/API) verifică entitlements_effective (server‑side) → altfel paywall/upsell (UI).
+
+1) Modele de date (SQL – extensii la schema existentă)
+-- Planuri de preț (snapshot de flags și meta)
+create table if not exists plans (
+  plan_code text primary key,                      -- "free"|"creator"|"pro"|"enterprise"
+  title text not null,
+  flags jsonb not null,                            -- {"canUseAllModules":true,...}
+  module_allowlist text[] not null default '{}',   -- subset pt. planuri restrictive (ex. Free)
+  retention_days int not null default 90,
+  created_at timestamptz default now()
+);
+
+-- Subscriptions sincronizate din Stripe
+create table if not exists subscriptions (
+  id uuid primary key default uuid_generate_v4(),
+  org_id uuid not null references orgs(id) on delete cascade,
+  stripe_customer_id text not null,
+  stripe_subscription_id text,
+  plan_code text not null references plans(plan_code),
+  status text not null,                            -- trialing|active|past_due|canceled|unpaid
+  current_period_end timestamptz,
+  seats int not null default 1,
+  updated_at timestamptz default now(),
+  unique(org_id, plan_code)
+);
+
+-- Entitlements atomice (proveniță: plan|addon|pack|license)
+create type entitlement_source as enum ('plan','addon','pack','license');
+
+create table if not exists entitlements (
+  id bigserial primary key,
+  org_id uuid not null references orgs(id) on delete cascade,
+  flag text not null,
+  value boolean not null default true,
+  source entitlement_source not null,
+  source_ref text,                                 -- ex: "pro" sau "fintech"
+  created_at timestamptz default now(),
+  unique (org_id, flag, source, source_ref)
+);
+
+-- Industry packs (catalog) + atașări la org
+create table if not exists industry_packs (
+  slug text primary key,                           -- "fintech"|"ecommerce"|"education"
+  title text not null,
+  min_plan text not null references plans(plan_code),
+  price_eur int not null,
+  modules text[] not null,
+  domain_config jsonb not null,                    -- jargon, kpis, compliance, style, output
+  created_at timestamptz default now()
+);
+
+create table if not exists org_industry_packs (
+  org_id uuid not null references orgs(id) on delete cascade,
+  pack_slug text not null references industry_packs(slug) on delete cascade,
+  activated_at timestamptz default now(),
+  unique(org_id, pack_slug)
+);
+
+-- Vedere: entitlements efective (OR pe toate sursele)
+create or replace view entitlements_effective as
+select
+  e.org_id,
+  e.flag,
+  bool_or(e.value) as enabled
+from entitlements e
+group by e.org_id, e.flag;
+
+-- Snapshot util pentru UI (plan curent)
+create or replace view org_plan_snapshot as
+select s.org_id, s.plan_code, p.flags, p.module_allowlist, p.retention_days, s.status
+from subscriptions s
+join plans p on p.plan_code = s.plan_code
+where s.status in ('trialing','active','past_due');
+
+2) Funcții SQL pentru calcul & seed
+-- 2.1 Upsert entitlements din plan (idempotent)
+create or replace function pf_apply_plan_entitlements(p_org uuid, p_plan text)
+returns void language sql as $$
+  insert into entitlements(org_id, flag, value, source, source_ref)
+  select p_org, key, (p.flags->>key)::boolean, 'plan', p_plan
+  from plans p, jsonb_object_keys(p.flags) as key
+  where p.plan_code = p_plan
+  on conflict (org_id, flag, source, source_ref) do update
+    set value = excluded.value, created_at = now();
+$$;
+
+-- 2.2 Aplică Industry Pack → entitlements + preset domain_config
+create or replace function pf_apply_pack(p_org uuid, p_pack_slug text)
+returns void language plpgsql as $$
+declare
+  min_plan text;
+begin
+  -- atașează pack la org (idempotent)
+  insert into org_industry_packs(org_id, pack_slug)
+  values (p_org, p_pack_slug)
+  on conflict do nothing;
+
+  -- activează flag simbolic pentru gating UI/API (de ex. "industryPack_fintech")
+  insert into entitlements(org_id, flag, value, source, source_ref)
+  values (p_org, 'industryPack_'||p_pack_slug, true, 'pack', p_pack_slug)
+  on conflict (org_id, flag, source, source_ref) do update set value=true, created_at=now();
+
+  -- NOTE: domain_config se injectează la runtime (nu se copiază în DB ca flags);
+  -- dacă vrei snapshot, poți salva în tabel separat (org_domain_overrides).
+end; $$;
+
+-- 2.3 Revocare entitlements pentru plan (ex: downgrade/cancel)
+create or replace function pf_revoke_plan_entitlements(p_org uuid, p_plan text)
+returns void language sql as $$
+  delete from entitlements
+  where org_id = p_org and source='plan' and source_ref = p_plan;
+$$;
+
+
+Seed plans: populat anterior (Free, Creator, Pro, Enterprise) cu JSONB flags.
+
+3) Stripe → Supabase (webhook) — Edge Function
+
+Evenimente utile
+
+checkout.session.completed (start abonament sau pack)
+
+customer.subscription.* (created/updated/deleted)
+
+invoice.paid / invoice.payment_failed (pack renewals)
+
+Principii
+
+Verifică semnătura (Stripe‑Signature header)
+
+Idempotent: persistă event_id în stripe_events (unique), altfel ignoră
+
+Mapare: SKU → plan_code sau pack_slug
+
+Upsert: în subscriptions + apel funcții pf_apply_*
+
+Skeleton (Deno/TypeScript)
+
+// supabase/functions/stripe-webhook/index.ts
+import { serve } from "https://deno.land/std/http/server.ts";
+import Stripe from "https://esm.sh/stripe@13.6.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+const STRIPE_SECRET = Deno.env.get("STRIPE_SECRET")!;
+const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
+const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+const stripe = new Stripe(STRIPE_SECRET, { apiVersion: "2024-06-20" });
+
+serve(async (req) => {
+  const sig = req.headers.get("stripe-signature") ?? "";
+  const body = await req.text();
+  let event;
+
+  try { event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET); }
+  catch (e) { return new Response("Invalid signature", { status: 400 }); }
+
+  // idempotency: store event.id
+  const { error: dupErr } = await supabase.from("stripe_events").insert({ id: event.id }).select().single().then(()=>({error:null})).catch(()=>({error:true}));
+  if (dupErr) return new Response("OK (duplicate)", { status: 200 });
+
+  // extract org by customer_id
+  const customerId = (event.data.object as any).customer ?? (event.data.object as any).customer_id;
+  const { data: orgRow } = await supabase.from("orgs").select("id").eq("stripe_customer_id", customerId).maybeSingle();
+  if (!orgRow) return new Response("No org for customer", { status: 200 });
+
+  const org_id = orgRow.id as string;
+
+  // route events
+  switch (event.type) {
+    case "customer.subscription.created":
+    case "customer.subscription.updated": {
+      const sub = event.data.object as any;
+      const plan_code = mapStripePriceToPlan(sub.items.data[0].price.id); // implement mapping
+      const status = sub.status; const current_period_end = new Date(sub.current_period_end * 1000).toISOString();
+      await supabase.from("subscriptions").upsert({
+        org_id, stripe_customer_id: customerId, stripe_subscription_id: sub.id,
+        plan_code, status, current_period_end, seats: sub.quantity ?? 1, updated_at: new Date().toISOString()
+      }, { onConflict: "org_id,plan_code" });
+
+      // apply plan entitlements
+      await supabase.rpc("pf_apply_plan_entitlements", { p_org: org_id, p_plan: plan_code });
+      break;
+    }
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as any;
+      const plan_code = mapStripePriceToPlan(sub.items.data[0].price.id);
+      await supabase.rpc("pf_revoke_plan_entitlements", { p_org: org_id, p_plan: plan_code });
+      break;
+    }
+    case "checkout.session.completed": {
+      const cs = event.data.object as any;
+      const lineItems = await stripe.checkout.sessions.listLineItems(cs.id);
+      for (const it of lineItems.data) {
+        const sku = it.price?.id as string;
+        const pack = mapStripePriceToPack(sku);      // implement mapping (e.g. price_ABC -> "fintech")
+        const plan = mapStripePriceToPlan(sku);
+        if (pack) await supabase.rpc("pf_apply_pack", { p_org: org_id, p_pack_slug: pack });
+        if (plan) await supabase.rpc("pf_apply_plan_entitlements", { p_org: org_id, p_plan: plan });
+      }
+      break;
+    }
+  }
+
+  return new Response("OK", { status: 200 });
+});
+
+
+Mapping: Ține într‑un tabel stripe_prices(plan_code, price_id) și stripe_prices_pack(pack_slug, price_id) ca să eviți cod hard‑codat.
+
+4) Industry Pack activat → domain preset la runtime
+
+La /api/run/{moduleId}, dacă domain se potrivește cu un pack activ, injectezi domain_config preset din industry_packs.domain_config în parameter_set_7d și în prompt (stil, KPIs, guardrails).
+
+// Pseudocod (API run)
+const packs = await sql`select ip.slug, ip.domain_config from org_industry_packs oip join industry_packs ip on ip.slug=oip.pack_slug where oip.org_id=${org}`;
+const domain = body.parameter_set_7d.domain; // "fintech" | "ecommerce" ...
+if (packs.some(p => p.slug === domain)) {
+  body.parameter_set_7d = applyDomainPreset(body.parameter_set_7d, packs.find(p=>p.slug===domain).domain_config);
+}
+
+
+FinTech: poate forța output_format: "spec" și Export requirement .spec+.json (vezi gating mai jos).
+
+5) API & UI Gating (server‑side hard gate + UI soft gate)
+5.1 Middleware server (Node/Deno/Edge)
+type Gate = "canUseAllModules"|"canExportMD"|"canExportPDF"|"canExportJSON"|"canUseGptTestReal"|
+            "hasCloudHistory"|"hasEvaluatorAI"|"hasAPI"|"hasWhiteLabel"|"canExportBundleZip"|"hasSeatsGT1";
+
+async function gate(org: string, required: Gate[]): Promise<void> {
+  const rows = await db.query(/* sql */`
+    select flag, enabled from entitlements_effective
+    where org_id = $1 and flag = any($2)`, [org, required]);
+  const enabled = new Map(rows.map((r: any) => [r.flag, r.enabled]));
+  for (const r of required) if (!enabled.get(r)) throw new PaywallError(r);
+}
+
+
+Exemple:
+
+/api/run/:moduleId → gate(org, ["canUseAllModules"])
+
+dacă plan=Free și modulul nu e în allowlist → 403 + X-Upsell: Creator
+
+/api/export/pdf → gate(org, ["canExportPDF"])
+
+/api/test/gpt-live → gate(org, ["canUseGptTestReal"])
+
+/api/bundle.zip → gate(org, ["canExportBundleZip"])
+
+Regulă FinTech (export):
+
+if (domain === "fintech") {
+  // obligatoriu .spec + .json
+  await gate(org, ["canExportJSON"]);         // plan Pro+
+  requireFormats(["spec","json"], exportRequest); // altfel 422
+}
+
+
+Returnează HTTP 402/403 + payload upsell:
+
+{
+  "error": "PAYWALL",
+  "missing_flag": "canExportPDF",
+  "suggested_sku": "pro",
+  "cta": "Upgrade to Pro to export PDF"
+}
+
+5.2 UI soft‑gate
+
+La montarea paginii, clientul face GET /me/entitlements (agregat din entitlements_effective) și GET /me/plan_snapshot (din view).
+
+Componentele ascund butoane sau afișează UpsellBanner când lipsesc flag‑uri.
+
+Când utilizatorul schimbă domain → dacă există pack corespunzător și nu e activ → OpenPaywall("Activate FinTech Pack").
+
+6) Audit & Trasabilitate
+
+Tabele dedicate pentru audit evenimente & schimbări entitlements.
+
+create table if not exists entitlements_audit (
+  id bigserial primary key,
+  org_id uuid not null,
+  flag text not null,
+  old_value boolean,
+  new_value boolean,
+  source entitlement_source,
+  source_ref text,
+  reason text,                         -- webhook|manual|migration
+  actor text,                          -- "stripe:webhook"|"admin:email"
+  at timestamptz default now()
+);
+
+-- Trigger pentru entitlements
+create or replace function pf_audit_entitlements()
+returns trigger language plpgsql as $$
+begin
+  insert into entitlements_audit(org_id, flag, old_value, new_value, source, source_ref, reason, actor)
+  values (coalesce(new.org_id, old.org_id),
+          coalesce(new.flag, old.flag),
+          old.value, new.value,
+          coalesce(new.source, old.source),
+          coalesce(new.source_ref, old.source_ref),
+          current_setting('pf.reason', true),
+          current_setting('pf.actor', true));
+  return new;
+end; $$;
+
+drop trigger if exists trg_entitlements_audit on entitlements;
+create trigger trg_entitlements_audit
+after insert or update or delete on entitlements
+for each row execute function pf_audit_entitlements();
+
+
+Best practices
+
+Webhook setează GUC‑uri: set local pf.reason = 'webhook'; set local pf.actor = 'stripe:webhook';.
+
+UI Admin setează pf.reason='admin', pf.actor='admin:<email>'.
+
+7) Edge cases & politici
+
+Trial → Active: la subscription.updated cu status='active' reaplici plan entitlements (idempotent).
+
+Past_due: păstrezi entitlements dar pui grace period 3 zile (feature flag separat grace_active dacă vrei rafinament).
+
+Cancel & Downgrade: customer.subscription.deleted → pf_revoke_plan_entitlements; păstrezi istoricul în entitlements_audit.
+
+Seat overage: dacă hasSeatsGT1=false și seats_used>1 → blochezi invitații noi (UI) și în API 403 {cta: "Upgrade to Enterprise"}.
+
+Plan < min_plan al unui pack: dacă org are fintech dar plan Creator → gating API la /api/run (ceri upgrade la Pro).
+
+RLS: toate tabelele au politicile pe org_id, deci nu scapi date cross‑tenant.
+
+8) Testare (scenarii minime)
+
+Free → Creator: verifică canUseAllModules trece TRUE; PDF/JSON rămân FALSE.
+
+Pro + FinTech Pack: /api/export/json permis; /api/bundle.zip blocat (nu Enterprise).
+
+Downgrade Pro → Creator: customer.subscription.updated → pf_revoke_plan_entitlements + pf_apply_plan_entitlements("creator"); endpoint /api/test/gpt-live devine 403.
+
+E‑Comm Pack fără plan Pro: /api/run cu domain=ecommerce → 403 + upsell pack/plan.
+
+Audit trail: toate schimbările apar în entitlements_audit cu actor='stripe:webhook'.
+
+9) Integrare cu Exporter (din bundle.ts)
+
+Înainte de zipBundle, fă gate:
+
+await gate(org, ["canExportMD"]);            // pentru .md
+if (request.includes("pdf")) await gate(org, ["canExportPDF"]);
+if (request.includes("json")) await gate(org, ["canExportJSON"]);
+if (request.includes("bundle.zip")) await gate(org, ["canExportBundleZip"]);
+
+
+Pentru FinTech:
+
+if (domain === "fintech") {
+  requireFormats(["spec","json"], selection);
+}
+
+10) Endpointuri utile (API)
+
+GET /me/entitlements → { flags: {canExportPDF:true,...}, packs: ["fintech"] }
+
+GET /me/plan_snapshot → { plan_code, retention_days, module_allowlist }
+
+POST /packs/activate → Stripe Checkout link; pe checkout.session.completed → pf_apply_pack.
+
+POST /run/:moduleId → hard gate canUseAllModules (+ allowlist pentru Free).
+
+
+
+
+
+
+standard complet pentru Telemetry @ fiecare run în PROMPTFORGE™ v3: ce capturăm, cum calculăm (TTA, scoruri, tokeni, rata de eșec), cum legăm la 7D, plus modele de date și query‑uri gata de folosit.
+
+🎯 Ce măsori la fiecare run
+0) Identitate & context
+
+run_id (uuid), module_id (M01–M50), module_version (semver)
+
+org_id, project_id, user_id
+
+parameter_set_7d: {domain, scale, urgency, complexity, resources, application, output_format}
+
+industry_pack activ (ex: fintech, ecommerce, education)
+
+1) Timeline & TTA (Time‑To‑Artifact)
+
+t_request (server receive)
+
+t_plan_start → t_plan_end
+
+t_generate_start → t_generate_end
+
+t_evaluate_start → t_evaluate_end
+
+t_format_start → t_format_end
+
+t_export_start → t_export_end
+
+TTA = t_first_artifact - t_request
+
+text‑only: t_format_end - t_request
+
+bundle: t_export_end - t_request
+
+Breakdown (ms): plan_ms, generate_ms, evaluate_ms, format_ms, export_ms, total_ms
+
+2) Model & cost
+
+model: (ex. gpt-4o, gpt‑5‑thinking), temperature, seed, top_p
+
+prompt_tokens, completion_tokens, total_tokens
+
+cache_hits (oui/non), retries (#), fallbacks[] (ex: tighten, crisis_mode)
+
+est_cost_usd (pricing map × tokens)
+
+3) Calitate (Test Engine)
+
+scores: {clarity, execution, ambiguity, business_fit, composite} (0–100; ambiguitate inversă)
+
+verdict: pass | partial_pass | fail
+
+thresholds & weights folosite (logate pentru audit)
+
+evaluator_feedback (rezumat 1–3 linii)
+
+4) Policy & compliance
+
+policy_hits[]: GDPR, IP, medical/financiar, domeniu‑specific (ex: SEC/FCA)
+
+redactions: câte câmpuri au fost anonimizate
+
+safety_blocked: boolean (dacă a tăiat conținutul neconform)
+
+5) Export & rezultate
+
+artifacts[]: ["txt","md","json","pdf"] generate
+
+export_ok: boolean
+
+checksum_sha256 (per fișier) & bundle_id (dacă Enterprise)
+
+manifest_signature (dacă Enterprise whitelabel)
+
+6) Stare & erori
+
+status: ok | partial | fail
+
+error_code (ex: PAYWALL_MISSING_FLAG, MODEL_TIMEOUT, POLICY_BLOCK)
+
+error_message (scurt, non‑PII)
+
+📏 KPI derivate (pe fereastră de timp)
+
+TTA p50/p90/p95 (text vs bundle)
+
+Rată eșec = #runs_fail / #runs_total
+
+opțional „rata partial” = #partial_pass / #runs_total
+
+Tokeni/artefact (medie & p95)
+
+Cost/artefact (USD)
+
+Export success rate = #export_ok / #runs_total
+
+Quality pass rate = #verdict=pass / #runs_total
+
+Policy hit rate = #policy_hits>0 / #runs_total
+
+Segmentare standard: pe domain 7D, module, industry_pack, plan (Free/Creator/Pro/Ent), org.
+
+🧱 Model de date (Supabase)
+runs (extinde tabelul existent)
+
+id uuid pk (run_id)
+
+prompt_version_id uuid fk
+
+parameter_set_7d jsonb
+
+status text (ok|partial|fail)
+
+telemetry jsonb ← payloadul de mai jos
+
+created_at timestamptz
+
+scores (există deja)
+
+câmpurile scorurilor + composite + verdict (0–100, etc.)
+
+telemetry_events (opțional, granular)
+
+run_id uuid fk, phase text (plan|generate|evaluate|format|export|policy|gate)
+
+event text, meta jsonb, at timestamptz
+
+🧩 Payload JSON (per run — exemplu)
+{
+  "run_id": "6a2f0f5a-0d0e-4d1e-9df1-6e8d93b9a111",
+  "module_id": "M14",
+  "module_version": "1.2.0",
+  "org_id": "7f1c...e2a",
+  "parameter_set_7d": {
+    "domain": "saas",
+    "scale": "startup",
+    "urgency": "sprint",
+    "complexity": "advanced",
+    "resources": "lean_team",
+    "application": "implementation",
+    "output_format": "spec"
+  },
+  "industry_pack": null,
+  "timeline": {
+    "t_request": "2025-08-19T09:00:00.000Z",
+    "t_plan_start": "2025-08-19T09:00:00.010Z",
+    "t_plan_end": "2025-08-19T09:00:00.080Z",
+    "t_generate_start": "2025-08-19T09:00:00.081Z",
+    "t_generate_end": "2025-08-19T09:00:01.250Z",
+    "t_evaluate_start": "2025-08-19T09:00:01.251Z",
+    "t_evaluate_end": "2025-08-19T09:00:01.430Z",
+    "t_format_start": "2025-08-19T09:00:01.431Z",
+    "t_format_end": "2025-08-19T09:00:01.520Z",
+    "t_export_start": "2025-08-19T09:00:01.521Z",
+    "t_export_end": "2025-08-19T09:00:01.880Z"
+  },
+  "latency_ms": {
+    "plan": 70, "generate": 1169, "evaluate": 179, "format": 89, "export": 359, "total": 1880,
+    "tta": 1520
+  },
+  "model": {"name":"gpt-5-thinking","temperature":0.4,"seed":42},
+  "tokens": {"prompt": 820, "completion": 910, "total": 1730, "cache_hits": true, "retries": 0},
+  "cost": {"est_usd": 0.32},
+  "scores": {"clarity": 88, "execution": 83, "ambiguity": 12, "business_fit": 79, "composite": 84.1, "verdict": "partial_pass"},
+  "policy": {"hits": ["gdpr"], "redactions": 1, "safety_blocked": false},
+  "export": {"artifacts": ["txt","md","json","pdf"], "export_ok": true, "checksums": {"prompt.md":"sha256:..."}},
+  "status": "ok",
+  "error": null
+}
+
+📊 Query‑uri rapide (KPI‑uri)
+
+TTA p95 (bundle) pe domeniu 7D
+
+select (parameter_set_7d->>'domain') as domain,
+       percentile_cont(0.95) within group (order by (telemetry->'latency_ms'->>'tta')::int) as tta_p95_ms
+from runs
+where telemetry->'export'->>'export_ok' = 'true'
+group by domain
+order by tta_p95_ms asc;
+
+
+Rată eșec pe modul
+
+select module_id,
+  avg((status='fail')::int)::numeric(5,2) as fail_rate
+from runs
+where created_at >= now() - interval '30 days'
+group by module_id
+order by fail_rate desc;
+
+
+Tokeni medii per artefact (p95)
+
+select (parameter_set_7d->>'output_format') as fmt,
+       percentile_cont(0.95) within group (order by (telemetry->'tokens'->>'total')::int) as tokens_p95
+from runs
+group by fmt;
+
+
+Quality pass rate (global & pe pack)
+
+select coalesce(industry_pack,'none') as pack,
+       avg((scores.verdict='pass')::int) as pass_rate
+from runs r
+join scores s on s.run_id = r.id
+group by pack
+order by pass_rate desc;
+
+🎛️ SLO/alertare recomandate
+
+TTA p95:
+
+text: ≤ 60s
+
+SOP/Bundle: ≤ 5min
+
+Fail rate 7d: < 2% (hard), < 5% (warning)
+
+Ambiguity: p90 ≤ 20
+
+Composite: medie ≥ 80
+
+Export success: ≥ 98%
+
+Alerte (Supabase + cron/Edge Function) → Slack/Email cu top module/domeniu care încalcă SLO‑uri.
+
+🧪 Calculul exact al TTA
+
+TTA text = t_format_end - t_request (primul artefact util)
+
+TTA bundle = t_export_end - t_request
+
+Dacă exportul e dezactivat (plan/policy), TTA se oprește la primul artefact promis de modul (de obicei .md/.spec).
+
+Loghezi întotdeauna ambele: tta_first_artifact și (dacă există) tta_bundle.
+
+🔐 Notă de conformitate
+
+Nu loga PII în error_message sau evaluator_feedback.
+
+policy_hits doar etichete (fără text sensibil).
+
+Hash‑uiește sursele (ex. src_hash) dacă salvezi provenance în FinTech/Healthcare.
+
+
+
+
+
+
+ritualul operațional pentru PROMPTFORGE™ v3 ca să ai disciplină de produs, control de calitate și trasabilitate completă:
+
+✅ Definition of Ready (DoR)
+
+Un modul / feature intră în lucru doar dacă are:
+
+Contract scris (input → output, KPI, guardrails)
+
+Parametrizare 7D stabilită (domain, scale, urgency, complexity, resources, application, output)
+
+Entitlements clare (ce plan/pack îl poate accesa)
+
+Cazuri de test „golden” definite (3–5 exemple de input + output așteptat)
+
+✅ Definition of Done (DoD)
+
+Se consideră finalizat numai dacă:
+
+Rulează pe /api/run/{moduleId} cu gating activ (plan/entitlements)
+
+Exportă bundle complet: .txt/.md/.json/.pdf + checksum
+
+Telemetrie salvată: tokens, cost, TTI, scor Evaluator
+
+Versionare marcată (module_versions.semver + changelog)
+
+RLS activ pe tabele Supabase (org_id enforced)
+
+🔎 Code Review de Prompt
+
+Proces canonic:
+
+Spec check — verifici dacă structura promptului include context → cerințe → spec → KPI → guardrails → fallback
+
+Evaluator AI — scoruri 0–100 pe claritate, execuție, ambiguitate, alignment, business_fit
+
+Feedback — Reviewer adaugă micro-optimizări: „Tighten tone”, „Optimize for Enterprise”
+
+Golden test — rulare pe GPT live și comparație cu output-urile salvate în modules/Mxx/examples/*.json
+
+📆 Release Cadence
+
+Săptămânal — patch release (vX.Y.Z → Z+1): bugfix, tuning KPI.
+
+Bilunar — minor release (vX.Y.Z → Y+1.0): module noi, Industry Packs.
+
+Trimestrial — major release (X+1.0.0): schimbări în engine (Evaluator, Bundle, Telemetrie).
+
+Artefacte livrate la fiecare release:
+
+Export .bundle.zip (module updated + changelog + telemetry schema)
+
+Changelog generativ în modules/versions.json și lib/versioning/**
+
+📝 Change Log
+
+Structură standard (semver + sursă schimbare):
+
+version: v3.2.0
+date: 2025-08-19
+changes:
+  - module: M07 Risk & Trust Reversal
+    type: improvement
+    source: "feedback Evaluator AI"
+    detail: "Clarify refund guardrail; KPI drop-off now -30%"
+  - module: M22 SOP Lead Gen
+    type: fix
+    source: "telemetry policy_hits"
+    detail: "Blocked invalid trigger in crisis mode"
+  - core: Export Bundle
+    type: feature
+    source: "enterprise entitlement"
+    detail: "Added .yaml export option"
+
+
+→ Persistat în module_versions și livrat ca artefact în bundle
+
+Astfel, ritualul operațional face ca fiecare clic → prompt → bundle să fie validabil, trasabil și monetizabil.

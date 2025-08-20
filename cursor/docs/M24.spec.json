@@ -1,0 +1,19 @@
+{
+  "module_code": "M24",
+  "vector": 7,
+  "name": "SOP PR Personal (Index Google)",
+  "purpose": "Control narativ pe brand: entity SEO, press kit și Q&A oficial.",
+  "tags": ["pr", "seo", "press"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md"] }, "schema": { "type": "object", "required": ["key_terms", "assets", "statement"], "properties": { "key_terms": { "type": "array", "minItems": 3, "items": { "type": "string" } }, "assets": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "statement": { "type": "string" } } }, "example": { "key_terms": ["brand","founder","product"], "assets": ["logo.png"], "statement": "official" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "press_kit", "type": "string", "required": true }, { "name": "faq", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M24-T1", "name": "Press kit + FAQ", "input": { "custom": { "key_terms": ["a","b","c"], "assets": ["x"], "statement": "y" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

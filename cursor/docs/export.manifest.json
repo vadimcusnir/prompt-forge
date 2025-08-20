@@ -1,0 +1,32 @@
+{
+  "project": "PROMPTFORGE_v3",
+  "module": "M07",
+  "run_id": "2025-08-18_MKT_M07_0001",
+  "sevenD": {
+    "domain": "MKT",
+    "scale": "team",
+    "urgency": "normal",
+    "complexity": "medium",
+    "resources": "standard",
+    "application": "content_ops",
+    "output": "bundle"
+  },
+  "files": {
+    "prompt.txt": "sha256:111aaa...",
+    "prompt.json": "sha256:222bbb...",
+    "prompt.md": "sha256:333ccc...",
+    "prompt.pdf": "sha256:444ddd...",
+    "manifest.json": "sha256:555eee..."
+  },
+  "score": 86,
+  "kpi": {
+    "tta_text_s": 42,
+    "tta_sop_s": 230
+  },
+  "license_notice": "PFv3 Pro - Marketing",
+  "bundle_checksum": "sha256:999zzz...",
+  "path_prefix": "/bundles/PROMPTFORGE_v3/2025-08-18/MKT/M07/run_0001/",
+  "visibility": "internal",
+  "dlp_summary": "no PII, safe_to_use knowledge only",
+  "created_at": "2025-08-18T00:00:00Z"
+}

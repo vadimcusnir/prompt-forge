@@ -1,0 +1,19 @@
+{
+  "module_code": "M45",
+  "vector": 6,
+  "name": "Simulator de Contrafactuale",
+  "purpose": "Simulează efectul fără buget media folosind istoric și model latent; produce scenarii, impact și riscuri.",
+  "tags": ["simulation", "counterfactual", "modeling"],
+  "status": "stable",
+  "semver": "0.1.0",
+  "inputs": { "sevenD_contract": { "required": ["domain", "output"], "output_must_be_one_of": ["bundle", "md", "json"] }, "schema": { "type": "object", "required": ["campanie", "constrangeri", "kpi"], "properties": { "campanie": { "type": "string" }, "constrangeri": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "kpi": { "type": "string" } } }, "example": { "campanie": "Launch Q4", "constrangeri": ["no paid"], "kpi": "CR" } },
+  "outputs": { "artifact_type": "bundle", "fields": [ { "name": "scenarii", "type": "markdown", "required": true }, { "name": "impact", "type": "json", "required": true }, { "name": "riscuri", "type": "markdown", "required": true } ] },
+  "kpi": { "score_min": 80 },
+  "tests": [ { "id": "M45-T1", "name": "Scenarii + impact", "input": { "custom": { "campanie": "X", "constrangeri": ["c"], "kpi": "Y" } }, "assert": { "schema_ok": true, "output_spec_complete": true, "kpi_min": 80 } } ],
+  "guardrails": { "privacy_safe": true, "respect_style": true, "no_unfounded_claims": true },
+  "deps": [],
+  "evaluation_hooks": ["clarity", "execution", "ambiguity", "business_fit"],
+  "telemetry_keys": ["run_id", "model", "tokens_in", "tokens_out", "scores", "policy_hits"]
+}
+
+

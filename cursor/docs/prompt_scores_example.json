@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "run_id": "00000000-0000-0000-0000-000000000001",
+  "module_id": "M14",
+  "parameter_set_7d": {
+    "domain": "saas",
+    "scale": "startup",
+    "urgency": "sprint",
+    "complexity": "advanced",
+    "resources": "lean_team",
+    "application": "implementation",
+    "output_format": "spec"
+  },
+  "criteria": {
+    "clarity": {
+      "score": 88,
+      "notes": "Structură clară, fără jargon inutil"
+    },
+    "execution": {
+      "score": 83,
+      "notes": "Pași implementabili + fallback"
+    },
+    "ambiguity": {
+      "score": 12,
+      "notes": "Doar 2 termeni vagi, definiți la final",
+      "inverted": true
+    },
+    "business_fit": {
+      "score": 79,
+      "notes": "Ar putea include KPI SaaS (NRR, TTV)"
+    }
+  },
+  "weights": {
+    "clarity": 0.3,
+    "execution": 0.35,
+    "ambiguity_inv": 0.15,
+    "business_fit": 0.2
+  },
+  "thresholds": {
+    "clarity_min": 80,
+    "execution_min": 80,
+    "ambiguity_max": 20,
+    "business_fit_min": 75
+  },
+  "composite": {
+    "score": 84.1,
+    "formula": "0.30*C + 0.35*E + 0.15*(100-A) + 0.20*B"
+  },
+  "verdict": "partial_pass",
+  "actions": [
+    "optimize_enterprise"
+  ],
+  "telemetry": {
+    "model": "gpt-4o",
+    "tokens_used": 9312,
+    "duration_ms": 1840,
+    "policy_hits": [
+      "gdpr"
+    ]
+  }
+}

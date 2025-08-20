@@ -1,7 +1,5 @@
 'use client';
 
-import { HomeInteractive } from "@/components/home-interactive";
-
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -14,7 +12,7 @@ interface HistoryPanelProps {
   onRestoreEntry?: (entry: HistoryEntry) => void
 }
 
-export function HomeInteractive() ({ onRestoreEntry }: HistoryPanelProps) {
+export function HistoryPanel({ onRestoreEntry }: HistoryPanelProps) {
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [stats, setStats] = useState<HistoryStats | null>(null)
   const [filters, setFilters] = useState({

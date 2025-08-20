@@ -6,7 +6,7 @@ import { ComingSoon } from "@/components/coming-soon";
 // Fallback ENV (optional): dacă vrei să forțezi din .env
 const ENV_FALLBACK = process.env.NEXT_PUBLIC_COMING_SOON === "true";
 
-export function ComingSoonInteractive() {
+export default function ComingSoonInteractive() {
   const [enabled, setEnabled] = useState<boolean | null>(ENV_FALLBACK ?? null);
 
   useEffect(() => {

@@ -1,7 +1,5 @@
 'use client';
 
-import { HomeInteractive } from "@/components/home-interactive";
-
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 
@@ -19,7 +17,7 @@ interface GPTEditorProps {
   onEditComplete?: (result: GPTEditResult) => void
 }
 
-export function HomeInteractive() ({ generatedPrompt, onEditComplete }: GPTEditorProps) {
+export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
   const [editResult, setEditResult] = useState<GPTEditResult | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [options, setOptions] = useState<GPTEditOptions>({

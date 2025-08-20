@@ -1,6 +1,6 @@
 "use client"
 
-import { HomeInteractive } from "@/components/home-interactive";
+
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
@@ -34,7 +34,7 @@ interface TestEngineProps {
   onTestComplete?: (result: TestResult) => void
 }
 
-export function HomeInteractive() ({ generatedPrompt, onTestComplete }: TestEngineProps) {
+export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps) {
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [currentTest, setCurrentTest] = useState<TestResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)

@@ -1,7 +1,5 @@
 "use client"
 
-import { HomeInteractive } from "@/components/home-interactive";
-
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 
@@ -38,7 +36,7 @@ interface ExportManagerProps {
   testResults?: TestResult[]
 }
 
-export function HomeInteractive() ({ currentPrompt, editResults = [], testResults = [] }: ExportManagerProps) {
+export function ExportManager({ currentPrompt, editResults = [], testResults = [] }: ExportManagerProps) {
   const [userPlan, setUserPlan] = useState<string>("pilot")
   const [exportFormat, setExportFormat] = useState<string>("txt")
   const [exportScope, setExportScope] = useState<"current" | "session" | "all">("current")

@@ -1,7 +1,5 @@
 "use client"
 
-import { HomeInteractive } from "@/components/home-interactive";
-
 import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 
@@ -18,7 +16,7 @@ interface ModuleGridProps {
   onVectorFilterChange: (vector: string) => void
 }
 
-export function HomeInteractive() ({ selectedModule, onSelectModule, vectorFilter, onVectorFilterChange }: ModuleGridProps) {
+export function ModuleGrid({ selectedModule, onSelectModule, vectorFilter, onVectorFilterChange }: ModuleGridProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showDetails, setShowDetails] = useState<number | null>(null)

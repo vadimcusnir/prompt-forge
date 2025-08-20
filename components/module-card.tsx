@@ -1,7 +1,5 @@
 'use client';
 
-import { HomeInteractive } from "@/components/home-interactive";
-
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -15,7 +13,7 @@ interface ModuleCardProps {
   onViewDetails: (moduleId: number) => void
 }
 
-export function HomeInteractive() ({ module, isSelected, onSelect, onViewDetails }: ModuleCardProps) {
+export function ModuleCard({ module, isSelected, onSelect, onViewDetails }: ModuleCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const primaryVector = module.vectors[0]

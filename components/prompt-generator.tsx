@@ -1,6 +1,6 @@
 'use client';
 
-import { HomeInteractive } from "@/components/home-interactive";
+import HomeInteractive from "@/components/home-interactive";
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
@@ -20,7 +20,7 @@ interface PromptGeneratorProps {
   onPromptGenerated?: (prompt: GeneratedPrompt) => void
 }
 
-export function HomeInteractive() ({ selectedModule, config, onPromptGenerated }: PromptGeneratorProps) {
+export function PromptGenerator({ selectedModule, config, onPromptGenerated }: PromptGeneratorProps) {
   const [generatedPrompt, setGeneratedPrompt] = useState<GeneratedPrompt | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationResult, setValidationResult] = useState<ReturnType<typeof validatePromptStructure> | null>(null)

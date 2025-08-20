@@ -1,7 +1,5 @@
 "use client"
 
-import { HomeInteractive } from "@/components/home-interactive";
-
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +13,7 @@ interface KeyboardShortcutsProps {
   onClearAll?: () => void
 }
 
-export function HomeInteractive() ({ onGeneratePrompt, onOpenHistory, onExport, onClearAll }: KeyboardShortcutsProps) {
+export function KeyboardShortcuts({ onGeneratePrompt, onOpenHistory, onExport, onClearAll }: KeyboardShortcutsProps) {
   const [showShortcuts, setShowShortcuts] = useState(false)
 
   useEffect(() => {

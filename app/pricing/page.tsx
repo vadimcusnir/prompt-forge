@@ -35,7 +35,7 @@ export default function PricingPage() {
   const [checkoutPlan, setCheckoutPlan] = useState<any>(null)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
 
-  // Planuri cu entitlements clare
+  // Plans with clear entitlements
   const plans = [
     {
       id: "pilot",
@@ -43,18 +43,18 @@ export default function PricingPage() {
       tagline: "Ship the core",
       price: "0€",
       period: "",
-      description: "Începe cu generatorul de bază și primele 12 module",
+      description: "Start with the core generator and first modules",
       features: [
-        { text: "Generator + 12 module de bază", included: true },
-        { text: "Export .md/.txt cu watermark", included: true },
-        { text: "Linter + scor AI", included: true },
+        { text: "Access to M01, M10, M18", included: true },
+        { text: "Export .txt with watermark", included: true },
+        { text: "Linter + AI scoring", included: true },
+        { text: "Limited branding tokens", included: true },
+        { text: "Simulated test engine", included: true },
         { text: "Export .json/.pdf", included: false },
-        { text: "Test GPT real", included: false },
-        { text: "Branding tokens", included: false },
-        { text: "API access", included: false },
-        { text: "Bundle .zip", included: false }
+        { text: "Real GPT testing", included: false },
+        { text: "Bundle .zip export", included: false }
       ],
-      cta: "Rulează primele module",
+      cta: "Run first modules",
       popular: false,
       color: "border-gray-600",
       badgeColor: "bg-gray-500/10 text-gray-400 border-gray-500/20"
@@ -64,19 +64,19 @@ export default function PricingPage() {
       name: "Pro",
       tagline: "Ship at scale",
       price: "49€",
-      period: "/lună",
-      description: "Acces complet la toate modulele și funcțiile avansate",
+      period: "/month",
+      description: "Complete access to all modules and advanced features",
       features: [
-        { text: "Acces complet M01–M50", included: true },
-        { text: "Export .json/.pdf fără watermark", included: true },
-        { text: "Branding tokens + test GPT real", included: true },
+        { text: "Complete access M01-M50", included: true },
+        { text: "Export .json/.pdf without watermark", included: true },
+        { text: "Branding tokens + real GPT testing", included: true },
         { text: "Cloud History", included: true },
+        { text: "Bundle .zip export", included: true },
+        { text: "Email support", included: true },
         { text: "API access", included: false },
-        { text: "Bundle .zip", included: false },
-        { text: "White-label", included: false },
-        { text: "Suport echipă", included: false }
+        { text: "White-label", included: false }
       ],
-      cta: "Deschide toate funcțiile",
+      cta: "Unlock all features",
       popular: true,
       color: "border-gold-industrial",
       badgeColor: "bg-gold-industrial/10 text-gold-industrial border-gold-industrial/20"
@@ -86,81 +86,81 @@ export default function PricingPage() {
       name: "Enterprise",
       tagline: "Ship with governance",
       price: "299€",
-      period: "/lună",
-      description: "Soluții custom cu API, white-label și suport dedicat",
+      period: "/month",
+      description: "Custom solutions with API, white-label and dedicated support",
       features: [
-        { text: "Custom modules + API run endpoint", included: true },
-        { text: "Bundle .zip + telemetry logging", included: true },
-        { text: "Licențe pe industrie + suport echipă", included: true },
-        { text: "White-label complet", included: true },
-        { text: "Dashboard echipă", included: true },
-        { text: "Audit trimestrial", included: true },
-        { text: "Suport 1-la-1", included: true },
-        { text: "Licențe pe industrie", included: true }
+        { text: "Custom modules and API", included: true },
+        { text: "Complete export with manifest & checksum", included: true },
+        { text: "White-label solution", included: true },
+        { text: "Team seats management", included: true },
+        { text: "Rate limits & quotas", included: true },
+        { text: "Bundle .zip export", included: true },
+        { text: "Dedicated support", included: true },
+        { text: "Industry license packages", included: true }
       ],
-      cta: "Activează licența strategică",
+      cta: "Activate strategic license",
       popular: false,
       color: "border-gray-600",
       badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/20"
     }
   ]
 
-  // Pachete licență pe industrie (Enterprise add-on)
+  // Industry license packages (Enterprise add-on)
   const industryPacks = [
     {
       name: "FinTech",
       modules: ["M07", "M13", "M41", "M47"],
-      price: "1.990€/an",
-      description: "Compliance PCI DSS, SOX, KYC/AML",
+      price: "1,990€/year",
+      description: "PCI DSS, SOX, KYC/AML compliance",
       color: "text-green-400"
     },
     {
-      name: "Educație",
+      name: "Education",
       modules: ["M03", "M18", "M25", "M29"],
-      price: "1.490€/an",
-      description: "Cursuri automate, handout exportabil",
+      price: "1,490€/year",
+      description: "Automated courses, exportable handouts",
       color: "text-blue-400"
     },
     {
-      name: "Consultanță + Funneluri",
+      name: "Consulting & Funnels",
       modules: ["M01", "M03", "M21", "M50"],
-      price: "1.750€/an",
-      description: "SOP-uri client-ready cu KPI",
+      price: "1,750€/year",
+      description: "Client-ready SOPs with KPIs",
       color: "text-purple-400"
     },
     {
       name: "Copywriting Agency",
       modules: ["M05", "M09", "M30", "M44"],
-      price: "1.690€/an",
-      description: "Stack complet pentru agenții",
+      price: "1,690€/year",
+      description: "Complete stack for agencies",
       color: "text-orange-400"
     }
   ]
 
-  // Add-ons extensibili
+  // Extensible add-ons
   const addOns = [
     {
       name: "Export Branding PDF no-logo",
-      description: "Elimină watermark PROMPTFORGE din .pdf",
-      price: "12€/lună",
+      description: "Remove PROMPTFORGE watermark from .pdf",
+      price: "12€/month",
       icon: FileText
     },
     {
       name: "Branding Tokens UI",
-      description: "Acces .tokens.css și .tokens.json",
-      price: "29€/lună",
+      description: "Access .tokens.css and .tokens.json",
+      price: "29€/month",
       icon: Settings
     },
     {
       name: "Prompt Audit Score Diff",
-      description: "Compară versiunile și generează rapoarte",
-      price: "19€/lună",
+      description: "Compare versions and generate reports",
+      price: "19€/month",
       icon: BarChart3
     },
     {
       name: "GPT Agent Orchestrator",
-      description: "Trimite prompturi direct în agent GPT specific",
-      price: "39€/lună",
+      description: "Send prompts directly to specific GPT agent",
+      price: "39€/month",
       icon: Cpu
     }
   ]
@@ -183,10 +183,10 @@ export default function PricingPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="text-center">
             <h1 className="text-3xl font-black font-[var(--font-heading)] text-foreground">
-              Alege forja potrivită
+              Choose the right forge
             </h1>
             <p className="text-muted-foreground mt-2">
-              Plătești pentru sistem, nu pentru volum. Entitlements clare, fără "unlimited" vag.
+              You pay for the system, not for volume. Clear entitlements, no vague "unlimited".
             </p>
           </div>
         </div>
@@ -196,16 +196,16 @@ export default function PricingPage() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-foreground mb-4">
-            Cât timp vrei să pierzi fără prompturi bune?
+            How long do you want to waste without good prompts?
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Activează PromptForge și scapă de blocaje. Fiecare plan include exact ce ai nevoie pentru a livra prompturi operaționale.
+            Activate PromptForge and escape the blocks. Each plan includes exactly what you need to deliver operational prompts.
           </p>
           
           {/* Promo Banner */}
           <div className="mt-6 inline-flex items-center gap-2 bg-gold-industrial/10 text-gold-industrial px-4 py-2 rounded-full border border-gold-industrial/20">
             <Clock className="w-4 h-4" />
-            <span className="text-sm font-medium">Promoția se încheie în 12h: -20% la Pro</span>
+            <span className="text-sm font-medium">Promotion ends in 12h: -20% on Pro</span>
           </div>
         </div>
 
@@ -222,7 +222,7 @@ export default function PricingPage() {
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className={plan.badgeColor}>
                     <Star className="w-3 h-3 mr-1" />
-                    Cel mai ales
+                    Most Popular
                   </Badge>
                 </div>
               )}
@@ -270,10 +270,10 @@ export default function PricingPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Globe className="w-5 h-5 text-purple-400" />
-              <span>Pachete Licență pe Industrie (Enterprise Add-on)</span>
+              <span>Industry License Packages (Enterprise Add-on)</span>
             </CardTitle>
             <CardDescription>
-              Configurări presetate cu module specifice industriei, preset 7-D și KPIs relevanți
+              Preset configurations with industry-specific modules, 7-D presets and relevant KPIs
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -299,10 +299,10 @@ export default function PricingPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Package className="w-5 h-5 text-blue-400" />
-              <span>Add-ons Extensibili</span>
+              <span>Extensible Add-ons</span>
             </CardTitle>
             <CardDescription>
-              Extinde funcționalitatea planului tău cu module specializate
+              Extend your plan's functionality with specialized modules
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -320,7 +320,7 @@ export default function PricingPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-foreground">{addon.price}</div>
-                      <button className="px-3 py-1 text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded">Adaugă</button>
+                      <button className="px-3 py-1 text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded">Add</button>
                     </div>
                   </div>
                 )
@@ -334,7 +334,7 @@ export default function PricingPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Target className="w-5 h-5 text-cyan-400" />
-              <span>Comparație Detaliată</span>
+              <span>Detailed Comparison</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -342,7 +342,7 @@ export default function PricingPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 font-medium text-foreground">Funcționalitate</th>
+                    <th className="text-left py-3 px-4 font-medium text-foreground">Feature</th>
                     <th className="text-center py-3 px-4 font-medium text-foreground">Pilot</th>
                     <th className="text-center py-3 px-4 font-medium text-foreground">Pro</th>
                     <th className="text-center py-3 px-4 font-medium text-foreground">Enterprise</th>
@@ -350,25 +350,25 @@ export default function PricingPage() {
                 </thead>
                 <tbody>
                   <tr className="border-b border-border/50">
-                    <td className="py-3 px-4 text-sm text-foreground">Generator 7-D</td>
+                    <td className="py-3 px-4 text-sm text-foreground">7-D Generator</td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-3 px-4 text-sm text-foreground">Module disponibile</td>
-                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">12 de bază</td>
+                    <td className="py-3 px-4 text-sm text-foreground">Available modules</td>
+                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">M01, M10, M18</td>
                     <td className="text-center py-3 px-4 text-sm text-foreground">M01-M50</td>
                     <td className="text-center py-3 px-4 text-sm text-foreground">Custom + M01-M50</td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-3 px-4 text-sm text-foreground">Export .txt, .md</td>
+                    <td className="py-3 px-4 text-sm text-foreground">Export .md/.txt</td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-3 px-4 text-sm text-foreground">Export .json, .pdf</td>
+                    <td className="py-3 px-4 text-sm text-foreground">Export .json/.pdf</td>
                     <td className="text-center py-3 px-4"><XCircle className="w-4 h-4 text-muted-foreground/50 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
@@ -380,7 +380,7 @@ export default function PricingPage() {
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-3 px-4 text-sm text-foreground">Test GPT real</td>
+                    <td className="py-3 px-4 text-sm text-foreground">Real GPT testing</td>
                     <td className="text-center py-3 px-4"><XCircle className="w-4 h-4 text-muted-foreground/50 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
                     <td className="text-center py-3 px-4"><CheckCircle className="w-4 h-4 text-green-400 mx-auto" /></td>
@@ -393,9 +393,9 @@ export default function PricingPage() {
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 px-4 text-sm text-foreground">Watermark</td>
-                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">Da</td>
-                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">Nu</td>
-                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">Nu</td>
+                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">Yes</td>
+                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">No</td>
+                    <td className="text-center py-3 px-4 text-sm text-muted-foreground">No</td>
                   </tr>
                 </tbody>
               </table>
@@ -409,8 +409,8 @@ export default function PricingPage() {
             <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-6 h-6 text-green-400" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">7 zile money-back</h3>
-            <p className="text-sm text-muted-foreground">Anulezi oricând. 7 zile money-back garantat.</p>
+            <h3 className="font-semibold text-foreground mb-2">7-day money-back</h3>
+            <p className="text-sm text-muted-foreground">Cancel anytime. 7-day money-back guaranteed.</p>
           </Card>
           
           <Card className="glass-effect p-6 text-center">
@@ -418,15 +418,15 @@ export default function PricingPage() {
               <Database className="w-6 h-6 text-blue-400" />
             </div>
             <h3 className="font-semibold text-foreground mb-2">Stripe Verified</h3>
-            <p className="text-sm text-muted-foreground">Plăți securizate cu Stripe. GDPR compliant.</p>
+            <p className="text-sm text-muted-foreground">Secure payments with Stripe. GDPR compliant.</p>
           </Card>
           
           <Card className="glass-effect p-6 text-center">
             <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="w-6 h-6 text-purple-400" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">Suport echipă</h3>
-            <p className="text-sm text-muted-foreground">Suport dedicat pentru Pro și Enterprise.</p>
+            <h3 className="font-semibold text-foreground mb-2">Team support</h3>
+            <p className="text-sm text-muted-foreground">Dedicated support for Pro and Enterprise.</p>
           </Card>
         </div>
 
@@ -435,50 +435,50 @@ export default function PricingPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Code className="w-5 h-5 text-yellow-400" />
-              <span>Întrebări Frecvente</span>
+              <span>Frequently Asked Questions</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-medium text-foreground mb-2">Dacă încerc Basic, pot face upgrade?</h4>
-              <p className="text-sm text-muted-foreground">Da, instant. Upgrade-ul se activează imediat și primești credit pentru zilele rămase din perioada curentă.</p>
+              <h4 className="font-medium text-foreground mb-2">If I try Basic, can I upgrade?</h4>
+              <p className="text-sm text-muted-foreground">Yes, instantly. The upgrade activates immediately and you receive credit for the remaining days in the current period.</p>
             </div>
             
             <div>
-              <h4 className="font-medium text-foreground mb-2">De ce Pro e mai scump?</h4>
-              <p className="text-sm text-muted-foreground">Pentru că include tot ce-ți lipsește în Basic: export .json/.pdf, test GPT real, branding tokens și cloud history.</p>
+              <h4 className="font-medium text-foreground mb-2">Why is Pro more expensive?</h4>
+              <p className="text-sm text-muted-foreground">Because it includes everything you're missing in Basic: .json/.pdf export, real GPT testing, branding tokens and cloud history.</p>
             </div>
             
             <div>
-              <h4 className="font-medium text-foreground mb-2">Ce se întâmplă dacă depășesc limita?</h4>
-              <p className="text-sm text-muted-foreground">Ești notificat și poți face upgrade instant. Nu există suprataxare - doar upgrade la planul superior.</p>
+              <h4 className="font-medium text-foreground mb-2">What happens if I exceed the limit?</h4>
+              <p className="text-sm text-muted-foreground">You're notified and can upgrade instantly. There's no overcharging - just upgrade to the higher plan.</p>
             </div>
             
             <div>
-              <h4 className="font-medium text-foreground mb-2">Pot anula oricând?</h4>
-              <p className="text-sm text-muted-foreground">Da, anulezi oricând din dashboard. Accesul rămâne activ până la sfârșitul perioadei plătite.</p>
+              <h4 className="font-medium text-foreground mb-2">Can I cancel anytime?</h4>
+              <p className="text-sm text-muted-foreground">Yes, cancel anytime from the dashboard. Access remains active until the end of the paid period.</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* CTA Final */}
+        {/* Final CTA */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Construiești sisteme de prompturi, nu piese unice
+            You're building prompt systems, not unique pieces
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Setezi 7‑D, apeși Start, scoți artefacte vândabile. Fără filler. Doar valoare operațională.
+            Set 7‑D, press Start, output sellable artifacts. No filler. Just operational value.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               className="bg-gold-industrial hover:bg-gold-industrial-dark text-pf-black font-bold px-8 py-4 text-lg rounded"
             >
-              Pornește forja acum
+              Start the forge now
             </button>
             <button 
               className="px-8 py-4 text-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded"
             >
-              Vezi toate modulele
+              See all modules
             </button>
           </div>
         </div>

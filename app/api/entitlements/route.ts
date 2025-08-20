@@ -1,32 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { EntitlementChecker } from "@/lib/entitlements/useEntitlements"
-import { telemetry } from "@/lib/telemetry"
 
 // Entitlements endpoint - provides plan information and entitlement checking
 export async function GET(request: NextRequest) {
   try {
+    console.log("Entitlements API called")
     const { searchParams } = new URL(request.url)
     const planId = searchParams.get('planId') || 'free'
     const feature = searchParams.get('feature')
     const userId = searchParams.get('userId')
     const sessionId = searchParams.get('sessionId')
 
-    // Track entitlement check
-    telemetry.track({
-      event: 'PF_ENTITLEMENT_CHECK',
-      timestamp: new Date().toISOString(),
-      userId: userId || undefined,
-      sessionId: sessionId || undefined,
-      metadata: {
-        planId,
-        feature: feature || 'general',
-        action: 'check_entitlements'
-      }
-    })
+    console.log("Plan ID:", planId, "Feature:", feature)
 
     // If specific feature check requested
     if (feature) {
+      console.log("Checking feature:", feature)
       const entitlementCheck = EntitlementChecker.checkFeature(planId, feature as any)
+      console.log("Entitlement check result:", entitlementCheck)
       
       return NextResponse.json({
         feature,
@@ -36,7 +27,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Return general plan information
+    console.log("Validating plan:", planId)
     const plan = EntitlementChecker.validatePlan(planId)
+    console.log("Plan validation result:", plan)
+    
     if (!plan) {
       return NextResponse.json({ 
         error: "INVALID_PLAN", 
@@ -187,20 +181,6 @@ export async function POST(request: NextRequest) {
     // Check entitlements
     const entitlementCheck = EntitlementChecker.checkFeature(planId, feature as any)
     
-    // Track entitlement check
-    telemetry.track({
-      event: 'PF_ENTITLEMENT_CHECK',
-      timestamp: new Date().toISOString(),
-      userId: userId || undefined,
-      sessionId: sessionId || undefined,
-      metadata: {
-        planId,
-        feature,
-        action: 'validate_entitlement',
-        result: entitlementCheck.allowed ? 'allowed' : 'denied'
-      }
-    })
-
     return NextResponse.json({
       feature,
       check: entitlementCheck,

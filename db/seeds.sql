@@ -3,21 +3,25 @@
 -- Run after schema.sql and rls_policies.sql
 
 -- ============================================================================
--- SEED PLANS (Free/Pro/Enterprise)
+-- SEED PLANS (Free/Creator/Pro/Enterprise)
 -- ============================================================================
 
 INSERT INTO plans (id, name, description, price_monthly, price_yearly, features, limits) VALUES
-('free', 'Free', 'Get started with basic prompt optimization', 0.00, 0.00, 
-  '{"canUseAllModules": false, "canExportMD": true, "canExportPDF": false, "canExportJSON": false, "canUseGptTestReal": false, "hasCloudHistory": false, "hasEvaluatorAI": false, "hasAPI": false, "hasWhiteLabel": false, "canExportBundleZip": false, "hasSeatsGT1": false}',
-  '{"runs_per_month": 10, "modules_per_run": 1, "export_formats": ["md"], "max_prompt_length": 1000, "retention_days": 30}'
+('free', 'Free', 'Get started with basic prompt optimization - limited modules', 0.00, 0.00, 
+  '{"canUseAllModules": false, "canExportMD": false, "canExportPDF": false, "canExportJSON": false, "canUseGptTestReal": false, "hasCloudHistory": false, "hasEvaluatorAI": false, "hasAPI": false, "hasWhiteLabel": false, "canExportBundleZip": false, "hasSeatsGT1": false, "allowedModules": ["M01", "M10", "M18"]}',
+  '{"runs_per_month": 10, "modules_per_run": 1, "export_formats": ["txt"], "max_prompt_length": 1000, "retention_days": 30}'
 ),
-('pro', 'Pro', 'Professional prompt engineering with advanced features', 29.00, 290.00,
-  '{"canUseAllModules": true, "canExportMD": true, "canExportPDF": true, "canExportJSON": true, "canUseGptTestReal": true, "hasCloudHistory": true, "hasEvaluatorAI": true, "hasAPI": false, "hasWhiteLabel": false, "canExportBundleZip": false, "hasSeatsGT1": false}',
-  '{"runs_per_month": 100, "modules_per_run": 5, "export_formats": ["md", "pdf", "json"], "max_prompt_length": 5000, "retention_days": 365}'
+('creator', 'Creator', 'Content creator focused with markdown export', 9.00, 90.00,
+  '{"canUseAllModules": false, "canExportMD": true, "canExportPDF": false, "canExportJSON": false, "canUseGptTestReal": false, "hasCloudHistory": false, "hasEvaluatorAI": false, "hasAPI": false, "hasWhiteLabel": false, "canExportBundleZip": false, "hasSeatsGT1": false, "allowedModules": ["ALL"]}',
+  '{"runs_per_month": 50, "modules_per_run": 3, "export_formats": ["txt", "md"], "max_prompt_length": 3000, "retention_days": 90}'
 ),
-('enterprise', 'Enterprise', 'Enterprise-grade prompt engineering with full API access', 99.00, 990.00,
-  '{"canUseAllModules": true, "canExportMD": true, "canExportPDF": true, "canExportJSON": true, "canUseGptTestReal": true, "hasCloudHistory": true, "hasEvaluatorAI": true, "hasAPI": true, "hasWhiteLabel": true, "canExportBundleZip": true, "hasSeatsGT1": true}',
-  '{"runs_per_month": 1000, "modules_per_run": 10, "export_formats": ["md", "pdf", "json", "zip"], "max_prompt_length": 10000, "retention_days": 2555}'
+('pro', 'Pro', 'Professional prompt engineering with advanced features and live testing', 29.00, 290.00,
+  '{"canUseAllModules": true, "canExportMD": true, "canExportPDF": true, "canExportJSON": true, "canUseGptTestReal": true, "hasCloudHistory": true, "hasEvaluatorAI": true, "hasAPI": false, "hasWhiteLabel": false, "canExportBundleZip": false, "hasSeatsGT1": false, "allowedModules": ["ALL"]}',
+  '{"runs_per_month": 100, "modules_per_run": 5, "export_formats": ["txt", "md", "pdf", "json"], "max_prompt_length": 5000, "retention_days": 365}'
+),
+('enterprise', 'Enterprise', 'Enterprise-grade prompt engineering with full API access and bundle exports', 99.00, 990.00,
+  '{"canUseAllModules": true, "canExportMD": true, "canExportPDF": true, "canExportJSON": true, "canUseGptTestReal": true, "hasCloudHistory": true, "hasEvaluatorAI": true, "hasAPI": true, "hasWhiteLabel": true, "canExportBundleZip": true, "hasSeatsGT1": true, "allowedModules": ["ALL"]}',
+  '{"runs_per_month": 1000, "modules_per_run": 10, "export_formats": ["txt", "md", "pdf", "json", "zip"], "max_prompt_length": 10000, "retention_days": 2555}'
 );
 
 -- ============================================================================
@@ -107,6 +111,7 @@ INSERT INTO industry_packs (name, slug, description, industry, modules, paramete
 ('Healthcare Innovation', 'healthcare-innovation', 'Healthcare content and clinical decision support pack', 'healthcare', 
   ARRAY[17, 12, 11, 24, 25], 
   ARRAY[]::UUID[], 
+  true, 
   '{"use_cases": ["clinical_content", "evidence_based_practice", "healthcare_innovation"], "target_audience": "healthcare_professionals", "difficulty": "advanced"}'
 ),
 
@@ -185,7 +190,9 @@ INSERT INTO ruleset_versions (version, checksum, content_hash, metadata, is_acti
 
 INSERT INTO orgs (name, slug, domain, plan_id, status) VALUES
 ('PromptForge Demo', 'demo', 'demo.promptforge.dev', 'pro', 'active'),
-('Test Organization', 'test-org', 'test.example.com', 'free', 'active');
+('Test Organization', 'test-org', 'test.example.com', 'free', 'active'),
+('Creator Test Org', 'creator-test', 'creator.example.com', 'creator', 'active'),
+('Enterprise Test Org', 'enterprise-test', 'enterprise.example.com', 'enterprise', 'active');
 
 -- ============================================================================
 -- VERIFICATION QUERIES

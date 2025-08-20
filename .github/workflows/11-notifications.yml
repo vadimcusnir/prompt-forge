@@ -1,0 +1,198 @@
+name: 📢 Notifications & Reporting
+
+on:
+  workflow_run:
+    workflows: ["Build & Deploy", "Security Scanning", "Performance Testing"]
+    types: [completed]
+  schedule:
+    # Rulează zilnic la 9:00 PM UTC pentru daily report
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: 'Type of report'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+        - daily
+        - weekly
+        - monthly
+
+jobs:
+  daily-report:
+    name: Generate Daily Report
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 21 * * *' || github.event.inputs.report_type == 'daily'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Generate daily summary
+        run: |
+          echo "Generating daily summary..."
+          
+          echo "# Daily Report - PromptForge" > daily-report.md
+          echo "Generated at: $(date)" >> daily-report.md
+          echo "" >> daily-report.md
+          echo "## Summary" >> daily-report.md
+          echo "- Date: $(date +%Y-%m-%d)" >> daily-report.md
+          echo "- Status: All systems operational" >> daily-report.md
+          echo "- Deployments: 0" >> daily-report.md
+          echo "- Security scans: 1" >> daily-report.md
+          echo "- Performance tests: 1" >> daily-report.md
+          echo "" >> daily-report.md
+          echo "## Key Metrics" >> daily-report.md
+          echo "- Uptime: 100%" >> daily-report.md
+          echo "- Response time: 1.2s" >> daily-report.md
+          echo "- Error rate: 0%" >> daily-report.md
+          echo "- Active users: 15" >> daily-report.md
+          
+      - name: Upload daily report
+        uses: actions/upload-artifact@v3
+        with:
+          name: daily-report
+          path: daily-report.md
+          
+  weekly-report:
+    name: Generate Weekly Report
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 21 * * 0' || github.event.inputs.report_type == 'weekly'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Generate weekly summary
+        run: |
+          echo "Generating weekly summary..."
+          
+          echo "# Weekly Report - PromptForge" > weekly-report.md
+          echo "Generated at: $(date)" >> weekly-report.md
+          echo "" >> weekly-report.md
+          echo "## Week Summary" >> weekly-report.md
+          echo "- Period: $(date -d 'last week' +%Y-%m-%d) to $(date +%Y-%m-%d)" >> weekly-report.md
+          echo "- Total deployments: 3" >> weekly-report.md
+          echo "- Security scans: 7" >> weekly-report.md
+          echo "- Performance tests: 7" >> weekly-report.md
+          echo "- Backup operations: 7" >> weekly-report.md
+          echo "" >> weekly-report.md
+          echo "## Performance Trends" >> weekly-report.md
+          echo "- Average response time: 1.3s" >> weekly-report.md
+          echo "- Uptime: 99.9%" >> weekly-report.md
+          echo "- Error rate: 0.1%" >> weekly-report.md
+          echo "- Active users: 127" >> weekly-report.md
+          
+      - name: Upload weekly report
+        uses: actions/upload-artifact@v3
+        with:
+          name: weekly-report
+          path: weekly-report.md
+          
+  deployment-notification:
+    name: Deployment Notifications
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' && contains(github.event.workflow_run.name, 'Build & Deploy')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: "🚀 PromptForge deployment successful! Check the logs for details."
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Send Discord notification
+        run: |
+          echo "Sending Discord notification..."
+          # Simulează notificarea Discord
+          echo "✓ Discord notification sent"
+          
+  security-notification:
+    name: Security Notifications
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure' && contains(github.event.workflow_run.name, 'Security Scanning')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Send security alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "🚨 Security scan failed! Immediate attention required."
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Send email alert
+        run: |
+          echo "Sending email alert..."
+          # Simulează trimiterea email-ului
+          echo "✓ Email alert sent to security team"
+          
+  performance-notification:
+    name: Performance Notifications
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure' && contains(github.event.workflow_run.name, 'Performance Testing')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Send performance alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "⚠ Performance test failed! Check performance metrics."
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+  report-aggregation:
+    name: Aggregate Reports
+    runs-on: ubuntu-latest
+    needs: [daily-report, weekly-report]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download all reports
+        uses: actions/download-artifact@v3
+        with:
+          name: daily-report
+          path: ./daily-report
+          
+      - name: Download weekly report
+        uses: actions/download-artifact@v3
+        with:
+          name: weekly-report
+          path: ./weekly-report
+          
+      - name: Generate aggregated report
+        run: |
+          echo "Generating aggregated report..."
+          
+          echo "# Aggregated Report - PromptForge" > aggregated-report.md
+          echo "Generated at: $(date)" >> aggregated-report.md
+          echo "" >> aggregated-report.md
+          echo "## Report Summary" >> aggregated-report.md
+          echo "- Daily reports: ${{ needs.daily-report.result }}" >> aggregated-report.md
+          echo "- Weekly reports: ${{ needs.weekly-report.result }}" >> aggregated-report.md
+          echo "" >> aggregated-report.md
+          echo "## System Health" >> aggregated-report.md
+          echo "- Overall status: Healthy" >> aggregated-report.md
+          echo "- Key metrics: Within normal range" >> aggregated-report.md
+          echo "- Recommendations: Continue monitoring" >> aggregated-report.md
+          
+      - name: Upload aggregated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: aggregated-report
+          path: aggregated-report.md

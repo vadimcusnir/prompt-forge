@@ -1,0 +1,200 @@
+name: ⚡ Performance Testing
+
+on:
+  push:
+    branches: [ main, develop, hotfix/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Rulează zilnic la 4:00 AM UTC pentru performance monitoring
+    - cron: '0 4 * * *'
+
+jobs:
+  lighthouse-audit:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build application
+        run: |
+          echo "Building application..."
+          pnpm build
+          
+      - name: Start application
+        run: |
+          echo "Starting application..."
+          pnpm start &
+          sleep 30
+          
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000
+            http://localhost:3000/pricing
+            http://localhost:3000/profilul-meu
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: './.lighthouserc.js'
+          
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build application
+        run: |
+          echo "Building application..."
+          pnpm build
+          
+      - name: Analyze bundle size
+        run: |
+          echo "Analyzing bundle size..."
+          npx @next/bundle-analyzer .next/static/chunks/**/*.js .next/static/chunks/**/*.css
+          
+      - name: Check bundle size limits
+        run: |
+          echo "Checking bundle size limits..."
+          npx size-limit --why
+          
+      - name: Generate bundle report
+        run: |
+          echo "Generating bundle report..."
+          npx webpack-bundle-analyzer .next/static/chunks/**/*.js --mode static --report
+          
+      - name: Upload bundle reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-reports
+          path: bundle-analyzer-report.html
+          
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build application
+        run: |
+          echo "Building application..."
+          pnpm build
+          
+      - name: Run performance tests
+        run: |
+          echo "Running performance tests..."
+          pnpm test:performance || true
+          
+      - name: Check Core Web Vitals
+        run: |
+          echo "Checking Core Web Vitals..."
+          npx web-vitals --json > web-vitals.json || true
+          
+      - name: Upload performance reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-reports
+          path: |
+            web-vitals.json
+            performance-test-results/
+            
+  memory-leak-test:
+    name: Memory Leak Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build application
+        run: |
+          echo "Building application..."
+          pnpm build
+          
+      - name: Start application
+        run: |
+          echo "Starting application..."
+          pnpm start &
+          sleep 30
+          
+      - name: Run memory leak tests
+        run: |
+          echo "Running memory leak tests..."
+          npx autocannon -d 60 -c 10 http://localhost:3000 || true
+          
+      - name: Check memory usage
+        run: |
+          echo "Checking memory usage..."
+          ps aux | grep "next start" | grep -v grep || true

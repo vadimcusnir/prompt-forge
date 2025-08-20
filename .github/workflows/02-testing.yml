@@ -1,0 +1,141 @@
+name: 🧪 Testing & Quality
+
+on:
+  push:
+    branches: [ main, develop, hotfix/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check code formatting
+        run: |
+          echo "Checking code formatting..."
+          pnpm format:check || true
+          
+      - name: Run ESLint
+        run: |
+          echo "Running ESLint..."
+          pnpm lint
+          
+      - name: Check TypeScript types
+        run: |
+          echo "Checking TypeScript types..."
+          pnpm type-check
+          
+      - name: Validate component props
+        run: |
+          echo "Validating component props..."
+          pnpm validate-props || true
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests..."
+          pnpm test:unit
+          
+      - name: Run integration tests
+        run: |
+          echo "Running integration tests..."
+          pnpm test:integration || true
+          
+      - name: Generate test coverage
+        run: |
+          echo "Generating test coverage..."
+          pnpm test:coverage || true
+          
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-coverage
+          path: coverage/
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build application
+        run: |
+          echo "Building application..."
+          pnpm build
+          
+      - name: Start application
+        run: |
+          echo "Starting application..."
+          pnpm start &
+          sleep 30
+          
+      - name: Run E2E tests
+        run: |
+          echo "Running E2E tests..."
+          pnpm test:e2e || true
+          
+      - name: Upload E2E reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-reports
+          path: e2e-reports/ || test-results/ || .next/

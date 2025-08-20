@@ -1,0 +1,240 @@
+name: 🚀 Build & Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pnpm-store
+            node_modules
+            .next/cache
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+            
+      - name: Run type check
+        run: pnpm type-check
+        
+      - name: Run linting
+        run: pnpm lint
+        
+      - name: Build application
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_MOTION: ${{ secrets.NEXT_PUBLIC_MOTION }}
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-files
+          path: |
+            .next/
+            public/
+            package.json
+            pnpm-lock.yaml
+            
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+    environment: preview
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-files
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod=false'
+          working-directory: ./
+          
+      - name: Comment PR with deployment info
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Staging deployment completed!**\n\nPreview URL: ${{ steps.deploy.outputs.preview-url }}\n\nDeployment ID: ${{ steps.deploy.outputs.deployment-id }}`
+            })
+            
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-files
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+          
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on production..."
+          sleep 30
+          
+          # Test homepage
+          curl -f https://${{ steps.deploy.outputs.url }} || exit 1
+          
+          # Test API endpoints
+          curl -f https://${{ steps.deploy.outputs.url }}/api/health || exit 1
+          
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "🚀 Production deployment successful!"
+          echo "URL: ${{ steps.deploy.outputs.url }}"
+          echo "Deployment ID: ${{ steps.deploy.outputs.deployment-id }}"
+          
+  post-deploy:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run health checks
+        run: |
+          echo "Running post-deployment health checks..."
+          
+          # Verifică dacă build-ul a fost creat
+          if [ -d ".next" ]; then
+            echo "✓ Build directory exists"
+          else
+            echo "⚠ Build directory missing"
+          fi
+          
+          # Verifică dacă package.json există
+          if [ -f "package.json" ]; then
+            echo "✓ Package.json exists"
+          else
+            echo "⚠ Package.json missing"
+          fi
+          
+      - name: Generate deployment report
+        if: always()
+        run: |
+          echo "Generating deployment report..."
+          
+          echo "# Deployment Report" > deployment-report.md
+          echo "Generated at: $(date)" >> deployment-report.md
+          echo "" >> deployment-report.md
+          echo "## Build Status" >> deployment-report.md
+          echo "- Build: ${{ needs.build.result }}" >> deployment-report.md
+          echo "- Staging: ${{ needs.deploy-staging.result }}" >> deployment-report.md
+          echo "- Production: ${{ needs.deploy-production.result }}" >> deployment-report.md
+          echo "" >> deployment-report.md
+          echo "## Environment Variables" >> deployment-report.md
+          echo "- Supabase: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' && '✓' || '⚠' }}" >> deployment-report.md
+          echo "- Stripe: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY != '' && '✓' || '⚠' }}" >> deployment-report.md
+          echo "- Motion: ${{ secrets.NEXT_PUBLIC_MOTION != '' && '✓' || '⚠' }}" >> deployment-report.md
+          
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-report
+          path: deployment-report.md

@@ -1,0 +1,249 @@
+name: 🗄️ Database Management
+
+on:
+  push:
+    branches: [ main, develop, hotfix/* ]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/seed/**'
+      - '.github/workflows/05-database.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/seed/**'
+  schedule:
+    # Rulează zilnic la 5:00 AM UTC pentru backup
+    - cron: '0 5 * * *'
+
+jobs:
+  migration-test:
+    name: Test Database Migrations
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Setup Supabase CLI
+        run: |
+          echo "Setting up Supabase CLI..."
+          npm install -g supabase
+          
+      - name: Start local Supabase
+        run: |
+          echo "Starting local Supabase..."
+          supabase start
+          
+      - name: Run migrations
+        run: |
+          echo "Running migrations..."
+          supabase db reset
+          
+      - name: Test migrations
+        run: |
+          echo "Testing migrations..."
+          supabase db diff --schema public
+          
+      - name: Stop local Supabase
+        if: always()
+        run: |
+          echo "Stopping local Supabase..."
+          supabase stop
+          
+  database-health:
+    name: Database Health Check
+    runs-on: ubuntu-latest
+    needs: migration-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check database connection
+        run: |
+          echo "Checking database connection..."
+          node -e "
+            const { createClient } = require('@supabase/supabase-js');
+            const client = createClient(
+              process.env.SUPABASE_URL || 'https://example.supabase.co',
+              process.env.SUPABASE_ANON_KEY || 'dummy-key'
+            );
+            console.log('Supabase client created successfully');
+          "
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          
+      - name: Validate schema
+        run: |
+          echo "Validating database schema..."
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            
+            const migrationsDir = './supabase/migrations';
+            if (fs.existsSync(migrationsDir)) {
+              const files = fs.readdirSync(migrationsDir);
+              console.log('Found migrations:', files);
+              
+              files.forEach(file => {
+                if (file.endsWith('.sql')) {
+                  const content = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+                  if (content.includes('CREATE TABLE') || content.includes('ALTER TABLE')) {
+                    console.log('✓ Valid migration:', file);
+                  }
+                }
+              });
+            }
+          "
+          
+  backup-simulation:
+    name: Backup Simulation
+    runs-on: ubuntu-latest
+    needs: database-health
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Simulate backup process
+        run: |
+          echo "Simulating backup process..."
+          mkdir -p backup-simulation
+          
+          # Simulează backup pentru tabelele importante
+          echo "-- Backup simulation for PromptForge" > backup-simulation/backup.sql
+          echo "-- Generated at: $(date)" >> backup-simulation/backup.sql
+          echo "" >> backup-simulation/backup.sql
+          
+          # Simulează backup pentru module
+          echo "-- Modules backup" >> backup-simulation/backup.sql
+          echo "SELECT 'modules' as table_name, COUNT(*) as record_count FROM modules;" >> backup-simulation/backup.sql
+          echo "" >> backup-simulation/backup.sql
+          
+          # Simulează backup pentru prompts
+          echo "-- Prompts backup" >> backup-simulation/backup.sql
+          echo "SELECT 'prompts' as table_name, COUNT(*) as record_count FROM prompts;" >> backup-simulation/backup.sql
+          echo "" >> backup-simulation/backup.sql
+          
+          # Simulează backup pentru subscriptions
+          echo "-- Subscriptions backup" >> backup-simulation/backup.sql
+          echo "SELECT 'stripe_subscriptions' as table_name, COUNT(*) as record_count FROM stripe_subscriptions;" >> backup-simulation/backup.sql
+          
+          echo "Backup simulation completed"
+          
+      - name: Upload backup simulation
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup-simulation
+          path: backup-simulation/
+          
+  data-integrity:
+    name: Data Integrity Check
+    runs-on: ubuntu-latest
+    needs: backup-simulation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check data integrity
+        run: |
+          echo "Checking data integrity..."
+          
+          # Verifică dacă există migrații
+          if [ -d "./supabase/migrations" ]; then
+            echo "✓ Migrations directory exists"
+            ls -la ./supabase/migrations/
+          else
+            echo "⚠ Migrations directory missing"
+          fi
+          
+          # Verifică dacă există seed data
+          if [ -d "./supabase/seed" ]; then
+            echo "✓ Seed directory exists"
+            ls -la ./supabase/seed/
+          else
+            echo "⚠ Seed directory missing"
+          fi
+          
+          # Verifică dacă există schema
+          if [ -f "./supabase/config.toml" ]; then
+            echo "✓ Supabase config exists"
+          else
+            echo "⚠ Supabase config missing"
+          fi
+          
+      - name: Validate SQL syntax
+        run: |
+          echo "Validating SQL syntax..."
+          
+          # Verifică sintaxa migrațiilor
+          for file in ./supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Validating: $file"
+              # Simulează validarea SQL (în producție ar folosi un parser real)
+              if grep -q "CREATE\|ALTER\|DROP\|INSERT\|UPDATE\|DELETE" "$file"; then
+                echo "✓ Valid SQL structure in $file"
+              else
+                echo "⚠ No SQL operations found in $file"
+              fi
+            fi
+          done

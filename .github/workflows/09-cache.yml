@@ -1,0 +1,195 @@
+name: 🗂️ Cache Management
+
+on:
+  schedule:
+    # Rulează zilnic la 7:00 AM UTC pentru cache cleanup
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      cache_action:
+        description: 'Cache action to perform'
+        required: true
+        default: 'cleanup'
+        type: choice
+        options:
+        - cleanup
+        - optimize
+        - validate
+
+jobs:
+  cache-cleanup:
+    name: Cache Cleanup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Clean npm cache
+        run: |
+          echo "Cleaning npm cache..."
+          npm cache clean --force
+          
+      - name: Clean pnpm cache
+        run: |
+          echo "Cleaning pnpm cache..."
+          pnpm store prune
+          
+      - name: Clean Next.js cache
+        run: |
+          echo "Cleaning Next.js cache..."
+          rm -rf .next/cache || true
+          rm -rf .next/build-manifest.json || true
+          
+      - name: Clean build artifacts
+        run: |
+          echo "Cleaning build artifacts..."
+          rm -rf dist || true
+          rm -rf build || true
+          rm -rf coverage || true
+          
+  cache-optimization:
+    name: Cache Optimization
+    runs-on: ubuntu-latest
+    needs: cache-cleanup
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Analyze cache usage
+        run: |
+          echo "Analyzing cache usage..."
+          
+          # Verifică dimensiunea node_modules
+          echo "Node modules size: $(du -sh node_modules | cut -f1)"
+          
+          # Verifică dimensiunea .next
+          if [ -d ".next" ]; then
+            echo "Next.js build size: $(du -sh .next | cut -f1)"
+          fi
+          
+          # Verifică dimensiunea pnpm store
+          echo "pnpm store size: $(du -sh ~/.pnpm-store 2>/dev/null | cut -f1 || echo 'N/A')"
+          
+      - name: Optimize cache strategy
+        run: |
+          echo "Optimizing cache strategy..."
+          
+          # Creează cache optimization report
+          echo "# Cache Optimization Report" > cache-optimization.md
+          echo "Generated at: $(date)" >> cache-optimization.md
+          echo "" >> cache-optimization.md
+          echo "## Current Cache Usage" >> cache-optimization.md
+          echo "- Node modules: $(du -sh node_modules | cut -f1)" >> cache-optimization.md
+          echo "- Next.js build: $(du -sh .next 2>/dev/null | cut -f1 || echo 'N/A')" >> cache-optimization.md
+          echo "- pnpm store: $(du -sh ~/.pnpm-store 2>/dev/null | cut -f1 || echo 'N/A')" >> cache-optimization.md
+          echo "" >> cache-optimization.md
+          echo "## Recommendations" >> cache-optimization.md
+          echo "- Use pnpm for faster installs" >> cache-optimization.md
+          echo "- Implement build caching" >> cache-optimization.md
+          echo "- Regular cache cleanup" >> cache-optimization.md
+          
+      - name: Upload cache report
+        uses: actions/upload-artifact@v3
+        with:
+          name: cache-optimization
+          path: cache-optimization.md
+          
+  cache-validation:
+    name: Cache Validation
+    runs-on: ubuntu-latest
+    needs: cache-optimization
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Validate cache integrity
+        run: |
+          echo "Validating cache integrity..."
+          
+          # Verifică dacă cache-ul funcționează
+          echo "Testing cache functionality..."
+          
+          # Test cu cache
+          start_time=$(date +%s.%N)
+          pnpm install --frozen-lockfile
+          end_time=$(date +%s.%N)
+          
+          cache_time=$(echo "$end_time - $start_time" | bc -l)
+          echo "Install time with cache: ${cache_time}s"
+          
+          # Test fără cache
+          rm -rf node_modules
+          start_time=$(date +%s.%N)
+          pnpm install --frozen-lockfile
+          end_time=$(date +%s.%N)
+          
+          no_cache_time=$(echo "$end_time - $start_time" | bc -l)
+          echo "Install time without cache: ${no_cache_time}s"
+          
+          # Calculează speedup
+          speedup=$(echo "$no_cache_time / $cache_time" | bc -l)
+          echo "Cache speedup: ${speedup}x"
+          
+      - name: Generate validation report
+        run: |
+          echo "Generating validation report..."
+          
+          echo "# Cache Validation Report" > cache-validation.md
+          echo "Generated at: $(date)" >> cache-validation.md
+          echo "" >> cache-validation.md
+          echo "## Cache Performance" >> cache-validation.md
+          echo "- Install with cache: ${cache_time}s" >> cache-validation.md
+          echo "- Install without cache: ${no_cache_time}s" >> cache-validation.md
+          echo "- Speedup: ${speedup}x" >> cache-validation.md
+          echo "" >> cache-validation.md
+          echo "## Status" >> cache-validation.md
+          if (( $(echo "$speedup > 2" | bc -l) )); then
+            echo "- Cache: ✅ Working efficiently" >> cache-validation.md
+          else
+            echo "- Cache: ⚠ Needs optimization" >> cache-validation.md
+          fi
+          
+      - name: Upload validation report
+        uses: actions/upload-artifact@v3
+        with:
+          name: cache-validation
+          path: cache-validation.md

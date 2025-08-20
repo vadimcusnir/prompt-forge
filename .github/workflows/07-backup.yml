@@ -1,0 +1,220 @@
+name: 💾 Backup & Recovery
+
+on:
+  schedule:
+    # Rulează zilnic la 6:00 AM UTC pentru backup
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Type of backup'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - incremental
+        - schema-only
+
+jobs:
+  database-backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Setup Supabase CLI
+        run: |
+          echo "Setting up Supabase CLI..."
+          npm install -g supabase
+          
+      - name: Create backup directory
+        run: |
+          echo "Creating backup directory..."
+          mkdir -p database-backups
+          cd database-backups
+          
+      - name: Generate schema backup
+        run: |
+          echo "Generating schema backup..."
+          supabase db dump --schema-only > schema-backup-$(date +%Y%m%d-%H%M%S).sql
+          
+      - name: Generate data backup
+        run: |
+          echo "Generating data backup..."
+          supabase db dump --data-only > data-backup-$(date +%Y%m%d-%H%M%S).sql
+          
+      - name: Compress backups
+        run: |
+          echo "Compressing backups..."
+          tar -czf database-backup-$(date +%Y%m%d-%H%M%S).tar.gz *.sql
+          
+      - name: Upload database backups
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-backups
+          path: database-backups/
+          
+  file-backup:
+    name: File System Backup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Create file backup
+        run: |
+          echo "Creating file system backup..."
+          mkdir -p file-backups
+          
+          # Backup important directories
+          tar -czf file-backups/source-code-$(date +%Y%m%d-%H%M%S).tar.gz \
+            --exclude=node_modules \
+            --exclude=.next \
+            --exclude=.git \
+            --exclude=dist \
+            .
+          
+      - name: Upload file backups
+        uses: actions/upload-artifact@v3
+        with:
+          name: file-backups
+          path: file-backups/
+          
+  vercel-backup:
+    name: Vercel Configuration Backup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install Vercel CLI
+        run: |
+          echo "Installing Vercel CLI..."
+          npm install -g vercel
+          
+      - name: Backup Vercel config
+        run: |
+          echo "Backing up Vercel configuration..."
+          mkdir -p vercel-backups
+          
+          # Backup vercel.json
+          if [ -f "vercel.json" ]; then
+            cp vercel.json vercel-backups/vercel-$(date +%Y%m%d-%H%M%S).json
+          fi
+          
+          # Backup environment files
+          if [ -f ".env.local" ]; then
+            cp .env.local vercel-backups/env-$(date +%Y%m%d-%H%M%S).local
+          fi
+          
+          # Backup Next.js config
+          if [ -f "next.config.mjs" ]; then
+            cp next.config.mjs vercel-backups/next-config-$(date +%Y%m%d-%H%M%S).mjs
+          fi
+          
+      - name: Upload Vercel backups
+        uses: actions/upload-artifact@v3
+        with:
+          name: vercel-backups
+          path: vercel-backups/
+          
+  backup-verification:
+    name: Backup Verification
+    runs-on: ubuntu-latest
+    needs: [database-backup, file-backup, vercel-backup]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download all backups
+        uses: actions/download-artifact@v3
+        with:
+          name: database-backups
+          path: ./database-backups
+          
+      - name: Download file backups
+        uses: actions/download-artifact@v3
+        with:
+          name: file-backups
+          path: ./file-backups
+          
+      - name: Download Vercel backups
+        uses: actions/download-artifact@v3
+        with:
+          name: vercel-backups
+          path: ./vercel-backups
+          
+      - name: Verify backup integrity
+        run: |
+          echo "Verifying backup integrity..."
+          
+          # Verifică database backups
+          if [ -d "./database-backups" ]; then
+            echo "✓ Database backups found"
+            ls -la ./database-backups/
+          else
+            echo "⚠ Database backups missing"
+          fi
+          
+          # Verifică file backups
+          if [ -d "./file-backups" ]; then
+            echo "✓ File backups found"
+            ls -la ./file-backups/
+          else
+            echo "⚠ File backups missing"
+          fi
+          
+          # Verifică Vercel backups
+          if [ -d "./vercel-backups" ]; then
+            echo "✓ Vercel backups found"
+            ls -la ./vercel-backups/
+          else
+            echo "⚠ Vercel backups missing"
+          fi
+          
+      - name: Generate backup report
+        run: |
+          echo "Generating backup report..."
+          
+          echo "# Backup Report" > backup-report.md
+          echo "Generated at: $(date)" >> backup-report.md
+          echo "" >> backup-report.md
+          echo "## Backup Status" >> backup-report.md
+          echo "- Database: ${{ needs.database-backup.result }}" >> backup-report.md
+          echo "- Files: ${{ needs.file-backup.result }}" >> backup-report.md
+          echo "- Vercel: ${{ needs.vercel-backup.result }}" >> backup-report.md
+          echo "" >> backup-report.md
+          echo "## Backup Summary" >> backup-report.md
+          echo "- Total files: $(find . -name "*.tar.gz" -o -name "*.sql" -o -name "*.json" -o -name "*.mjs" | wc -l)" >> backup-report.md
+          echo "- Total size: $(du -sh . | cut -f1)" >> backup-report.md
+          
+      - name: Upload backup report
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup-report
+          path: backup-report.md

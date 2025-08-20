@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      .next:
-        specifier: link:.next
-        version: link:.next
       '@radix-ui/react-accordion':
         specifier: ^1.1.2
         version: 1.2.12(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

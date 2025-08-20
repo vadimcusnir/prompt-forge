@@ -60,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#0A0A0A" />
         <meta name="msapplication-TileColor" content="#0A0A0A" />
+        <link rel="stylesheet" href="/output.css" />
       </head>
       <body className={`${montserrat.variable} ${openSans.variable} font-sans antialiased min-h-screen bg-black`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>

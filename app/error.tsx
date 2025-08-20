@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 
 interface ErrorProps {
@@ -16,10 +16,10 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-md w-full mx-4 text-center">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+        <div className="bg-[#1a1a1a] dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-[#1a1a1a] dark:bg-red-900 mb-4">
             <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
           </div>
           

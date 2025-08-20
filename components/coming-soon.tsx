@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
+// Button import removed - using native button elements
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -98,12 +98,11 @@ export function ComingSoon({ message = "PROMPTFORGE™ v3.0 - Coming Soon!" }: C
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="ghost" 
+            <button 
               className="text-white border border-[#5a5a5a] hover:border-[#d1a954] hover:text-[#d1a954] px-8 py-3"
             >
               Adaugă altcineva
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -171,14 +170,14 @@ export function ComingSoon({ message = "PROMPTFORGE™ v3.0 - Coming Soon!" }: C
                   </div>
                 </div>
                 
-                <Button 
+                <button 
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full bg-[#d1a954] hover:bg-[#d1a954]/90 text-black font-bold py-3 text-lg shadow-[0_0_20px_rgba(209,169,84,0.3)] hover:shadow-[0_0_30px_rgba(209,169,84,0.5)] transition-all duration-300"
                 >
                   {isSubmitting ? "Se procesează..." : "Adaugă-mă pe listă"}
                   <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                </button>
               </form>
             </CardContent>
           </Card>

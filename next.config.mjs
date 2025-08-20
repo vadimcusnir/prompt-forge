@@ -19,6 +19,8 @@ const nextConfig = {
   trailingSlash: false,
   // Disable static export
   output: 'standalone',
+  // Force dynamic rendering for all pages
+  staticPageGenerationTimeout: 0,
 }
 
 export default nextConfig

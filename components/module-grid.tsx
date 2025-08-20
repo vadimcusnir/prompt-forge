@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+
 import { Badge } from "@/components/ui/badge"
 import { ModuleCard } from "./module-card"
 import { MODULES, searchModules, getModulesByVector } from "@/lib/modules"
@@ -63,29 +63,27 @@ export function ModuleGrid({ selectedModule, onSelectModule, vectorFilter, onVec
           </Badge>
 
           <div className="flex items-center gap-1">
-            <button onClick={() => setViewMode("grid")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" variant={viewMode === "grid" ? "default" : "outline"}>
+            <button onClick={() => setViewMode("grid")} className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-3 py-2 h-8 rounded-md ${viewMode === "grid" ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90" : "border bg-background hover:bg-accent hover:text-accent-foreground"}`}>
               <Grid className="w-4 h-4" />
-            </Button>
-            <button onClick={() => setViewMode("list")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" variant={viewMode === "list" ? "default" : "outline"}>
+            </button>
+            <button onClick={() => setViewMode("list")} className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-3 py-2 h-8 rounded-md ${viewMode === "list" ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90" : "border bg-background hover:bg-accent hover:text-accent-foreground"}`}>
               <List className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Vector Filter Pills */}
       <div className="flex flex-wrap gap-2">
-        <button onClick={() => onVectorFilterChange("all")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" variant={vectorFilter === "all" ? "default" : "outline"}>
+        <button onClick={() => onVectorFilterChange("all")} className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-3 py-2 h-8 rounded-md ${vectorFilter === "all" ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90" : "border bg-background hover:bg-accent hover:text-accent-foreground"}`}>
           All ({Object.keys(MODULES).length})
-        </Button>
+        </button>
         {Object.entries(VECTORS).map(([key, vector]) => {
           const count = getModulesByVector(Number.parseInt(key)).length
           return (
-            <button onClick={() => onVectorFilterChange(key)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" key={key}
-              
-              variant={vectorFilter === key ? "default" : "outline"}>
+            <button onClick={() => onVectorFilterChange(key)} className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-3 py-2 h-8 rounded-md ${vectorFilter === key ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90" : "border bg-background hover:bg-accent hover:text-accent-foreground"}`} key={key}>
               {vector.name} ({count})
-            </Button>
+            </button>
           )
         })}
       </div>
@@ -112,7 +110,7 @@ export function ModuleGrid({ selectedModule, onSelectModule, vectorFilter, onVec
               onVectorFilterChange("all")
             } className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             Reset filters
-          </Button>
+          </button>
         </div>
       )}
     </div>

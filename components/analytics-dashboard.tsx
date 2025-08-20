@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   BarChart3, 
@@ -125,15 +125,15 @@ export function AnalyticsDashboard() {
           <button onClick={loadAnalytics} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
-          </Button>
+          </button>
           <button onClick={() => exportAnalytics('json')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export JSON
-          </Button>
+          </button>
           <button onClick={() => exportAnalytics('csv')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
-          </Button>
+          </button>
         </div>
       </div>
 

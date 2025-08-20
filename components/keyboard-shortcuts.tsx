@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+
 import { Keyboard, X } from "lucide-react"
 
 interface KeyboardShortcutsProps {
@@ -75,7 +75,7 @@ export function KeyboardShortcuts({ onGeneratePrompt, onOpenHistory, onExport, o
     return (
       <button onClick={() => setShowShortcuts(true)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
         <Keyboard className="w-4 h-4" />
-      </Button>
+      </button>
     )
   }
 
@@ -86,7 +86,7 @@ export function KeyboardShortcuts({ onGeneratePrompt, onOpenHistory, onExport, o
           <h3 className="text-lg font-bold font-[var(--font-heading)] text-foreground">Keyboard Shortcuts</h3>
           <button onClick={() => setShowShortcuts(false)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             <X className="w-4 h-4" />
-          </Button>
+          </button>
         </div>
 
         <div className="space-y-3">

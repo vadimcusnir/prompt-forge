@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckoutModal } from "@/components/checkout-modal"
@@ -320,7 +320,7 @@ export default function PricingPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-foreground">{addon.price}</div>
-                      <Button variant="ghost" size="sm">Adaugă</Button>
+                      <button className="px-3 py-1 text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded">Adaugă</button>
                     </div>
                   </div>
                 )
@@ -470,19 +470,16 @@ export default function PricingPage() {
             Setezi 7‑D, apeși Start, scoți artefacte vândabile. Fără filler. Doar valoare operațională.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-[#d1a954] hover:bg-[#d1a954]/90 text-black font-bold px-8 py-4 text-lg"
+            <button 
+              className="bg-[#d1a954] hover:bg-[#d1a954]/90 text-black font-bold px-8 py-4 text-lg rounded"
             >
               Pornește forja acum
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="px-8 py-4 text-lg"
+            </button>
+            <button 
+              className="px-8 py-4 text-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded"
             >
               Vezi toate modulele
-            </Button>
+            </button>
           </div>
         </div>
       </div>

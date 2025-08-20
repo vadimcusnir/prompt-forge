@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+// Button import removed - using native button elements
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Bell, 
@@ -156,7 +156,7 @@ export function NotificationDashboard() {
         <button onClick={fetchStats} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
-        </Button>
+        </button>
       </div>
 
       {/* Statistics Cards */}
@@ -312,16 +312,16 @@ export function NotificationDashboard() {
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => handleTestNotification(NotificationType.INFO, NotificationSeverity.LOW)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Info
-                    </Button>
+                    </button>
                     <button onClick={() => handleTestNotification(NotificationType.WARNING, NotificationSeverity.MEDIUM)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Warning
-                    </Button>
+                    </button>
                     <button onClick={() => handleTestNotification(NotificationType.ERROR, NotificationSeverity.HIGH)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Error
-                    </Button>
+                    </button>
                     <button onClick={() => handleTestNotification(NotificationType.SECURITY, NotificationSeverity.CRITICAL)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Security
-                    </Button>
+                    </button>
                   </div>
                 </div>
 
@@ -330,7 +330,7 @@ export function NotificationDashboard() {
                   <button onClick={handleEmergencyTest} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-destructive text-white shadow-xs hover:bg-destructive/90">
                     <AlertTriangle className="w-4 h-4 mr-2" />
                     Test Emergency Alert
-                  </Button>
+                  </button>
                   <p className="text-xs text-[#5a5a5a] mt-2">
                     This will trigger immediate escalation to security team
                   </p>
@@ -340,7 +340,7 @@ export function NotificationDashboard() {
                   <h4 className="text-sm font-medium text-white mb-2">Performance Test</h4>
                   <button onClick={() => handleTestNotification(NotificationType.PERFORMANCE, NotificationSeverity.HIGH)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                     Performance Alert
-                  </Button>
+                  </button>
                   <p className="text-xs text-[#5a5a5a] mt-2">
                     Will escalate to DevOps after 30 minutes
                   </p>
@@ -351,13 +351,13 @@ export function NotificationDashboard() {
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => handleTelegramTest('default')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Test Default Channel
-                    </Button>
+                    </button>
                     <button onClick={() => handleTelegramTest('security')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Test Security Channel
-                    </Button>
+                    </button>
                     <button onClick={() => handleTelegramTest('emergency')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Test Emergency Channel
-                    </Button>
+                    </button>
                   </div>
                   <p className="text-xs text-[#5a5a5a] mt-2">
                     Test Telegram notifications to different channels

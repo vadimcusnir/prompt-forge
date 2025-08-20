@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * components/testing-dashboard.tsx — Testing Dashboard
  * 
@@ -5,17 +7,15 @@
  * Includes test execution, results display, and quality metrics
  */
 
-"use client"
-
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { 
   Play, 
-  Stop, 
+  Square, 
   RefreshCw, 
   CheckCircle, 
   XCircle, 
@@ -127,11 +127,11 @@ export function TestingDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'passed': return 'bg-green-100 text-green-800'
-      case 'failed': return 'bg-red-100 text-red-800'
-      case 'skipped': return 'bg-yellow-100 text-yellow-800'
-      case 'error': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'passed': return 'bg-[#1a1a1a] text-green-800'
+      case 'failed': return 'bg-[#1a1a1a] text-red-800'
+      case 'skipped': return 'bg-[#1a1a1a] text-yellow-800'
+      case 'error': return 'bg-[#1a1a1a] text-orange-800'
+      default: return 'bg-[#1a1a1a] text-gray-800'
     }
   }
 
@@ -183,15 +183,15 @@ export function TestingDashboard() {
           <button onClick={loadTestInfo} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
-          </Button>
+          </button>
           <button onClick={() => exportResults('json')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export JSON
-          </Button>
+          </button>
           <button onClick={() => exportResults('csv')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -321,13 +321,13 @@ export function TestingDashboard() {
                           Run
                         </>
                       )}
-                    </Button>
+                    </button>
                   </div>
                 ))}
               </div>
 
               {isRunning && (
-                <div className="flex items-center justify-center p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-center p-4 bg-[#1a1a1a] rounded-lg">
                   <RefreshCw className="h-6 w-6 animate-spin text-blue-600 mr-2" />
                   <span className="text-blue-600">Running {currentTest} tests...</span>
                 </div>

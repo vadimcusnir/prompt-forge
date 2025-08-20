@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+// Button import removed - using native button elements
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   Select, 
@@ -254,14 +254,14 @@ export function SevenDSelector({
                   </Select>
                   
                   {selectedOption && (
-                    <div className={`p-2 rounded-lg border text-xs ${getOptionColor(dimension as keyof SevenDParams, selectedOption.value)}`}>
-                      {selectedOption.description}
+                    <div className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all px-3 py-1 mt-2 ${getOptionColor(dimension, selectedOption.value)}`}>
+                      <selectedOption.icon className="w-4 h-4" />
+                      <span>{selectedOption.label}</span>
+                      {selectedOption.description && (
+                        <span className="text-xs opacity-70">• {selectedOption.description}</span>
+                      )}
                     </div>
                   )}
-                  
-                  <div className="text-xs text-muted-foreground">
-                    {config.description}
-                  </div>
                 </div>
               )
             })}
@@ -269,69 +269,38 @@ export function SevenDSelector({
         </CardContent>
       </Card>
 
-      {/* Validation Errors */}
+      {/* Validation Results */}
       {validationErrors.length > 0 && (
-        <Alert variant="destructive">
+        <Alert className="border-red-500/50 bg-red-500/10">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>7D Validation Errors:</strong>
-            <ul className="mt-2 list-disc list-inside">
+            <div className="space-y-1">
               {validationErrors.map((error, index) => (
-                <li key={index}>{error}</li>
+                <div key={index}>{error}</div>
               ))}
-            </ul>
+            </div>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* 7D Summary */}
-      {isValid && (
-        <Card className="glass-effect p-4 border-green-500/20">
+      {/* AI Recommendations */}
+      {showRecommendations && recommendations.length > 0 && (
+        <Card className="border-blue-500/50 bg-blue-500/10">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-green-400">
-              <Check className="w-5 h-5" />
-              <span>7D Configuration Valid</span>
+            <CardTitle className="flex items-center space-x-2 text-blue-400">
+              <Zap className="w-5 h-5" />
+              <span>AI Recommendations</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(currentSevenD).map(([key, value]) => (
-                <div key={key} className="space-y-1">
-                  <div className="text-xs text-muted-foreground capitalize">{key}</div>
-                  <Badge variant="outline" className={getOptionColor(key as keyof SevenDParams, value)}>
-                    {value}
-                  </Badge>
+            <div className="space-y-2">
+              {recommendations.map((rec, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-blue-200">{rec}</span>
                 </div>
               ))}
             </div>
-            
-            {currentSevenD.domain && (
-              <div className="mt-4 text-xs text-muted-foreground">
-                <strong>Signature:</strong> {CursorAgent.generateSevenDSignature(currentSevenD as SevenDParams)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Domain-Specific Recommendations */}
-      {showRecommendations && recommendations.length > 0 && (
-        <Card className="glass-effect p-4 border-blue-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-blue-400">
-              <Info className="w-5 h-5" />
-              <span>Domain Recommendations</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {recommendations.map((recommendation, index) => (
-                <li key={index} className="flex items-start space-x-2 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
-                  <span>{recommendation}</span>
-                </li>
-              ))}
-            </ul>
           </CardContent>
         </Card>
       )}

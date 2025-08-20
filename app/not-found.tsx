@@ -1,13 +1,15 @@
+'use client'
+
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+
 import { Search, Home, ArrowLeft } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-md w-full mx-4 text-center">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-4">
+        <div className="bg-[#1a1a1a] dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-[#1a1a1a] dark:bg-blue-900 mb-4">
             <Search className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
           
@@ -26,10 +28,10 @@ export default function NotFound() {
             </button>
             
             <Link href="/" className="block">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
                 <Home className="h-4 w-4 mr-2" />
                 Go home
-              </Button>
+              </button>
             </Link>
           </div>
 

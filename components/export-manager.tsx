@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -264,13 +264,13 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
                 <Download className="w-4 h-4 mr-2" />
               )}
               {isExporting ? 'Generating...' : `Export ${getFormatLabel(exportFormat)}`}
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Plan Restrictions Warning */}
         {!availableFormats.includes(exportFormat) && (
-          <Alert className="mb-4 border-orange-200 bg-orange-50">
+          <Alert className="mb-4 border-orange-200 bg-[#1a1a1a]">
             <Lock className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800">
               <strong>Plan Restriction:</strong> {getUpgradeMessage(getMinPlanForFeature(exportFormat as any))}
@@ -293,20 +293,25 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
           <button onClick={copyToClipboard} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
             {copied ? "Copied!" : "Copy Prompt"}
-          </Button>
+          </button>
 
           <button onClick={() => window.print()} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             <Printer className="w-4 h-4 mr-2" />
             Print
-          </Button>
+          </button>
 
           <button onClick={() => {
               if (navigator.share && currentPrompt) {
                 navigator.share({
-                  title: `PROMPTFORGE™ - Module ${currentPrompt.moduleId} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                  title: `PROMPTFORGE™ - Module ${currentPrompt.moduleId}`,
+                  text: currentPrompt.prompt.substring(0, 100) + "...",
+                  url: window.location.href
+                })
+              }
+            }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             <Share2 className="w-4 h-4 mr-2" />
             Share
-          </Button>
+          </button>
         </div>
       </Card>
 

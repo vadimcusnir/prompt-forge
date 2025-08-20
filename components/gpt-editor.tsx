@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -214,19 +214,19 @@ export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
               Optimize with GPT-4
             </>
           )}
-        </Button>
+        </button>
 
         {editResult && (
           <>
             <button onClick={handleCopyEdited} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Copy className="w-4 h-4 mr-2" />
               Copy Optimized
-            </Button>
+            </button>
 
             <button onClick={handleDownloadEdited} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Download className="w-4 h-4 mr-2" />
               Download Optimized
-            </Button>
+            </button>
           </>
         )}
       </div>

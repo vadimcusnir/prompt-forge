@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -272,7 +272,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
               Run Test
             </>
           )}
-        </Button>
+        </button>
       </div>
 
       {/* Test Progress */}

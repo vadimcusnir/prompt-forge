@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -145,7 +145,7 @@ export default function TestPage() {
               ))}
             </div>
             
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div className="mt-4 p-4 bg-[#1a1a1a] rounded-lg">
               <h4 className="font-medium mb-2">Summary:</h4>
               <p className="text-sm">
                 Passed: {testResults.filter(r => r.success).length} / {testResults.length}
@@ -172,10 +172,10 @@ export default function TestPage() {
             </div>
             
             <div className="flex gap-2">
-              <Button variant="default">Default Button</Button>
-              <Button variant="secondary">Secondary Button</Button>
-              <Button variant="outline">Outline Button</Button>
-              <Button variant="destructive">Destructive Button</Button>
+              <button className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90">Default Button</button>
+              <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80">Secondary Button</button>
+              <button className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded">Outline Button</button>
+              <button className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90">Destructive Button</button>
             </div>
           </div>
         </CardContent>

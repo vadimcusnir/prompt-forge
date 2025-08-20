@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Check, XCircle, AlertTriangle, Clock, Lock } from "lucide-react"
@@ -247,7 +247,10 @@ export function QualityGates({
             </button>
             
             {canDeliver && (
-              <button className="bg-green-600 hover:bg-green-700 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2">
+              <button 
+                onClick={() => {/* TODO: Implement export functionality */}}
+                className="bg-green-600 hover:bg-green-700 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 rounded"
+              >
                 Proceed to Export
               </button>
             )}

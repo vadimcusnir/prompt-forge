@@ -180,8 +180,7 @@ function CarouselPrevious({
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
-    <Button
-      data-slot="carousel-previous"
+    <button onClick={scrollPrev} disabled={!canScrollPrev} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90" data-slot="carousel-previous"
       variant={variant}
       size={size}
       className={cn(
@@ -190,11 +189,7 @@ function CarouselPrevious({
           ? "top-1/2 -left-12 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
         className
-      )}
-      disabled={!canScrollPrev}
-      onClick={scrollPrev}
-      {...props}
-    >
+      )}>
       <ArrowLeft />
       <span className="sr-only">Previous slide</span>
     </Button>
@@ -210,8 +205,7 @@ function CarouselNext({
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (
-    <Button
-      data-slot="carousel-next"
+    <button onClick={scrollNext} disabled={!canScrollNext} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90" data-slot="carousel-next"
       variant={variant}
       size={size}
       className={cn(
@@ -220,11 +214,7 @@ function CarouselNext({
           ? "top-1/2 -right-12 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
         className
-      )}
-      disabled={!canScrollNext}
-      onClick={scrollNext}
-      {...props}
-    >
+      )}>
       <ArrowRight />
       <span className="sr-only">Next slide</span>
     </Button>

@@ -122,15 +122,15 @@ export function AnalyticsDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadAnalytics}>
+          <button onClick={loadAnalytics} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" onClick={() => exportAnalytics('json')}>
+          <button onClick={() => exportAnalytics('json')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export JSON
           </Button>
-          <Button variant="outline" onClick={() => exportAnalytics('csv')}>
+          <button onClick={() => exportAnalytics('csv')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>

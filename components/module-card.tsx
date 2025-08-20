@@ -66,26 +66,16 @@ export function ModuleCard({ module, isSelected, onSelect, onViewDetails }: Modu
       </div>
 
       <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs bg-transparent"
-          onClick={(e) => {
+        <button onClick={(e) => {
             e.stopPropagation()
             setIsExpanded(!isExpanded)
-          }}
-        >
+          } className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 text-xs bg-transparent">
           {isExpanded ? "Minimize" : "Details"}
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs bg-transparent"
-          onClick={(e) => {
+        <button onClick={(e) => {
             e.stopPropagation()
             onViewDetails(module.id)
-          }}
-        >
+          } className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 text-xs bg-transparent">
           Specifications
         </Button>
       </div>

@@ -63,10 +63,10 @@ export function ModuleGrid({ selectedModule, onSelectModule, vectorFilter, onVec
           </Badge>
 
           <div className="flex items-center gap-1">
-            <Button size="sm" variant={viewMode === "grid" ? "default" : "outline"} onClick={() => setViewMode("grid")}>
+            <button onClick={() => setViewMode("grid")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" variant={viewMode === "grid" ? "default" : "outline"}>
               <Grid className="w-4 h-4" />
             </Button>
-            <Button size="sm" variant={viewMode === "list" ? "default" : "outline"} onClick={() => setViewMode("list")}>
+            <button onClick={() => setViewMode("list")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" variant={viewMode === "list" ? "default" : "outline"}>
               <List className="w-4 h-4" />
             </Button>
           </div>
@@ -75,24 +75,15 @@ export function ModuleGrid({ selectedModule, onSelectModule, vectorFilter, onVec
 
       {/* Vector Filter Pills */}
       <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant={vectorFilter === "all" ? "default" : "outline"}
-          onClick={() => onVectorFilterChange("all")}
-          className="glass-effect"
-        >
+        <button onClick={() => onVectorFilterChange("all")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" variant={vectorFilter === "all" ? "default" : "outline"}>
           All ({Object.keys(MODULES).length})
         </Button>
         {Object.entries(VECTORS).map(([key, vector]) => {
           const count = getModulesByVector(Number.parseInt(key)).length
           return (
-            <Button
-              key={key}
-              size="sm"
-              variant={vectorFilter === key ? "default" : "outline"}
-              onClick={() => onVectorFilterChange(key)}
-              className="glass-effect"
-            >
+            <button onClick={() => onVectorFilterChange(key)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3" key={key}
+              
+              variant={vectorFilter === key ? "default" : "outline"}>
               {vector.name} ({count})
             </Button>
           )
@@ -116,14 +107,10 @@ export function ModuleGrid({ selectedModule, onSelectModule, vectorFilter, onVec
         <div className="text-center py-12 text-muted-foreground">
           <Filter className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>No modules found for the selected criteria.</p>
-          <Button
-            variant="outline"
-            onClick={() => {
+          <button onClick={() => {
               setSearchQuery("")
               onVectorFilterChange("all")
-            }}
-            className="mt-4"
-          >
+            } className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             Reset filters
           </Button>
         </div>

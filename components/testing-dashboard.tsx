@@ -180,15 +180,15 @@ export function TestingDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadTestInfo}>
+          <button onClick={loadTestInfo} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" onClick={() => exportResults('json')}>
+          <button onClick={() => exportResults('json')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export JSON
           </Button>
-          <Button variant="outline" onClick={() => exportResults('csv')}>
+          <button onClick={() => exportResults('csv')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
@@ -309,11 +309,7 @@ export function TestingDashboard() {
                       <h4 className="font-medium">{test.type.toUpperCase()} Tests</h4>
                       <p className="text-sm text-muted-foreground">{test.description}</p>
                     </div>
-                    <Button
-                      onClick={() => runTests(test.type)}
-                      disabled={isRunning}
-                      className="ml-4"
-                    >
+                    <button onClick={() => runTests(test.type)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
                       {isRunning && currentTest === test.type ? (
                         <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />

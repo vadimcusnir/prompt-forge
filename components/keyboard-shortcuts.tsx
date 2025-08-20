@@ -73,13 +73,7 @@ export function KeyboardShortcuts({ onGeneratePrompt, onOpenHistory, onExport, o
 
   if (!showShortcuts) {
     return (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowShortcuts(true)}
-        className="fixed bottom-4 right-4 glass-effect z-50"
-        title="Keyboard Shortcuts (Ctrl+K)"
-      >
+      <button onClick={() => setShowShortcuts(true)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
         <Keyboard className="w-4 h-4" />
       </Button>
     )
@@ -90,7 +84,7 @@ export function KeyboardShortcuts({ onGeneratePrompt, onOpenHistory, onExport, o
       <Card className="glass-strong p-6 max-w-md w-full animate-slide-up">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold font-[var(--font-heading)] text-foreground">Keyboard Shortcuts</h3>
-          <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(false)}>
+          <button onClick={() => setShowShortcuts(false)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             <X className="w-4 h-4" />
           </Button>
         </div>

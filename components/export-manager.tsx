@@ -257,12 +257,7 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
           </div>
 
           <div className="flex items-end">
-            <Button 
-              onClick={handleExport} 
-              className="w-full"
-              disabled={!canDeliver || isExporting}
-              title={!canDeliver ? "Quality gates must pass before export" : ""}
-            >
+            <button onClick={handleExport} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
               {isExporting ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
               ) : (
@@ -295,35 +290,20 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={copyToClipboard} 
-            disabled={!currentPrompt || !canProceed}
-            title={!canProceed ? "Quality gates must pass before copying" : ""}
-          >
+          <button onClick={copyToClipboard} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
             {copied ? "Copied!" : "Copy Prompt"}
           </Button>
 
-          <Button variant="outline" size="sm" onClick={() => window.print()}>
+          <button onClick={() => window.print()} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             <Printer className="w-4 h-4 mr-2" />
             Print
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
+          <button onClick={() => {
               if (navigator.share && currentPrompt) {
                 navigator.share({
-                  title: `PROMPTFORGE™ - Module ${currentPrompt.moduleId}`,
-                  text: currentPrompt.prompt.substring(0, 200) + "...",
-                  url: window.location.href,
-                })
-              }
-            }}
-          >
+                  title: `PROMPTFORGE™ - Module ${currentPrompt.moduleId} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>

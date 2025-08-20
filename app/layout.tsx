@@ -2,7 +2,7 @@
 import "./globals.css"
 import type { Metadata } from "next"
 import { Montserrat, Open_Sans } from "next/font/google"
-import { ThemeProvider } from "next-themes"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const montserrat = Montserrat({
   subsets: ["latin"],

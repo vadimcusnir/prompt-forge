@@ -169,32 +169,35 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <Button onClick={handleGeneratePrompt} disabled={!selectedModule || isGenerating} className="glow-primary">
+        <button 
+          onClick={handleGeneratePrompt} 
+          disabled={!selectedModule || isGenerating} 
+          className="glow-primary inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+        >
           {isGenerating ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
           {generatedPrompt ? "Regenerate" : "Generate"} Prompt
-        </Button>
+        </button>
 
         {generatedPrompt && (
           <>
-            <Button
-              variant="outline"
+            <button
               onClick={handleRerollPrompt}
               disabled={isGenerating}
-              className="glass-effect bg-transparent"
+              className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Reroll
-            </Button>
+            </button>
 
-            <Button variant="outline" onClick={handleCopyPrompt} className="glass-effect bg-transparent">
+            <button onClick={handleCopyPrompt} className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Copy className="w-4 h-4 mr-2" />
               Copy
-            </Button>
+            </button>
 
-            <Button variant="outline" onClick={handleDownloadPrompt} className="glass-effect bg-transparent">
+            <button onClick={handleDownloadPrompt} className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Download className="w-4 h-4 mr-2" />
               Download
-            </Button>
+            </button>
           </>
         )}
       </div>

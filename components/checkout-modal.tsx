@@ -148,9 +148,9 @@ export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
                 Primești un email de confirmare și poți începe să folosești toate funcționalitățile imediat.
               </p>
             </div>
-            <Button onClick={onClose} className="w-full">
+            <button onClick={onClose} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
               Închide
-            </Button>
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -210,12 +210,12 @@ export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
                   </p>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="outline" onClick={onClose} className="flex-1">
+                  <button onClick={onClose} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
                     Anulează
-                  </Button>
-                  <Button onClick={handleUpgrade} className="flex-1">
+                  </button>
+                  <button onClick={handleUpgrade} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
                     Continuă
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}
@@ -253,12 +253,12 @@ export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="outline" onClick={() => setStep("plan")} className="flex-1">
+                  <button onClick={() => setStep("plan")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
                     Înapoi
-                  </Button>
-                  <Button onClick={handleBillingSubmit} className="flex-1">
+                  </button>
+                  <button onClick={handleBillingSubmit} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
                     Continuă la plată
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}
@@ -293,12 +293,12 @@ export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button variant="outline" onClick={() => setStep("billing")} className="flex-1">
+                  <button onClick={() => setStep("billing")} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
                     Înapoi
-                  </Button>
-                  <Button onClick={handlePaymentSubmit} className="flex-1">
+                  </button>
+                  <button onClick={handlePaymentSubmit} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
                     Finalizează upgrade-ul
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}

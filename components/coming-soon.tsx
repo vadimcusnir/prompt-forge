@@ -99,7 +99,6 @@ export function ComingSoon({ message = "PROMPTFORGE™ v3.0 - Coming Soon!" }: C
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={() => setIsSubmitted(false)}
               variant="ghost" 
               className="text-white border border-[#5a5a5a] hover:border-[#d1a954] hover:text-[#d1a954] px-8 py-3"
             >

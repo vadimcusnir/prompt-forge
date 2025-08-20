@@ -88,7 +88,6 @@ export function AdminToggle() {
           </div>
           <Switch
             checked={status?.enabled || false}
-            onCheckedChange={handleToggle}
             disabled={isToggling}
             className="data-[state=checked]:bg-[#d1a954]"
           />
@@ -116,13 +115,9 @@ export function AdminToggle() {
         )}
 
         <div className="pt-4 border-t border-[#5a5a5a]/20">
-          <Button
-            onClick={() => handleToggle(!status?.enabled)}
-            disabled={isToggling}
-            className="w-full bg-[#d1a954] hover:bg-[#d1a954]/90 text-black font-bold"
-          >
+          <button onClick={() => handleToggle(!status?.enabled)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
             {isToggling ? "Processing..." : `Turn ${status?.enabled ? 'Off' : 'On'}`}
-          </Button>
+          </button>
         </div>
       </CardContent>
     </Card>

@@ -202,7 +202,7 @@ export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <Button onClick={handleOptimizePrompt} disabled={!generatedPrompt || isEditing} className="glow-primary">
+        <button onClick={handleOptimizePrompt} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
           {isEditing ? (
             <>
               <Clock className="w-4 h-4 mr-2 animate-spin" />
@@ -218,12 +218,12 @@ export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
 
         {editResult && (
           <>
-            <Button variant="outline" onClick={handleCopyEdited} className="glass-effect bg-transparent">
+            <button onClick={handleCopyEdited} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Copy className="w-4 h-4 mr-2" />
               Copy Optimized
             </Button>
 
-            <Button variant="outline" onClick={handleDownloadEdited} className="glass-effect bg-transparent">
+            <button onClick={handleDownloadEdited} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Download className="w-4 h-4 mr-2" />
               Download Optimized
             </Button>

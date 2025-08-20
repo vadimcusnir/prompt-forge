@@ -172,11 +172,11 @@ export function HistoryPanel({ onRestoreEntry }: HistoryPanelProps) {
           </select>
 
           <div className="flex gap-2 ml-auto">
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <button onClick={handleExport} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={handleClearHistory}>
+            <button onClick={handleClearHistory} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
               <Trash2 className="w-4 h-4 mr-2" />
               Delete All
             </Button>
@@ -210,15 +210,10 @@ export function HistoryPanel({ onRestoreEntry }: HistoryPanelProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">{formatDate(entry.timestamp)}</span>
-                  <Button variant="ghost" size="sm" onClick={() => onRestoreEntry?.(entry)} className="text-xs">
+                  <button onClick={() => onRestoreEntry?.(entry)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                     Restore
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteEntry(entry.id)}
-                    className="text-xs text-red-400 hover:text-red-300"
-                  >
+                  <button onClick={() => handleDeleteEntry(entry.id)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>

@@ -153,12 +153,7 @@ export function NotificationDashboard() {
           <h2 className="text-2xl font-bold text-white">Notification Dashboard</h2>
           <p className="text-[#5a5a5a]">Monitor and manage system notifications</p>
         </div>
-        <Button 
-          onClick={fetchStats} 
-          disabled={isLoading}
-          variant="outline"
-          className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-        >
+        <button onClick={fetchStats} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
@@ -315,40 +310,16 @@ export function NotificationDashboard() {
                 <div>
                   <h4 className="text-sm font-medium text-white mb-2">Quick Tests</h4>
                   <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTestNotification(NotificationType.INFO, NotificationSeverity.LOW)}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTestNotification(NotificationType.INFO, NotificationSeverity.LOW)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Info
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTestNotification(NotificationType.WARNING, NotificationSeverity.MEDIUM)}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTestNotification(NotificationType.WARNING, NotificationSeverity.MEDIUM)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Warning
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTestNotification(NotificationType.ERROR, NotificationSeverity.HIGH)}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTestNotification(NotificationType.ERROR, NotificationSeverity.HIGH)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Error
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTestNotification(NotificationType.SECURITY, NotificationSeverity.CRITICAL)}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTestNotification(NotificationType.SECURITY, NotificationSeverity.CRITICAL)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Security
                     </Button>
                   </div>
@@ -356,12 +327,7 @@ export function NotificationDashboard() {
 
                 <div>
                   <h4 className="text-sm font-medium text-white mb-2">Emergency Test</h4>
-                  <Button
-                    variant="destructive"
-                    onClick={handleEmergencyTest}
-                    disabled={isSending}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
+                  <button onClick={handleEmergencyTest} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-destructive text-white shadow-xs hover:bg-destructive/90">
                     <AlertTriangle className="w-4 h-4 mr-2" />
                     Test Emergency Alert
                   </Button>
@@ -372,13 +338,7 @@ export function NotificationDashboard() {
 
                 <div>
                   <h4 className="text-sm font-medium text-white mb-2">Performance Test</h4>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleTestNotification(NotificationType.PERFORMANCE, NotificationSeverity.HIGH)}
-                    disabled={isSending}
-                    className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                  >
+                  <button onClick={() => handleTestNotification(NotificationType.PERFORMANCE, NotificationSeverity.HIGH)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                     Performance Alert
                   </Button>
                   <p className="text-xs text-[#5a5a5a] mt-2">
@@ -389,31 +349,13 @@ export function NotificationDashboard() {
                 <div>
                   <h4 className="text-sm font-medium text-white mb-2">Telegram Test</h4>
                   <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTelegramTest('default')}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTelegramTest('default')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Test Default Channel
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTelegramTest('security')}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTelegramTest('security')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Test Security Channel
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleTelegramTest('emergency')}
-                      disabled={isSending}
-                      className="border-[#5a5a5a] text-white hover:border-[#d1a954] hover:text-[#d1a954]"
-                    >
+                    <button onClick={() => handleTelegramTest('emergency')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                       Test Emergency Channel
                     </Button>
                   </div>

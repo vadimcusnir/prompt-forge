@@ -242,18 +242,14 @@ export function QualityGates({
           </div>
 
           <div className="flex justify-center space-x-4">
-            <Button 
-              variant="outline" 
-              disabled={!canProceed}
-              onClick={validateQualityGates}
-            >
+            <button onClick={validateQualityGates} disabled={!canProceed} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               Re-validate
-            </Button>
+            </button>
             
             {canDeliver && (
-              <Button className="bg-green-600 hover:bg-green-700">
+              <button className="bg-green-600 hover:bg-green-700 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2">
                 Proceed to Export
-              </Button>
+              </button>
             )}
           </div>
         </div>

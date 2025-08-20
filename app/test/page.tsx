@@ -114,13 +114,9 @@ export default function TestPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            onClick={runBasicTests} 
-            disabled={isLoading}
-            className="w-full"
-          >
+          <button onClick={runBasicTests} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
             {isLoading ? 'Running Tests...' : 'Run Feature Tests'}
-          </Button>
+          </button>
         </CardContent>
       </Card>
 

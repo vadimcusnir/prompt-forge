@@ -55,15 +55,10 @@ export default function SevenDPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => window.history.back()}
-                className="text-muted-foreground hover:text-foreground"
-              >
+              <button onClick={() => window.history.back()} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
-              </Button>
+              </button>
               <div>
                 <h1 className="text-2xl font-black font-[var(--font-heading)] text-foreground text-gradient">
                   7D Configuration Engine
@@ -181,23 +176,17 @@ export default function SevenDPage() {
         {/* Action Buttons */}
         {currentSevenD && (
           <div className="flex space-x-4 mb-8">
-            <Button 
-              onClick={handleShowValidation}
-              className="glow-primary"
-            >
+            <button onClick={handleShowValidation} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
               <Zap className="w-4 h-4 mr-2" />
               Test Quality Gates
-            </Button>
+            </button>
             
-            <Button 
-              variant="outline"
-              onClick={() => {
+            <button onClick={() => {
                 console.log('Current 7D Configuration:', currentSevenD)
                 alert(`7D Signature: ${JSON.stringify(currentSevenD, null, 2)}`)
-              }}
-            >
+              }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
               Export 7D Configuration
-            </Button>
+            </button>
           </div>
         )}
 

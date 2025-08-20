@@ -253,16 +253,13 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 
-                <Button 
-                  className={`w-full ${
+                <button onClick={() => handlePlanSelect(plan.id)} className={`w-full inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground ${
                     plan.popular 
                       ? 'bg-[#d1a954] text-black hover:bg-[#d1a954]/90 font-bold' 
-                      : 'variant="outline"'
-                  }`}
-                  onClick={() => handlePlanSelect(plan.id)}
-                >
+                      : ''
+                  }`}>
                   {plan.cta}
-                </Button>
+                </button>
               </CardContent>
             </Card>
           ))}

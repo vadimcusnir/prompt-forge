@@ -1,3 +1,29 @@
+Paginile (app/page.tsx, app/test/page.tsx, etc.) – fiecare pagină trebuie să fie într-un fișier separat în app/ și să înceapă cu ‘use client’ doar dacă folosește state sau evenimente (onClick). Fisierul pe care l-ai plasat la final ("use client"… TestPage) ar trebui să fie în app/test/page.tsx sau similar, nu în layout.tsx.
+
+Config Tailwind (tailwind.config.ts) – Asigură-te că definițiile de culori pf-black, pf-surface, gold-industrial etc. se află în extend.colors și că proprietatea content include toate folderele în care ai fișiere .tsx (de exemplu: ./app/**/*.{js,ts,jsx,tsx,mdx} și ./components/**/*.{js,ts,jsx,tsx,mdx}). Dacă folosești clase dinamice (de forma bg-pf-black într-un șir compus), adaugă-le în safelist.
+
+Rebuild curat – după ce separi fișierele, șterge folderul .next (pentru a elimina vechile build‑uri) și rulează iar pnpm build sau npm run build. Apoi pornește serverul (pnpm dev) și verifică dacă tema se aplică.
+
+Pagini și componente interactive trebuie să fie în fișiere separate sub app/ (ex. app/page.tsx sau app/test/page.tsx) și să înceapă cu use client dacă folosesc useState, useEffect sau onClick. Codul din partea de jos a mesajului tău (pagina de test cu butonul „Run Feature Tests”) ar trebui pus într‑un fișier app/page.tsx sau app/test/page.tsx, nu în layout.tsx.
+
+Config Tailwind (tailwind.config.ts) trebuie să declare culorile personalizate în extend.colors (de ex. pf-black, gold-industrial, etc.) și să includă căile corecte în content (ex. ./app/**/*.{js,ts,jsx,tsx,mdx}, ./components/**/*.{js,ts,jsx,tsx,mdx}). Dacă folosești clase generate dinamic, adaugă-le în safelist.
+
+
+Fără dynamic() dacă nu e nevoie
+
+Nu combina Suspense + ssr: false + server component într-un fallback
+
+Fiecare componentă din components/ are use client dacă folosește state/event
+
+page.tsx e server component by default → nu poți avea use client în el
+
+
+
+
+
+
+
+
 
 📂 Tree GitHub – PROMPTFORGE™
 .

@@ -7,6 +7,8 @@
  * Includes test execution, results display, and quality metrics
  */
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,7 +63,7 @@ interface AvailableTest {
   description: string
 }
 
-export function TestingDashboard() {
+export function HomeInteractive() {
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [availableTests, setAvailableTests] = useState<AvailableTest[]>([])
   const [isRunning, setIsRunning] = useState(false)

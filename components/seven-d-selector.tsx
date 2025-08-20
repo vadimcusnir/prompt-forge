@@ -1,5 +1,7 @@
 'use client';
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

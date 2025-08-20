@@ -6,10 +6,10 @@ import { Search, Home, ArrowLeft } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pf-black to-pf-surface dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-md w-full mx-4 text-center">
-        <div className="bg-[#1a1a1a] dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-[#1a1a1a] dark:bg-blue-900 mb-4">
+        <div className="bg-pf-surface dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-pf-surface dark:bg-blue-900 mb-4">
             <Search className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
           

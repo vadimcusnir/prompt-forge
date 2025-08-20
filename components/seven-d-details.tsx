@@ -1,5 +1,7 @@
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -28,7 +30,7 @@ interface SevenDDetailsProps {
   showCompliance?: boolean
 }
 
-export function SevenDDetails({ sevenD, showCompliance = true }: SevenDDetailsProps) {
+export function HomeInteractive() ({ sevenD, showCompliance = true }: SevenDDetailsProps) {
   // Domain-specific compliance and recommendations
   const getDomainCompliance = (domain: string) => {
     switch (domain) {

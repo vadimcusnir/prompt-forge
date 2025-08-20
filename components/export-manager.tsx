@@ -1,5 +1,7 @@
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 
@@ -36,7 +38,7 @@ interface ExportManagerProps {
   testResults?: TestResult[]
 }
 
-export function ExportManager({ currentPrompt, editResults = [], testResults = [] }: ExportManagerProps) {
+export function HomeInteractive() ({ currentPrompt, editResults = [], testResults = [] }: ExportManagerProps) {
   const [userPlan, setUserPlan] = useState<string>("pilot")
   const [exportFormat, setExportFormat] = useState<string>("txt")
   const [exportScope, setExportScope] = useState<"current" | "session" | "all">("current")
@@ -90,10 +92,10 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
 
   const getPlanColor = (planId: string) => {
     switch (planId) {
-      case 'pilot': return 'bg-gray-500'
-      case 'pro': return 'bg-[#d1a954]'
+      case 'pilot': return 'bg-pf-text-muted'
+      case 'pro': return 'bg-gold-industrial'
       case 'enterprise': return 'bg-gradient-to-r from-purple-600 to-pink-600'
-      default: return 'bg-gray-500'
+      default: return 'bg-pf-text-muted'
     }
   }
 
@@ -203,9 +205,9 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
         />
       )}
 
-      <Card className="glass-effect p-6 glow-primary">
+      <Card className="glass-effect p-6 glow-primary border-[#5a5a5a]/30">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold font-[var(--font-heading)] text-foreground">Export Manager</h3>
+          <h3 className="text-lg font-bold font-[var(--font-heading)] text-white">Export Manager</h3>
           <Badge className={`${getPlanColor(userPlan)} text-white`}>
             {getPlanIcon(userPlan)}
             <span className="ml-2">{currentPlan?.label}</span>
@@ -214,11 +216,11 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2 text-foreground">Export Format</label>
+            <label className="block text-sm font-medium mb-2 text-white">Export Format</label>
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value)}
-              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+              className="w-full glass-effect border-[#5a5a5a]/30 rounded-lg px-3 py-2 text-sm text-white focus:border-[#d1a954] focus:ring-[#d1a954]/20"
             >
               {availableFormats.map(format => (
                 <option key={format} value={format}>
@@ -229,11 +231,11 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-foreground">User Plan</label>
+            <label className="block text-sm font-medium mb-2 text-white">User Plan</label>
             <select
               value={userPlan}
               onChange={(e) => setUserPlan(e.target.value)}
-              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+              className="w-full glass-effect border-[#5a5a5a]/30 rounded-lg px-3 py-2 text-sm text-white focus:border-[#d1a954] focus:ring-[#d1a954]/20"
             >
               {Object.values(PLANS).map(plan => (
                 <option key={plan.id} value={plan.id}>
@@ -244,11 +246,11 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-foreground">Export Scope</label>
+            <label className="block text-sm font-medium mb-2 text-white">Export Scope</label>
             <select
               value={exportScope}
               onChange={(e) => setExportScope(e.target.value as any)}
-              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+              className="w-full glass-effect border-[#5a5a5a]/30 rounded-lg px-3 py-2 text-sm text-white focus:border-[#d1a954] focus:ring-[#d1a954]/20"
             >
               <option value="current">Current Session</option>
               <option value="session">Session Report</option>
@@ -257,9 +259,9 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
           </div>
 
           <div className="flex items-end">
-            <button onClick={handleExport} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
+            <button onClick={handleExport} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-gold-industrial text-pf-black shadow-[0_0_20px_rgba(209,169,84,0.3)] hover:shadow-[0_0_30px_rgba(209,169,84,0.5)]">
               {isExporting ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2" />
               ) : (
                 <Download className="w-4 h-4 mr-2" />
               )}
@@ -270,9 +272,9 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
 
         {/* Plan Restrictions Warning */}
         {!availableFormats.includes(exportFormat) && (
-          <Alert className="mb-4 border-orange-200 bg-[#1a1a1a]">
+          <Alert className="mb-4 border-orange-200 bg-pf-surface border-pf-text-muted/30">
             <Lock className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
+            <AlertDescription className="text-orange-400">
               <strong>Plan Restriction:</strong> {getUpgradeMessage(getMinPlanForFeature(exportFormat as any))}
             </AlertDescription>
           </Alert>
@@ -280,7 +282,7 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
 
         {/* Quality Gate Warning */}
         {!canDeliver && currentPrompt && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive" className="mb-4 border-[#5a5a5a]/30">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               <strong>Export Blocked:</strong> Quality gates must pass before export. 
@@ -290,12 +292,12 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
         )}
 
         <div className="flex flex-wrap gap-2">
-          <button onClick={copyToClipboard} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+          <button onClick={copyToClipboard} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 h-8 glass-effect border-[#5a5a5a]/30 hover:border-[#d1a954] hover:text-[#d1a954]">
             {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
             {copied ? "Copied!" : "Copy Prompt"}
           </button>
 
-          <button onClick={() => window.print()} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+          <button onClick={() => window.print()} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 h-8 glass-effect border-[#5a5a5a]/30 hover:border-[#d1a954] hover:text-[#d1a954]">
             <Printer className="w-4 h-4 mr-2" />
             Print
           </button>
@@ -308,7 +310,7 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
                   url: window.location.href
                 })
               }
-            }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+            }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 h-8 glass-effect border-[#5a5a5a]/30 hover:border-[#d1a954] hover:text-[#d1a954]">
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </button>
@@ -316,16 +318,16 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
       </Card>
 
       {/* Plan Features Overview */}
-      <Card className="glass-effect p-4">
-        <h4 className="font-semibold mb-3 text-foreground">Plan Features</h4>
+      <Card className="glass-effect p-4 border-[#5a5a5a]/30">
+        <h4 className="font-semibold mb-3 text-white">Plan Features</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {Object.values(PLANS).map(plan => (
-            <div key={plan.id} className="text-center p-3 rounded-lg border">
+            <div key={plan.id} className="text-center p-3 rounded-lg border border-[#5a5a5a]/30">
               <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${getPlanColor(plan.id)} text-white text-sm font-bold mb-2`}>
                 {getPlanIcon(plan.id)}
               </div>
-              <div className="text-sm font-medium text-foreground">{plan.label}</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-sm font-medium text-white">{plan.label}</div>
+              <div className="text-xs text-[#5a5a5a]">
                 {plan.exports_allowed.join(', ')}
               </div>
               {plan.features.canExportBundleZip && (
@@ -337,18 +339,18 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
       </Card>
 
       <Tabs defaultValue="preview" className="space-y-4">
-        <TabsList className="glass-effect">
+        <TabsList className="glass-effect border-[#5a5a5a]/30">
           <TabsTrigger value="preview">Preview Export</TabsTrigger>
           <TabsTrigger value="stats">Statistics</TabsTrigger>
           <TabsTrigger value="bundle">Bundle Info</TabsTrigger>
         </TabsList>
 
         <TabsContent value="preview">
-          <Card className="glass-effect p-4">
-            <div className="text-sm text-muted-foreground mb-2">
+          <Card className="glass-effect p-4 border-[#5a5a5a]/30">
+            <div className="text-sm text-[#5a5a5a] mb-2">
               Preview for {getFormatLabel(exportFormat)} - {exportScope}
             </div>
-            <div className="bg-input rounded-lg p-4 font-mono text-xs text-foreground max-h-64 overflow-y-auto">
+            <div className="glass-effect rounded-lg p-4 font-mono text-xs text-white max-h-64 overflow-y-auto border-[#5a5a5a]/30">
               {exportFormat === "json" && (
                 <pre>{JSON.stringify({
                   module: currentPrompt?.moduleId,
@@ -372,12 +374,12 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
                 </div>
               )}
               {exportFormat === "pdf" && (
-                <div className="text-center text-muted-foreground">
+                <div className="text-center text-[#5a5a5a]">
                   PDF preview not available. Download to view.
                 </div>
               )}
               {exportFormat === "bundle" && (
-                <div className="text-center text-muted-foreground">
+                <div className="text-center text-[#5a5a5a]">
                   ZIP bundle containing all artifacts will be generated.
                 </div>
               )}
@@ -386,27 +388,27 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
         </TabsContent>
 
         <TabsContent value="stats">
-          <Card className="glass-effect p-4">
+          <Card className="glass-effect p-4 border-[#5a5a5a]/30">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {(() => {
                 const stats = historyManager.getStats()
                 return (
                   <>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">{stats.totalEntries}</div>
-                      <div className="text-sm text-muted-foreground">Total Entries</div>
+                      <div className="text-2xl font-bold text-[#d1a954]">{stats.totalEntries}</div>
+                      <div className="text-sm text-[#5a5a5a]">Total Entries</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-400">{stats.promptsGenerated}</div>
-                      <div className="text-sm text-muted-foreground">Prompts</div>
+                      <div className="text-sm text-[#5a5a5a]">Prompts</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-purple-400">{stats.editsPerformed}</div>
-                      <div className="text-sm text-muted-foreground">Edits</div>
+                      <div className="text-sm text-[#5a5a5a]">Edits</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-400">{stats.testsExecuted}</div>
-                      <div className="text-sm text-muted-foreground">Tests</div>
+                      <div className="text-sm text-[#5a5a5a]">Tests</div>
                     </div>
                   </>
                 )
@@ -416,24 +418,24 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
         </TabsContent>
 
         <TabsContent value="bundle">
-          <Card className="glass-effect p-4">
+          <Card className="glass-effect p-4 border-[#5a5a5a]/30">
             {exportBundle ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h5 className="font-medium">Bundle Generated</h5>
-                  <Badge variant="outline">Checksum: {exportBundle.checksum.substring(0, 8)}...</Badge>
+                  <h5 className="font-medium text-white">Bundle Generated</h5>
+                  <Badge variant="outline" className="border-[#5a5a5a]/30">Checksum: {exportBundle.checksum.substring(0, 8)}...</Badge>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-[#5a5a5a]">
                   <div>Files: {exportBundle.artifacts.length}</div>
                   <div>Total Size: {exportBundle.artifacts.reduce((sum, a) => sum + a.size, 0)} bytes</div>
                   <div>Generated: {new Date(exportBundle.manifest.created_at).toLocaleString()}</div>
                 </div>
-                <div className="text-xs font-mono bg-input p-2 rounded">
+                <div className="text-xs font-mono glass-effect p-2 rounded border-[#5a5a5a]/30">
                   {exportBundle.artifacts.map(a => a.filename).join('\n')}
                 </div>
               </div>
             ) : (
-              <div className="text-center text-muted-foreground py-8">
+              <div className="text-center text-[#5a5a5a] py-8">
                 Generate an export bundle to see details here.
               </div>
             )}

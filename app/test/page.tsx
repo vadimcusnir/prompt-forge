@@ -145,7 +145,7 @@ export default function TestPage() {
               ))}
             </div>
             
-            <div className="mt-4 p-4 bg-[#1a1a1a] rounded-lg">
+            <div className="mt-4 p-4 bg-pf-surface rounded-lg">
               <h4 className="font-medium mb-2">Summary:</h4>
               <p className="text-sm">
                 Passed: {testResults.filter(r => r.success).length} / {testResults.length}

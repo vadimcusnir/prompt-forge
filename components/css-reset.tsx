@@ -1,11 +1,13 @@
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 /**
  * CSS Reset Component - Ensures proper CSS cascade and prevents conflicts
  * This component should be imported early in the component tree
  */
 
-export function CSSReset() {
+export function HomeInteractive() () {
   return (
     <style jsx global>{`
       /* Force black background at highest priority */

@@ -8,7 +8,7 @@ export function AdminButton({ onClick }: AdminButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="text-white hover:text-[#d1a954] px-4 py-2 transition-colors duration-200"
+      className="text-pf-text hover:text-gold-industrial px-4 py-2 transition-colors duration-200"
     >
       Close Admin
     </button>

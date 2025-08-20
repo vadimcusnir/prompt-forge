@@ -1,11 +1,13 @@
 'use client'
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import * as React from 'react'
 import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
 } from 'next-themes'
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+export function HomeInteractive() ({ children, ...props }: ThemeProviderProps) {
+  return  <div>...</div>; {...props}>{children}</NextThemesProvider>
 }

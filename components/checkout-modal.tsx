@@ -1,5 +1,7 @@
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 // Button import removed - using native button elements
@@ -34,7 +36,7 @@ interface CheckoutModalProps {
   onClose: () => void
 }
 
-export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
+export function HomeInteractive() ({ plan, isOpen, onClose }: CheckoutModalProps) {
   const [step, setStep] = useState<"plan" | "billing" | "payment" | "success">("plan")
   const [billingInfo, setBillingInfo] = useState({
     email: "",
@@ -97,7 +99,7 @@ export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
 
   const getPlanColor = (planId: string) => {
     switch (planId) {
-      case 'pro': return 'bg-[#d1a954]'
+      case 'pro': return 'bg-gold-industrial'
       case 'enterprise': return 'bg-gradient-to-r from-purple-600 to-pink-600'
       default: return 'bg-blue-500'
     }

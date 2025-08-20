@@ -1,5 +1,7 @@
 'use client';
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 
@@ -18,7 +20,7 @@ interface PromptGeneratorProps {
   onPromptGenerated?: (prompt: GeneratedPrompt) => void
 }
 
-export function PromptGenerator({ selectedModule, config, onPromptGenerated }: PromptGeneratorProps) {
+export function HomeInteractive() ({ selectedModule, config, onPromptGenerated }: PromptGeneratorProps) {
   const [generatedPrompt, setGeneratedPrompt] = useState<GeneratedPrompt | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationResult, setValidationResult] = useState<ReturnType<typeof validatePromptStructure> | null>(null)
@@ -118,11 +120,11 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
   const selectedModuleData = selectedModule ? MODULES[selectedModule] : null
 
   return (
-    <Card className="glass-effect p-6 glow-accent">
+    <Card className="glass-effect p-6 glow-accent border-[#5a5a5a]/30">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold font-[var(--font-heading)] text-foreground">Prompt Generator</h2>
+        <h2 className="text-xl font-bold font-[var(--font-heading)] text-white">Prompt Generator</h2>
         {validationResult && (
-          <Badge variant={validationResult.score >= 80 ? "default" : "secondary"} className="glass-effect">
+          <Badge variant={validationResult.score >= 80 ? "default" : "secondary"} className="glass-effect border-[#5a5a5a]/30">
             Validation: {validationResult.score}%
           </Badge>
         )}
@@ -130,21 +132,21 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
 
       {/* Module Info */}
       {selectedModuleData && (
-        <div className="mb-6 p-4 glass-strong rounded-lg">
+        <div className="mb-6 p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline">M{selectedModuleData.id.toString().padStart(2, "0")}</Badge>
-            <h3 className="font-semibold text-foreground">{selectedModuleData.name}</h3>
+            <Badge variant="outline" className="border-[#d1a954] text-[#d1a954]">M{selectedModuleData.id.toString().padStart(2, "0")}</Badge>
+            <h3 className="font-semibold text-white">{selectedModuleData.name}</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-2">{selectedModuleData.description}</p>
-          <div className="text-xs text-muted-foreground">
+          <p className="text-sm text-[#5a5a5a] mb-2">{selectedModuleData.description}</p>
+          <div className="text-xs text-[#5a5a5a]">
             <strong>KPI:</strong> {selectedModuleData.kpi}
           </div>
         </div>
       )}
 
       {/* Session Config Display */}
-      <div className="mb-6 p-4 glass-strong rounded-lg">
-        <h4 className="font-semibold text-foreground mb-2">Session Configuration</h4>
+      <div className="mb-6 p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+        <h4 className="font-semibold text-white mb-2">Session Configuration</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
           <div>
             <strong>Domain:</strong> {config.domain}
@@ -160,7 +162,7 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
           </div>
         </div>
         {generatedPrompt && (
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 text-xs text-pf-text-muted">
             <strong>Hash:</strong> {generatedPrompt.hash} |<strong> Generated:</strong>{" "}
             {generatedPrompt.timestamp.toLocaleString("en-US")}
           </div>
@@ -172,7 +174,7 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
         <button 
           onClick={handleGeneratePrompt} 
           disabled={!selectedModule || isGenerating} 
-          className="glow-primary inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+          className="glow-primary inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-gold-industrial text-pf-black shadow-[0_0_20px_rgba(209,169,84,0.3)] hover:shadow-[0_0_30px_rgba(209,169,84,0.5)]"
         >
           {isGenerating ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
           {generatedPrompt ? "Regenerate" : "Generate"} Prompt
@@ -183,18 +185,18 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
             <button
               onClick={handleRerollPrompt}
               disabled={isGenerating}
-              className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
+              className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border-pf-text-muted/30 hover:border-gold-industrial hover:text-gold-industrial"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Reroll
             </button>
 
-            <button onClick={handleCopyPrompt} className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
+            <button onClick={handleCopyPrompt} className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border-pf-text-muted/30 hover:border-gold-industrial hover:text-gold-industrial">
               <Copy className="w-4 h-4 mr-2" />
               Copy
             </button>
 
-            <button onClick={handleDownloadPrompt} className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
+            <button onClick={handleDownloadPrompt} className="glass-effect bg-transparent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border-pf-text-muted/30 hover:border-gold-industrial hover:text-gold-industrial">
               <Download className="w-4 h-4 mr-2" />
               Download
             </button>
@@ -204,8 +206,8 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
 
       {/* Validation Results */}
       {validationResult && (
-        <div className="mb-6 p-4 glass-strong rounded-lg">
-          <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+        <div className="mb-6 p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+          <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
             {validationResult.score >= 80 ? (
               <Check className="w-4 h-4 text-green-400" />
             ) : (
@@ -233,18 +235,18 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
         </div>
       )}
 
-      <Separator className="mb-6" />
+      <Separator className="mb-6 border-[#5a5a5a]/30" />
 
       {/* Generated Prompt Display */}
       <div>
-        <h4 className="font-semibold text-foreground mb-2">Generated Prompt</h4>
+        <h4 className="font-semibold text-white mb-2">Generated Prompt</h4>
         <Textarea
           value={generatedPrompt?.prompt || ""}
           placeholder={
             /* Translated placeholder text */
             selectedModule ? "The generated prompt will appear here..." : "Select a module to generate a prompt"
           }
-          className="min-h-[400px] font-mono text-sm glass-effect"
+          className="min-h-[400px] font-mono text-sm glass-effect border-[#5a5a5a]/30 focus:border-[#d1a954] focus:ring-[#d1a954]/20"
           readOnly
         />
       </div>

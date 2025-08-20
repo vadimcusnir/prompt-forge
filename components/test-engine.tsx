@@ -1,5 +1,7 @@
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 
@@ -32,7 +34,7 @@ interface TestEngineProps {
   onTestComplete?: (result: TestResult) => void
 }
 
-export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps) {
+export function HomeInteractive() ({ generatedPrompt, onTestComplete }: TestEngineProps) {
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [currentTest, setCurrentTest] = useState<TestResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
@@ -186,14 +188,14 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
   const comparison = testResults.length > 1 ? compareTestResults(testResults) : null
 
   return (
-    <Card className="glass-effect p-6 glow-accent">
+    <Card className="glass-effect p-6 glow-accent border-[#5a5a5a]/30">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold font-[var(--font-heading)] text-foreground flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
+        <h2 className="text-xl font-bold font-[var(--font-heading)] text-white flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-[#d1a954]" />
           Test Engine
         </h2>
         {currentTest && (
-          <Badge variant={currentTest.status === "success" ? "default" : "destructive"} className="glass-effect">
+          <Badge variant={currentTest.status === "success" ? "default" : "destructive"} className="glass-effect border-[#5a5a5a]/30">
             {getStatusIcon(currentTest.status)}
             <span className="ml-1">{getStatusText(currentTest.status)}</span>
           </Badge>
@@ -201,16 +203,16 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
       </div>
 
       {/* Test Options */}
-      <div className="mb-6 p-4 glass-strong rounded-lg">
-        <h4 className="font-semibold text-foreground mb-3">Test Options</h4>
+      <div className="mb-6 p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+        <h4 className="font-semibold text-white mb-3">Test Options</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-2 text-foreground">Test Mode</label>
+            <label className="block text-sm font-medium mb-2 text-white">Test Mode</label>
             <Select
               value={testOptions.mode}
               onValueChange={(value: any) => setTestOptions({ ...testOptions, mode: value })}
             >
-              <SelectTrigger className="glass-effect">
+              <SelectTrigger className="glass-effect border-[#5a5a5a]/30 focus:border-[#d1a954] focus:ring-[#d1a954]/20">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -229,7 +231,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
               checked={testOptions.validateKPIs}
               onCheckedChange={(checked) => setTestOptions({ ...testOptions, validateKPIs: !!checked })}
             />
-            <label htmlFor="validateKPIs" className="text-sm text-foreground">
+            <label htmlFor="validateKPIs" className="text-sm text-white">
               Validate KPIs
             </label>
           </div>
@@ -240,7 +242,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
               checked={testOptions.checkGuardrails}
               onCheckedChange={(checked) => setTestOptions({ ...testOptions, checkGuardrails: !!checked })}
             />
-            <label htmlFor="checkGuardrails" className="text-sm text-foreground">
+            <label htmlFor="checkGuardrails" className="text-sm text-white">
               Check Guardrails
             </label>
           </div>
@@ -251,7 +253,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
               checked={testOptions.simulateFailures}
               onCheckedChange={(checked) => setTestOptions({ ...testOptions, simulateFailures: !!checked })}
             />
-            <label htmlFor="simulateFailures" className="text-sm text-foreground">
+            <label htmlFor="simulateFailures" className="text-sm text-white">
               Simulate Failures
             </label>
           </div>
@@ -260,7 +262,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
 
       {/* Action Button */}
       <div className="mb-6">
-        <button onClick={handleRunTest} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
+        <button onClick={handleRunTest} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 bg-gold-industrial text-pf-black shadow-[0_0_20px_rgba(209,169,84,0.3)] hover:shadow-[0_0_30px_rgba(209,169,84,0.5)]">
           {isRunning ? (
             <>
               <Clock className="w-4 h-4 mr-2 animate-spin" />
@@ -277,12 +279,12 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
 
       {/* Test Progress */}
       {isRunning && (
-        <div className="mb-6 p-4 glass-strong rounded-lg border-l-4 border-primary">
+        <div className="mb-6 p-4 glass-strong rounded-lg border-l-4 border-gold-industrial">
           <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 animate-spin text-primary" />
-            <span className="font-semibold text-foreground">Execution in progress...</span>
+            <Clock className="w-4 h-4 animate-spin text-gold-industrial" />
+            <span className="font-semibold text-white">Execution in progress...</span>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-[#5a5a5a] mb-3">
             Simulating GPT execution and validating prompt structure...
           </p>
           <Progress value={75} className="w-full" />
@@ -293,8 +295,8 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
       {currentTest && (
         <div className="mb-6 space-y-4">
           {/* Scores Overview */}
-          <div className="p-4 glass-strong rounded-lg">
-            <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+          <div className="p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
               <Target className="w-4 h-4" />
               Validation Scores
             </h4>
@@ -303,35 +305,35 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
                 <div className={`text-2xl font-bold ${getScoreColor(currentTest.scores.structure)}`}>
                   {currentTest.scores.structure}%
                 </div>
-                <div className="text-xs text-muted-foreground">Structure</div>
+                <div className="text-xs text-[#5a5a5a]">Structure</div>
                 <Progress value={currentTest.scores.structure} className="w-full mt-1 h-1" />
               </div>
               <div className="text-center">
                 <div className={`text-2xl font-bold ${getScoreColor(currentTest.scores.kpiCompliance)}`}>
                   {currentTest.scores.kpiCompliance}%
                 </div>
-                <div className="text-xs text-muted-foreground">KPI Compliance</div>
+                <div className="text-xs text-[#5a5a5a]">KPI Compliance</div>
                 <Progress value={currentTest.scores.kpiCompliance} className="w-full mt-1 h-1" />
               </div>
               <div className="text-center">
                 <div className={`text-2xl font-bold ${getScoreColor(currentTest.scores.clarity)}`}>
                   {currentTest.scores.clarity}%
                 </div>
-                <div className="text-xs text-muted-foreground">Clarity</div>
+                <div className="text-xs text-[#5a5a5a]">Clarity</div>
                 <Progress value={currentTest.scores.clarity} className="w-full mt-1 h-1" />
               </div>
               <div className="text-center">
                 <div className={`text-2xl font-bold ${getScoreColor(currentTest.scores.executability)}`}>
                   {currentTest.scores.executability}%
                 </div>
-                <div className="text-xs text-muted-foreground">Executability</div>
+                <div className="text-xs text-[#5a5a5a]">Executability</div>
                 <Progress value={currentTest.scores.executability} className="w-full mt-1 h-1" />
               </div>
               <div className="text-center">
                 <div className={`text-2xl font-bold ${getScoreColor(currentTest.scores.overall)}`}>
                   {currentTest.scores.overall}%
                 </div>
-                <div className="text-xs text-muted-foreground">Overall</div>
+                <div className="text-xs text-[#5a5a5a]">Overall</div>
                 <Progress value={currentTest.scores.overall} className="w-full mt-1 h-1" />
               </div>
             </div>
@@ -339,8 +341,8 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
 
           {/* Validation Issues */}
           {currentTest.validation.issues.length > 0 && (
-            <div className="p-4 glass-strong rounded-lg">
-              <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <div className="p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+              <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Identified Issues ({currentTest.validation.issues.length})
               </h4>
@@ -364,11 +366,11 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
                       <Check className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-foreground break-words">
+                      <div className="text-sm font-medium text-white break-words">
                         [{issue.section}] {issue.message}
                       </div>
                       {issue.suggestion && (
-                        <div className="text-xs text-muted-foreground mt-1 break-words line-clamp-2">
+                        <div className="text-xs text-[#5a5a5a] mt-1 break-words line-clamp-2">
                           💡 {issue.suggestion}
                         </div>
                       )}
@@ -381,8 +383,8 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
 
           {/* Recommendations */}
           {currentTest.recommendations.length > 0 && (
-            <div className="p-4 glass-strong rounded-lg">
-              <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <div className="p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+              <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
                 <Zap className="w-4 h-4" />
                 Recommendations ({currentTest.recommendations.length})
               </h4>
@@ -390,7 +392,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
                 {currentTest.recommendations.map((rec, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm">
                     <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
-                    <span className="text-muted-foreground break-words">{rec}</span>
+                    <span className="text-[#5a5a5a] break-words">{rec}</span>
                   </div>
                 ))}
               </div>
@@ -398,8 +400,8 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
           )}
 
           {/* Performance Metrics */}
-          <div className="p-4 glass-strong rounded-lg">
-            <h4 className="font-semibold text-foreground mb-3">Performance Metrics</h4>
+          <div className="p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+            <h4 className="font-semibold text-white mb-3">Performance Metrics</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <strong>Execution Time:</strong> {currentTest.executionTime}ms
@@ -421,8 +423,8 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
 
       {/* Trends Analysis */}
       {comparison && (
-        <div className="mb-6 p-4 glass-strong rounded-lg">
-          <h4 className="font-semibold text-foreground mb-3">Trends Analysis</h4>
+        <div className="mb-6 p-4 glass-strong rounded-lg border-[#5a5a5a]/30">
+          <h4 className="font-semibold text-white mb-3">Trends Analysis</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {comparison.trends.map((trend, index) => (
               <div key={index} className="text-center">
@@ -434,7 +436,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
                   ) : (
                     <Minus className="w-4 h-4 text-gray-400" />
                   )}
-                  <span className="text-sm font-medium text-foreground">{trend.metric}</span>
+                  <span className="text-sm font-medium text-white">{trend.metric}</span>
                 </div>
                 <div
                   className={`text-lg font-bold ${
@@ -450,15 +452,15 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
         </div>
       )}
 
-      <Separator className="mb-6" />
+      <Separator className="mb-6 border-[#5a5a5a]/30" />
 
       {/* Test Output */}
       <div>
-        <h4 className="font-semibold text-foreground mb-2">GPT Test Output</h4>
+        <h4 className="font-semibold text-white mb-2">GPT Test Output</h4>
         <Textarea
           value={currentTest?.output || ""}
           placeholder="Test result will appear here..."
-          className="min-h-[300px] font-mono text-sm glass-effect"
+          className="min-h-[300px] font-mono text-sm glass-effect border-[#5a5a5a]/30 focus:border-[#d1a954] focus:ring-[#d1a954]/20"
           readOnly
         />
       </div>

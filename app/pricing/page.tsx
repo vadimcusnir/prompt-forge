@@ -78,8 +78,8 @@ export default function PricingPage() {
       ],
       cta: "Deschide toate funcțiile",
       popular: true,
-      color: "border-[#d1a954]",
-      badgeColor: "bg-[#d1a954]/10 text-[#d1a954] border-[#d1a954]/20"
+      color: "border-gold-industrial",
+      badgeColor: "bg-gold-industrial/10 text-gold-industrial border-gold-industrial/20"
     },
     {
       id: "enterprise",
@@ -203,7 +203,7 @@ export default function PricingPage() {
           </p>
           
           {/* Promo Banner */}
-          <div className="mt-6 inline-flex items-center gap-2 bg-[#d1a954]/10 text-[#d1a954] px-4 py-2 rounded-full border border-[#d1a954]/20">
+          <div className="mt-6 inline-flex items-center gap-2 bg-gold-industrial/10 text-gold-industrial px-4 py-2 rounded-full border border-gold-industrial/20">
             <Clock className="w-4 h-4" />
             <span className="text-sm font-medium">Promoția se încheie în 12h: -20% la Pro</span>
           </div>
@@ -215,7 +215,7 @@ export default function PricingPage() {
             <Card 
               key={plan.id}
               className={`glass-effect p-6 relative transition-all duration-300 hover:shadow-xl ${
-                plan.popular ? 'scale-105 ring-2 ring-[#d1a954]' : ''
+                plan.popular ? 'scale-105 ring-2 ring-gold-industrial' : ''
               } ${plan.color}`}
             >
               {plan.popular && (
@@ -255,7 +255,7 @@ export default function PricingPage() {
                 
                 <button onClick={() => handlePlanSelect(plan.id)} className={`w-full inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground ${
                     plan.popular 
-                      ? 'bg-[#d1a954] text-black hover:bg-[#d1a954]/90 font-bold' 
+                      ? 'bg-gold-industrial text-pf-black hover:bg-gold-industrial-dark font-bold' 
                       : ''
                   }`}>
                   {plan.cta}
@@ -471,7 +471,7 @@ export default function PricingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              className="bg-[#d1a954] hover:bg-[#d1a954]/90 text-black font-bold px-8 py-4 text-lg rounded"
+              className="bg-gold-industrial hover:bg-gold-industrial-dark text-pf-black font-bold px-8 py-4 text-lg rounded"
             >
               Pornește forja acum
             </button>

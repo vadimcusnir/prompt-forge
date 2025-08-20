@@ -1,5 +1,8 @@
 "use client";
 
+export function ComingSoonInteractive() {
+  return <ComingSoon />;
+}
 import { useState, useEffect } from "react";
 import { ComingSoon } from "@/components/coming-soon";
 

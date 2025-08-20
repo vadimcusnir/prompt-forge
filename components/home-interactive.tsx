@@ -22,22 +22,23 @@ export function HomeInteractive() {
     checkComingSoon();
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") setShowAdmin((p) => !p);
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
+        setShowAdmin((p) => !p);
+      }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  if (comingSoonEnabled === true) {
-    return null; // This will be handled by the ComingSoonInteractive component
-  }
+  if (comingSoonEnabled === true) return null;
 
   if (showAdmin) {
     return (
-      <div className="min-h-[100dvh] bg-black p-8 isolate">
+      <div className="min-h-screen bg-pf-black p-8">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+            <h1 className="text-3xl font-bold text-pf-text">Admin Panel</h1>
             <AdminButton onClick={() => setShowAdmin(false)} />
           </div>
           <AdminToggle />
@@ -46,5 +47,5 @@ export function HomeInteractive() {
     );
   }
 
-  return null; // No interactive elements to show in normal state
+  return null;
 }

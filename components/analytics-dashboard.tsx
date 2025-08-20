@@ -7,6 +7,8 @@
 
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -52,7 +54,7 @@ interface BusinessMetrics {
   monthlyGrowth: number
 }
 
-export function AnalyticsDashboard() {
+export function HomeInteractive() () {
   const [userAnalytics, setUserAnalytics] = useState<AnalyticsData | null>(null)
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics | null>(null)
   const [loading, setLoading] = useState(true)
@@ -231,7 +233,7 @@ export function AnalyticsDashboard() {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Poor (<70%)</span>
+                <span className="text-sm font-medium">Poor (&lt;70%)</span>
                 <div className="flex items-center gap-2">
                   <Progress value={userAnalytics?.qualityDistribution?.poor || 0} className="w-24" />
                   <Badge variant="secondary">{userAnalytics?.qualityDistribution?.poor || 0}</Badge>

@@ -1,5 +1,7 @@
 'use client';
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 
@@ -17,7 +19,7 @@ interface QualityGatesProps {
   onValidationChange?: (canProceed: boolean, canDeliver: boolean) => void
 }
 
-export function QualityGates({ 
+export function HomeInteractive() ({ 
   prompt, 
   testResults, 
   userPlanId = 'pilot',

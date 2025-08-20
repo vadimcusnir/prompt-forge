@@ -1,8 +1,10 @@
 "use client"
 
+import { HomeInteractive } from "@/components/home-interactive";
+
 import { Card } from "@/components/ui/card"
 
-export function ModuleCardSkeleton() {
+export function HomeInteractive() () {
   return (
     <Card className="glass-effect p-4 loading-shimmer">
       <div className="flex items-start justify-between mb-3">
@@ -19,7 +21,7 @@ export function ModuleCardSkeleton() {
   )
 }
 
-export function PromptGeneratorSkeleton() {
+export function HomeInteractive() () {
   return (
     <Card className="glass-effect p-6 loading-shimmer">
       <div className="h-6 bg-muted/30 rounded w-48 mb-4"></div>

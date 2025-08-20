@@ -9,6 +9,23 @@ const config: Config = {
     "./lib/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    'bg-pf-black',
+    'text-gold-industrial', 
+    'border-pf-surface',
+    'glow-primary',
+    'glass-effect',
+    'bg-pf-surface',
+    'bg-pf-surface-light',
+    'bg-pf-surface-dark',
+    'text-pf-text',
+    'text-pf-text-muted',
+    'border-pf-border',
+    'bg-pf-accent',
+    'bg-pf-success',
+    'bg-pf-warning',
+    'bg-pf-error'
+  ],
   theme: {
     container: { 
       center: true, 
@@ -17,6 +34,24 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // PromptForge custom colors
+        "pf-black": "#0a0a0a",
+        "pf-surface": "#1a1a1a",
+        "pf-surface-light": "#2a2a2a",
+        "pf-surface-dark": "#0f0f0f",
+        "gold-industrial": "#d4af37",
+        "gold-industrial-light": "#e6c547",
+        "gold-industrial-dark": "#b8941f",
+        "pf-accent": "#3b82f6",
+        "pf-accent-light": "#60a5fa",
+        "pf-accent-dark": "#1d4ed8",
+        "pf-success": "#10b981",
+        "pf-warning": "#f59e0b",
+        "pf-error": "#ef4444",
+        "pf-text": "#ffffff",
+        "pf-text-muted": "#9ca3af",
+        "pf-border": "#374151",
+        // Existing shadcn/ui colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -50,6 +85,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        overlay: "hsl(var(--overlay))",
       },
       borderRadius: {
         lg: "var(--radius)",

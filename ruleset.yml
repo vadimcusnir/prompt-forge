@@ -1,33 +1,84 @@
+# PROMPTFORGE v3 — ruleset.yml (SSOT)
 project: PROMPTFORGE_v3
+schema_version: 1
 semver: 1.0.0
+is_ssot: true
 
-enums:
-  domain: [saas, fintech, ecommerce, education, healthcare, legal, marketing, media, real_estate]
-  scale: [personal_brand, solo, startup, boutique_agency, smb, corporate, enterprise]
-  urgency: [low, planned, sprint, pilot, crisis]
-  complexity: [foundational, standard, advanced, expert]
-  resources: [minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget]
-  application: [training, audit, implementation, strategy_design, crisis_response, experimentation, documentation]
-  output_format: [txt, md, json, pdf, bundle]
+policies:
+  defaults_editable_only_here: true
+  ui_cannot_override_defaults: true
+  telemetry:
+    do_not_log_raw_client_content: true
 
-rules:
-  enum_only: true
-  raise_on_invalid: true
+sevenD:
+  required: [domain, output_format]
+  enums:
+    domain: [saas, fintech, ecommerce, education, healthcare, legal, marketing, media, real_estate]
+    scale: [personal_brand, solo, startup, boutique_agency, smb, corporate, enterprise]
+    urgency: [low, planned, sprint, pilot, crisis]
+    complexity: [foundational, standard, advanced, expert]
+    resources: [minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget]
+    application: [training, audit, implementation, strategy_design, crisis_response, experimentation, documentation]
+    output_format: [txt, md, json, pdf, bundle]
+  validation:
+    enum_only: true         # NU accepta text liber la 7D
+    raise_on_invalid: true  # oprește rularea la prima abatere
+  fallback:
+    by_domain_defaults: true
+  variability:
+    diversity_budget:
+      applies_to: [style, angle]
+      not_applied_to: [facts]
+      range: { min: 0.0, max: 1.0 }
+      default: 0.2
 
-DoR:
-  - sevenD.valid
-  - entitlement.valid
-  - output_spec.loaded
-  - tests.defined
+test_and_score:
+  rubric_axes: [clarity, execution, ambiguity, business_fit]
+  thresholds:
+    clarity_min: 80
+    execution_min: 80
+    ambiguity_max: 20
+    business_fit_min: 75
+    total_min: 80
+  auto_fix:
+    enabled: true
+    max_iterations: 1   # un singur "tighten" automat
 
-DoD:
-  - score >= 80
-  - output.complete
-  - checksum.valid
-  - manifest.written
-  - telemetry.saved
+definition_of_ready:
+  conditions:
+    - id: sevenD_valid
+      desc: "7D complet, ∈ enums, signature_7d calculată"
+      required: true
+    - id: entitlement_valid
+      desc: "Plan/flags permit modulul și exportul cerut"
+      required: true
+    - id: output_spec_loaded
+      desc: "module.spec.outputs.fields disponibil & complet"
+      required: true
+    - id: tests_defined
+      desc: "Cel puțin un testcase definit"
+      required: true
+
+definition_of_done:
+  conditions:
+    - id: score_threshold
+      desc: "Score total ≥ 80 (după auto_fix dacă e cazul)"
+      required: true
+    - id: output_complete
+      desc: "Toate câmpurile required din OUTPUT_SPEC sunt populate"
+      required: true
+    - id: checksum_valid
+      desc: "sha256 per fișier + bundle checksum canonic valide"
+      required: true
+    - id: manifest_written
+      desc: "manifest.json complet (include license_notice)"
+      required: true
+    - id: telemetry_saved
+      desc: "runs.telemetry salvată fără PII în clar"
+      required: true
 
 export:
+  # Ordinea canonică garantează checksum reproductibil
   canonical_order:
     - prompt.txt
     - prompt.json
@@ -36,3 +87,6 @@ export:
     - manifest.json
     - telemetry.json
     - checksum.txt
+  artifacts: ["prompt.txt","prompt.md","prompt.json","prompt.pdf","manifest.json","telemetry.json","checksum.txt"]
+  checksum:
+    algo: sha256

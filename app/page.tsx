@@ -2,25 +2,10 @@
 
 // ================== IMPORTS ==================
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
+import { ComingSoonInteractive } from "@/components/coming-soon-interactive";
+import HomeInteractive from "@/components/home-interactive";
+import { MainContentInteractive } from "@/components/main-content-interactive";
 import { Metadata } from "next";
-
-// ================== COMPONENTS ==================
-// Lazy load components for performance
-const ComingSoonInteractive = dynamic(
-  () => import("@/components/coming-soon-interactive").then(mod => mod.ComingSoonInteractive),
-  { ssr: false, loading: () => <div className="text-center p-10">Loading…</div> }
-);
-
-const HomeInteractive = dynamic(
-  () => import("@/components/home-interactive").then(mod => mod.HomeInteractive),
-  { ssr: false }
-);
-
-const MainContentInteractive = dynamic(
-  () => import("@/components/main-content-interactive").then(mod => mod.MainContentInteractive),
-  { ssr: false }
-);
 
 // ================== ENV TOGGLE ==================
 const COMING_SOON = process.env.NEXT_PUBLIC_COMING_SOON === "true";

@@ -36,7 +36,7 @@ interface CheckoutModalProps {
   onClose: () => void
 }
 
-export function HomeInteractive() ({ plan, isOpen, onClose }: CheckoutModalProps) {
+export function CheckoutModal({ plan, isOpen, onClose }: CheckoutModalProps) {
   const [step, setStep] = useState<"plan" | "billing" | "payment" | "success">("plan")
   const [billingInfo, setBillingInfo] = useState({
     email: "",

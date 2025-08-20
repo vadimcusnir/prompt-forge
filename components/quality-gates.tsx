@@ -19,7 +19,7 @@ interface QualityGatesProps {
   onValidationChange?: (canProceed: boolean, canDeliver: boolean) => void
 }
 
-export function HomeInteractive() ({ 
+export function QualityGates({ 
   prompt, 
   testResults, 
   userPlanId = 'pilot',

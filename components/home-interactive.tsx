@@ -1,21 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AdminToggle } from "@/components/admin-toggle";
 import { AdminButton } from "@/components/admin-button";
 
-export function HomeInteractive() {
+export default function HomeInteractive() {
   const [comingSoonEnabled, setComingSoonEnabled] = useState<boolean | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
+    let unmounted = false;
+
     const checkComingSoon = async () => {
       try {
         const res = await fetch("/api/toggle-coming-soon", { cache: "no-store" });
         const json = res.ok ? await res.json() : null;
-        setComingSoonEnabled(Boolean(json?.data?.enabled));
+        if (!unmounted) setComingSoonEnabled(Boolean(json?.data?.enabled));
       } catch {
-        setComingSoonEnabled(false);
+        if (!unmounted) setComingSoonEnabled(false);
       }
     };
 
@@ -26,9 +28,11 @@ export function HomeInteractive() {
         setShowAdmin((p) => !p);
       }
     };
-
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      unmounted = true;
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   if (comingSoonEnabled === true) return null;

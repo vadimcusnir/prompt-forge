@@ -1,0 +1,8 @@
+---
+description: Export Bundle – artefacte + checksum + manifest
+globs:
+  - "app/api/export/**"
+  - "lib/export/**"
+---
+- Generezi: prompt.txt, prompt.md, prompt.json, prompt.pdf, telemetry.json, manifest.json, checksum.txt.
+- Ordine checksum canonică. Blochezi exporturi care depășesc entitlements.

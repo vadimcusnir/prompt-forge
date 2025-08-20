@@ -1,0 +1,165 @@
+name: 04 - Performance & Load Testing
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 4 * * *' # Daily performance check
+
+jobs:
+  lighthouse-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm run start:test &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for app to start
+        run: sleep 30
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000
+            http://localhost:3000/api/gpt-editor
+            http://localhost:3000/api/gpt-test
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Stop application
+        run: pkill -f "npm run start:test" || true
+
+  load-testing:
+    runs-on: ubuntu-latest
+    needs: lighthouse-audit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Artillery
+        run: npm install -g artillery
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm run start:test &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for app to start
+        run: sleep 30
+
+      - name: Run load tests
+        run: |
+          # API load test
+          artillery run load-tests/api-load-test.yml
+          
+          # Frontend load test
+          artillery run load-tests/frontend-load-test.yml
+
+      - name: Stop application
+        run: pkill -f "npm run start:test" || true
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: |
+            artillery-report-*.json
+            artillery-report-*.html
+
+  bundle-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze bundle size
+        run: |
+          npm run build
+          npm run analyze
+
+      - name: Check bundle size limits
+        run: |
+          # Check if bundle size exceeds limits
+          if [ -f "bundle-analysis.json" ]; then
+            TOTAL_SIZE=$(jq '.totalSize' bundle-analysis.json)
+            if [ "$TOTAL_SIZE" -gt 500000 ]; then
+              echo "❌ Bundle size $TOTAL_SIZE exceeds 500KB limit"
+              exit 1
+            fi
+            echo "✅ Bundle size $TOTAL_SIZE is within limits"
+          fi
+
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: |
+            bundle-analysis.json
+            bundle-stats.html
+
+  performance-monitoring:
+    runs-on: ubuntu-latest
+    needs: [lighthouse-audit, load-testing, bundle-analysis]
+    steps:
+      - name: Download all performance reports
+        uses: actions/download-artifact@v4
+        with:
+          path: performance-reports/
+
+      - name: Generate performance summary
+        run: |
+          echo "# Performance Test Results" > performance-summary.md
+          echo "## Lighthouse Scores" >> performance-summary.md
+          echo "## Load Test Results" >> performance-summary.md
+          echo "## Bundle Analysis" >> performance-summary.md
+          
+          # Add actual data from reports
+          if [ -f "performance-reports/lighthouse-results.json" ]; then
+            echo "Lighthouse results available" >> performance-summary.md
+          fi
+
+      - name: Upload performance summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-summary
+          path: performance-summary.md

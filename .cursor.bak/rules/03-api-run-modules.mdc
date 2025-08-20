@@ -1,0 +1,8 @@
+---
+description: /api/run/{moduleId} – handler unificat + gating + logs
+globs:
+  - "app/api/run/**"
+---
+- Validezi 7D cu enum-only (din ruleset.yml). Dacă invalid → 400.
+- Verifici entitlements; dacă lipsește → 403 ENTITLEMENT_REQUIRED.
+- Logezi run_id, model, tokens, duration. Nu salvezi conținut brut client.

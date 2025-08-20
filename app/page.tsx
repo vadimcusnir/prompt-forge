@@ -1,368 +1,193 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ModuleGrid } from "@/components/module-grid"
-import { PromptGenerator } from "@/components/prompt-generator"
-import { GPTEditor } from "@/components/gpt-editor"
-import { TestEngine } from "@/components/test-engine"
-import { HistoryPanel } from "@/components/history-panel"
-import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
-import { ExportManager } from "@/components/export-manager"
-import { getModuleStats } from "@/lib/modules"
-import { historyManager, type HistoryEntry } from "@/lib/history-manager"
-import type { SessionConfig, GeneratedPrompt } from "@/types/promptforge"
-import type { GPTEditResult } from "@/lib/gpt-editor"
-import type { TestResult } from "@/lib/test-engine"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ComingSoon } from "@/components/coming-soon";
+import { AdminToggle } from "@/components/admin-toggle";
+import {
+  Wand2,
+  Cpu,
+  Download,
+  ArrowRight,
+  Check,
+  Zap,
+  Shield,
+  Clock,
+  Target,
+  Users,
+  BookOpen,
+} from "lucide-react";
 
-export default function PromptForgePage() {
-  const [selectedModule, setSelectedModule] = useState<number | null>(null)
-  const [vectorFilter, setVectorFilter] = useState<string>("all")
-  const [config, setConfig] = useState<SessionConfig>({
-    vector: "all",
-    domain: "SaaS",
-    scale: "startup",
-    urgency: "pilot",
-    resources: "solo",
-    complexity: "standard",
-    application: "training",
-    outputFormat: "spec",
-  })
-  const [generatedPrompts, setGeneratedPrompts] = useState<GeneratedPrompt[]>([])
-  const [currentPrompt, setCurrentPrompt] = useState<GeneratedPrompt | null>(null)
-  const [editResults, setEditResults] = useState<GPTEditResult[]>([])
-  const [testResults, setTestResults] = useState<TestResult[]>([])
+export default function HomePage() {
+  const [comingSoonEnabled, setComingSoonEnabled] = useState<boolean | null>(null);
+  const [showAdmin, setShowAdmin] = useState(false);
 
-  const moduleStats = getModuleStats()
-
-  const handlePromptGenerated = (prompt: GeneratedPrompt) => {
-    setGeneratedPrompts((prev) => [prompt, ...prev.slice(0, 9)]) // Keep last 10
-    setCurrentPrompt(prompt)
-
-    historyManager.addEntry({
-      type: "prompt",
-      moduleId: selectedModule || 0,
-      moduleName: prompt.moduleName,
-      vector: prompt.vector,
-      config,
-      content: prompt.content,
-      metadata: {
-        sessionHash: prompt.sessionHash,
-        validationScore: prompt.validationScore,
-        kpiCompliance: prompt.kpiCompliance,
-        structureScore: prompt.structureScore,
-        clarityScore: prompt.clarityScore,
-      },
-      tags: [config.domain, config.scale, config.urgency],
-    })
-  }
-
-  const handleEditComplete = (result: GPTEditResult) => {
-    setEditResults((prev) => [result, ...prev.slice(0, 4)]) // Keep last 5
-
-    historyManager.addEntry({
-      type: "edit",
-      moduleId: selectedModule || 0,
-      moduleName: result.originalPrompt?.moduleName || "Unknown",
-      vector: result.originalPrompt?.vector || "1",
-      config,
-      content: result.optimizedPrompt,
-      metadata: {
-        editType: result.optimizationType,
-        improvements: result.improvements,
-        validationScore: result.metrics.overallScore,
-      },
-      tags: ["gpt-edit", result.optimizationType],
-    })
-  }
-
-  const handleTestComplete = (result: TestResult) => {
-    setTestResults((prev) => [result, ...prev.slice(0, 9)]) // Keep last 10
-
-    historyManager.addEntry({
-      type: "test",
-      moduleId: selectedModule || 0,
-      moduleName: result.prompt?.moduleName || "Unknown",
-      vector: result.prompt?.vector || "1",
-      config,
-      content: result.testOutput,
-      metadata: {
-        testMode: result.testMode,
-        validationScore: result.validationScore,
-        structureScore: result.structureScore,
-        clarityScore: result.clarityScore,
-        improvements: result.recommendations,
-      },
-      tags: ["test", result.testMode],
-    })
-  }
-
-  const handleRestoreEntry = (entry: HistoryEntry) => {
-    if (entry.type === "prompt") {
-      // Restore as current prompt
-      const restoredPrompt: GeneratedPrompt = {
-        id: `restored_${Date.now()}`,
-        content: entry.content,
-        moduleName: entry.moduleName,
-        vector: entry.vector,
-        sessionHash: entry.metadata.sessionHash || "",
-        timestamp: new Date(),
-        validationScore: entry.metadata.validationScore || 0,
-        kpiCompliance: entry.metadata.kpiCompliance || 0,
-        structureScore: entry.metadata.structureScore || 0,
-        clarityScore: entry.metadata.clarityScore || 0,
-        config: entry.config,
+  useEffect(() => {
+    const checkComingSoon = async () => {
+      try {
+        const res = await fetch("/api/toggle-coming-soon", { cache: "no-store" });
+        const json = res.ok ? await res.json() : null;
+        setComingSoonEnabled(Boolean(json?.data?.enabled));
+      } catch {
+        setComingSoonEnabled(false);
       }
-      setCurrentPrompt(restoredPrompt)
-      setSelectedModule(entry.moduleId)
-    }
-  }
+    };
 
-  const handleGenerateShortcut = () => {
-    if (selectedModule) {
-      // Trigger generation if module is selected
-      const generateButton = document.querySelector("[data-generate-button]") as HTMLButtonElement
-      generateButton?.click()
-    }
-  }
+    checkComingSoon();
 
-  const handleHistoryShortcut = () => {
-    // Switch to history tab
-    const historyTab = document.querySelector('[data-tab="history"]') as HTMLButtonElement
-    historyTab?.click()
-  }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") setShowAdmin((p) => !p);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
-  const handleExportShortcut = () => {
-    // Trigger quick export
-    const exportButton = document.querySelector("[data-export-button]") as HTMLButtonElement
-    exportButton?.click()
-  }
+  if (comingSoonEnabled === true) return <ComingSoon />;
 
-  const handleClearAllShortcut = () => {
-    if (confirm("Are you sure you want to delete all data? This action cannot be undone.")) {
-      historyManager.clearHistory()
-      setGeneratedPrompts([])
-      setCurrentPrompt(null)
-      setEditResults([])
-      setTestResults([])
-    }
+  if (showAdmin) {
+    return (
+      <div className="min-h-[100dvh] bg-black p-8 isolate">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+            <Button
+              variant="ghost"
+              onClick={() => setShowAdmin(false)}
+              className="text-white hover:text-[#d1a954]"
+            >
+              Close Admin
+            </Button>
+          </div>
+          <AdminToggle />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-black font-[var(--font-heading)] text-foreground text-gradient">
-                PROMPTFORGE™ <span className="text-primary">v3.0</span>
-              </h1>
-              <p className="text-sm text-muted-foreground">Complete AI Prompt Generation System</p>
+    <main className="min-h-[100dvh] bg-black isolate">
+      {/* Hero Section */}
+      <section className="relative min-h-[100dvh] flex items-center justify-center bg-gradient-to-b from-[#0a0a0a] via-[#0e0e0e] to-black overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(1200px_600px_at_50%_0%,#10130F_0%,#0B0B0C_60%,#080809_100%)] opacity-60" />
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight">
+            Generatorul tău <span className="text-[#d1a954]">operațional</span> de prompturi
+          </h1>
+          <p className="text-xl md:text-2xl text-[#5a5a5a] mb-8 max-w-3xl mx-auto leading-relaxed">
+            50 module. 7 vectori. Exportă în{" "}
+            <span className="text-[#d1a954] font-semibold">&lt; 60 secunde</span>.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Button className="bg-[#d1a954] hover:bg-[#d1a954]/90 text-black font-bold px-8 py-4 text-lg shadow-[0_0_20px_rgba(209,169,84,0.3)] hover:shadow-[0_0_30px_rgba(209,169,84,0.5)] transition-all duration-300">
+              Pornește forja
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="text-white border border-[#5a5a5a] hover:border-[#d1a954] hover:text-[#d1a954] px-8 py-4 text-lg transition-all duration-300"
+            >
+              Vezi modulele
+            </Button>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-[#5a5a5a]">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#d1a954]" />
+              <span>TTA &lt; 60s</span>
             </div>
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="glass-effect animate-fade-in">
-                {moduleStats.totalModules} Active Modules
-              </Badge>
-              <Badge variant="outline" className="glass-effect animate-fade-in">
-                7 Semantic Vectors
-              </Badge>
-              <Badge variant="outline" className="glass-effect animate-fade-in">
-                Popular Vector: V{moduleStats.mostPopularVector}
-              </Badge>
-              {generatedPrompts.length > 0 && (
-                <Badge variant="outline" className="glass-effect animate-bounce-subtle">
-                  {generatedPrompts.length} Generated Prompts
-                </Badge>
-              )}
-              {editResults.length > 0 && (
-                <Badge variant="outline" className="glass-effect animate-bounce-subtle">
-                  {editResults.length} GPT Optimizations
-                </Badge>
-              )}
-              {testResults.length > 0 && (
-                <Badge variant="outline" className="glass-effect animate-bounce-subtle">
-                  {testResults.length} Executed Tests
-                </Badge>
-              )}
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-[#d1a954]" />
+              <span>AI Score ≥ 80/100</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Download className="w-4 h-4 text-[#d1a954]" />
+              <span>.md/.json/.pdf export</span>
             </div>
           </div>
         </div>
-      </header>
+      </section>
 
-      <div className="container mx-auto px-6 py-8">
-        {/* Configuration Panel */}
-        <Card className="glass-effect p-6 mb-8 glow-primary animate-fade-in">
-          <h2 className="text-xl font-bold font-[var(--font-heading)] mb-4 text-foreground">Session Configuration</h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Domain</label>
-              <select
-                value={config.domain}
-                onChange={(e) => setConfig({ ...config, domain: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="SaaS">SaaS</option>
-                <option value="fintech">FinTech</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="consulting">Consulting</option>
-                <option value="personal_brand">Personal Brand</option>
-                <option value="education">Education</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Scale</label>
-              <select
-                value={config.scale}
-                onChange={(e) => setConfig({ ...config, scale: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="startup">Startup</option>
-                <option value="corporate">Corporate</option>
-                <option value="personal_brand">Personal Brand</option>
-                <option value="enterprise">Enterprise</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Urgency</label>
-              <select
-                value={config.urgency}
-                onChange={(e) => setConfig({ ...config, urgency: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="pilot">Pilot</option>
-                <option value="sprint">Sprint</option>
-                <option value="enterprise">Enterprise</option>
-                <option value="crisis">Crisis</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Complexity</label>
-              <select
-                value={config.complexity}
-                onChange={(e) => setConfig({ ...config, complexity: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="standard">Standard</option>
-                <option value="advanced">Advanced</option>
-                <option value="expert">Expert</option>
-              </select>
-            </div>
+      {/* How It Works */}
+      <section className="py-24 px-4 bg-black">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Cum funcționează</h2>
+            <p className="text-xl text-[#5a5a5a] max-w-2xl mx-auto">
+              Nu ai nevoie de mai mult text. Ai nevoie de un sistem repetabil.
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Resources</label>
-              <select
-                value={config.resources}
-                onChange={(e) => setConfig({ ...config, resources: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="solo">Solo</option>
-                <option value="team">Team</option>
-                <option value="large_budget">Large Budget</option>
-                <option value="minimal">Minimal</option>
-              </select>
-            </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-[#1a1a1a] border-[#5a5a5a]/30 rounded-xl hover:shadow-[0_0_20px_rgba(209,169,84,0.1)] transition-all duration-300">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 bg-[#d1a954]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Wand2 className="w-8 h-8 text-[#d1a954]" />
+                </div>
+                <CardTitle className="text-white text-xl">Setezi 7‑D</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <CardDescription className="text-[#5a5a5a]">
+                  Configurezi parametrii operaționali: Domain, Scale, Urgency, Complexity,
+                  Resources, Application, Output.
+                </CardDescription>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 border-[#d1a954] text-[#d1a954] hover:bg-[#d1a954] hover:text-black"
+                  onClick={() => (window.location.href = "/seven-d")}
+                >
+                  Testează 7D
+                </Button>
+              </CardContent>
+            </Card>
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Application</label>
-              <select
-                value={config.application}
-                onChange={(e) => setConfig({ ...config, application: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="training">Training</option>
-                <option value="audit">Audit</option>
-                <option value="implementation">Implementation</option>
-                <option value="crisis_response">Crisis Response</option>
-              </select>
-            </div>
+            <Card className="bg-[#1a1a1a] border-[#5a5a5a]/30 rounded-xl hover:shadow-[0_0_20px_rgba(209,169,84,0.1)] transition-all duration-300">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 bg-[#d1a954]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Cpu className="w-8 h-8 text-[#d1a954]" />
+                </div>
+                <CardTitle className="text-white text-xl">Rulezi modul</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <CardDescription className="text-[#5a5a5a]">
+                  Alege M01–M50, primești output validat cu scor AI ≥ 80/100 și telemetrie
+                  completă.
+                </CardDescription>
+              </CardContent>
+            </Card>
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Output Format</label>
-              <select
-                value={config.outputFormat}
-                onChange={(e) => setConfig({ ...config, outputFormat: e.target.value })}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-              >
-                <option value="spec">Technical Spec</option>
-                <option value="playbook">Playbook</option>
-                <option value="checklist">Checklist</option>
-                <option value="json">JSON</option>
-              </select>
-            </div>
+            <Card className="bg-[#1a1a1a] border-[#5a5a5a]/30 rounded-xl hover:shadow-[0_0_20px_rgba(209,169,84,0.1)] transition-all duration-300">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 bg-[#d1a954]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Download className="w-8 h-8 text-[#d1a954]" />
+                </div>
+                <CardTitle className="text-white text-xl">Expunți bundle</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <CardDescription className="text-[#5a5a5a]">
+                  Descarci prompt.txt, prompt.md, prompt.json, prompt.pdf cu manifest și checksum.
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
-        </Card>
+        </div>
+      </section>
 
-        {/* Module Selection */}
-        <Card className="glass-effect p-6 mb-8 glow-success animate-fade-in">
-          <h2 className="text-xl font-bold font-[var(--font-heading)] mb-4 text-foreground">Module Selection</h2>
+      {/* Module Grid */}
+      <section className="py-24 px-4 bg-[#0e0e0e]">
+        {/* ... restul secțiunilor tale ... */}
+      </section>
 
-          <ModuleGrid
-            selectedModule={selectedModule}
-            onSelectModule={setSelectedModule}
-            vectorFilter={vectorFilter}
-            onVectorFilterChange={setVectorFilter}
-          />
-        </Card>
+      {/* CTA */}
+      <section className="py-24 px-4 bg-black">
+        {/* ... */}
+      </section>
 
-        {/* Main Workflow Tabs */}
-        <Tabs defaultValue="generator" className="space-y-6">
-          <TabsList className="glass-effect">
-            <TabsTrigger value="generator">Generator</TabsTrigger>
-            <TabsTrigger value="editor">GPT Editor</TabsTrigger>
-            <TabsTrigger value="test">Test Engine</TabsTrigger>
-            <TabsTrigger value="history" data-tab="history">
-              History
-            </TabsTrigger>
-            <TabsTrigger value="export">Export</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="generator" className="animate-slide-up">
-            <PromptGenerator
-              selectedModule={selectedModule}
-              config={config}
-              onPromptGenerated={handlePromptGenerated}
-            />
-          </TabsContent>
-
-          <TabsContent value="editor" className="animate-slide-up">
-            <GPTEditor generatedPrompt={currentPrompt} onEditComplete={handleEditComplete} />
-          </TabsContent>
-
-          <TabsContent value="test" className="animate-slide-up">
-            <TestEngine generatedPrompt={currentPrompt} onTestComplete={handleTestComplete} />
-          </TabsContent>
-
-          <TabsContent value="history" className="animate-slide-up">
-            <Card className="glass-effect p-6 glow-accent">
-              <h2 className="text-xl font-bold font-[var(--font-heading)] mb-6 text-foreground">Session History</h2>
-              <HistoryPanel onRestoreEntry={handleRestoreEntry} />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="export" className="animate-slide-up">
-            <Card className="glass-effect p-6 glow-primary">
-              <h2 className="text-xl font-bold font-[var(--font-heading)] mb-6 text-foreground">Export & Reports</h2>
-              <ExportManager currentPrompt={currentPrompt} editResults={editResults} testResults={testResults} />
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      <KeyboardShortcuts
-        onGeneratePrompt={handleGenerateShortcut}
-        onOpenHistory={handleHistoryShortcut}
-        onExport={handleExportShortcut}
-        onClearAll={handleClearAllShortcut}
-      />
-    </div>
-  )
+      {/* Footer */}
+      <footer className="bg-[#0e0e0e] border-t border-[#5a5a5a]/30 py-16 px-4">
+        {/* ... */}
+      </footer>
+    </main>
+  );
 }

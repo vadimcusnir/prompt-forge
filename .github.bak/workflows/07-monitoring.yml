@@ -1,0 +1,229 @@
+name: 07 - Monitoring & Health Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '*/15 * * * *' # Every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm run start:test &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for app to start
+        run: sleep 30
+
+      - name: Health check endpoints
+        run: |
+          # Check main page
+          if curl -f http://localhost:3000 > /dev/null 2>&1; then
+            echo "✅ Main page accessible"
+          else
+            echo "❌ Main page not accessible"
+            exit 1
+          fi
+          
+          # Check API endpoints
+          if curl -f http://localhost:3000/api/gpt-editor > /dev/null 2>&1; then
+            echo "✅ GPT Editor API accessible"
+          else
+            echo "❌ GPT Editor API not accessible"
+            exit 1
+          fi
+          
+          if curl -f http://localhost:3000/api/gpt-test > /dev/null 2>&1; then
+            echo "✅ GPT Test API accessible"
+          else
+            echo "❌ GPT Test API not accessible"
+            exit 1
+          fi
+
+      - name: Stop application
+        run: pkill -f "npm run start:test" || true
+
+  performance-metrics:
+    runs-on: ubuntu-latest
+    needs: health-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm run start:test &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for app to start
+        run: sleep 30
+
+      - name: Measure response times
+        run: |
+          echo "Measuring API response times..."
+          
+          # Measure GPT Editor API response time
+          START_TIME=$(date +%s%N)
+          curl -s http://localhost:3000/api/gpt-editor > /dev/null
+          END_TIME=$(date +%s%N)
+          RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+          echo "GPT Editor API response time: ${RESPONSE_TIME}ms"
+          
+          # Measure GPT Test API response time
+          START_TIME=$(date +%s%N)
+          curl -s http://localhost:3000/api/gpt-test > /dev/null
+          END_TIME=$(date +%s%N)
+          RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+          echo "GPT Test API response time: ${RESPONSE_TIME}ms"
+          
+          # Check if response times are acceptable
+          if [ $RESPONSE_TIME -gt 5000 ]; then
+            echo "⚠️ Response time ${RESPONSE_TIME}ms exceeds 5s threshold"
+          else
+            echo "✅ Response time ${RESPONSE_TIME}ms is acceptable"
+          fi
+
+      - name: Check memory usage
+        run: |
+          echo "Checking memory usage..."
+          # Get memory usage of the Node.js process
+          MEMORY_USAGE=$(ps aux | grep "npm run start:test" | grep -v grep | awk '{print $6}')
+          if [ ! -z "$MEMORY_USAGE" ]; then
+            MEMORY_MB=$((MEMORY_USAGE / 1024))
+            echo "Memory usage: ${MEMORY_MB}MB"
+            
+            if [ $MEMORY_MB -gt 512 ]; then
+              echo "⚠️ Memory usage ${MEMORY_MB}MB exceeds 512MB threshold"
+            else
+              echo "✅ Memory usage ${MEMORY_MB}MB is acceptable"
+            fi
+          fi
+
+      - name: Stop application
+        run: pkill -f "npm run start:test" || true
+
+  error-monitoring:
+    runs-on: ubuntu-latest
+    needs: performance-metrics
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check error logs
+        run: |
+          echo "Checking for error patterns in code..."
+          
+          # Check for console.error usage
+          ERROR_COUNT=$(grep -r "console.error" . --exclude-dir=node_modules --exclude-dir=.git | wc -l)
+          echo "console.error usage count: $ERROR_COUNT"
+          
+          # Check for throw statements
+          THROW_COUNT=$(grep -r "throw" . --exclude-dir=node_modules --exclude-dir=.git | wc -l)
+          echo "throw statements count: $THROW_COUNT"
+          
+          # Check for try-catch blocks
+          TRY_CATCH_COUNT=$(grep -r "try" . --exclude-dir=node_modules --exclude-dir=.git | wc -l)
+          echo "try-catch blocks count: $TRY_CATCH_COUNT"
+          
+          # Calculate error handling ratio
+          if [ $THROW_COUNT -gt 0 ]; then
+            ERROR_HANDLING_RATIO=$((TRY_CATCH_COUNT * 100 / THROW_COUNT))
+            echo "Error handling ratio: ${ERROR_HANDLING_RATIO}%"
+            
+            if [ $ERROR_HANDLING_RATIO -lt 80 ]; then
+              echo "⚠️ Error handling ratio below 80%"
+            else
+              echo "✅ Error handling ratio is good"
+            fi
+          fi
+
+  alerting:
+    runs-on: ubuntu-latest
+    needs: [health-check, performance-metrics, error-monitoring]
+    if: always()
+    steps:
+      - name: Generate monitoring report
+        run: |
+          echo "# Monitoring Report" > monitoring-report.md
+          echo "## Health Status" >> monitoring-report.md
+          echo "## Performance Metrics" >> monitoring-report.md
+          echo "## Error Analysis" >> monitoring-report.md
+          echo "## Recommendations" >> monitoring-report.md
+          
+          # Add timestamp
+          echo "Generated: $(date)" >> monitoring-report.md
+
+      - name: Upload monitoring report
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-report
+          path: monitoring-report.md
+
+      - name: Check for critical issues
+        run: |
+          # Check if any critical issues were found
+          if [ "${{ needs.health-check.result }}" == "failure" ]; then
+            echo "🚨 CRITICAL: Health check failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.performance-metrics.result }}" == "failure" ]; then
+            echo "⚠️ WARNING: Performance metrics check failed"
+          fi
+          
+          if [ "${{ needs.error-monitoring.result }}" == "failure" ]; then
+            echo "⚠️ WARNING: Error monitoring check failed"
+          fi
+          
+          echo "✅ All monitoring checks completed"
+
+  notification:
+    runs-on: ubuntu-latest
+    needs: [health-check, performance-metrics, error-monitoring, alerting]
+    if: always()
+    steps:
+      - name: Send notifications
+        run: |
+          # Send notification based on results
+          if [ "${{ needs.health-check.result }}" == "failure" ]; then
+            echo "🚨 ALERT: Application health check failed"
+            # Add notification logic here (Slack, email, etc.)
+          elif [ "${{ needs.performance-metrics.result }}" == "failure" ] || [ "${{ needs.error-monitoring.result }}" == "failure" ]; then
+            echo "⚠️ WARNING: Some monitoring checks failed"
+            # Add notification logic here
+          else
+            echo "✅ All monitoring checks passed"
+          fi

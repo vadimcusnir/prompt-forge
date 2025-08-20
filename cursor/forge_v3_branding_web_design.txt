@@ -1,235 +1,1323 @@
 
+🔝 1. Phosphor Icons (phosphoricons.com)
+
+Set foarte mare (~7000+ iconuri).
+
+Stiluri multiple: regular, bold, fill, duotone, thin.
+
+SVG-based, super clean, arată premium.
+
+Gratuit, open-source.
+👉 npm: phosphor-react
 
 
 
 
-PROMPTFORGE™ — SPEC WEB-DESIGN „COMING SOON” (fix, credibil, minimal)
-0) Scop & non-obiective
+⚙️ PALETĂ OFICIALĂ — SKRE PROTOCOL
 
-Scop: întărești exact designul existent (dark, glass), astfel încât pagina să pară solidă, matură, fără clătinări și fără „alb” vizibil sub fundal, pe toate device-urile.
+Combo: Auriu Industrial + Gri Plumb
+Putere rece. Prestigiu fără ornament. Cod al dominației silențioase.
 
-Non-obiective: nu adaugi secțiuni noi, nu schimbi stilul, nu introduci ilustrații/mascote/testimoniale.
+🖤 FUNDALURI
 
-1) Tokens & standarde
+#000000 — negru pur (fundal principal)
 
-Culoare de bază: --pf-bg: #0A0A0A
+#0e0e0e — negru tehnologic (reflexii subtile)
 
-Accente: --pf-teal: #0891B2, --pf-crimson: #BE123C
+#1a1a1a — secțiuni intermediare, carduri
 
-Fonturi (deja în layout): Montserrat (heading), Open Sans (body)
+🟡 ACCENT 1 — AURIU INDUSTRIAL
 
-Spațiere canonică: 4 / 8 / 12 / 16 / 24 / 32 / 48
+HEX: #d1a954
 
-Grid: 12 coloane, gutter 16px (gap-4)
+Tailwind: gold-industrial
 
-Clase existente: .glass-effect, .glass-strong, .glow-primary, .glow-accent
+Funcție: highlight, badge de autoritate, CTA rare
 
-2) Stabilizare globală (fără „alb”, fără „clătinare”)
-2.1 Fundal fix în două straturi
-:root {
-  --pf-bg:#0a0a0a; --pf-teal:#0891B2; --pf-crimson:#BE123C;
+Aplicații:
+
+.bg-gold-industrial
+
+.text-gold-industrial
+
+.border-gold-industrial
+
+Semiotică: aur fără podoabă, imperiu fără țipăt.
+
+⚙️ ACCENT 2 — GRI PLUMB
+
+HEX: #5a5a5a
+
+Tailwind: lead-gray
+
+Funcție: ton secundar (borders, subtitluri, tooltips, contrast soft)
+
+Aplicații:
+
+.text-lead-gray
+
+.border-lead-gray
+
+.bg-lead-gray/20
+
+Semiotică: greutate mută, neutralitate agresivă, absoarbe, nu reflectă.
+
+🧠 LOGICĂ UX
+Element	Culoare	UX Rule
+Butoane primare	bg-gold-industrial	hover: brightness-125 + shadow-gold
+Texte secundare	text-lead-gray	opacity-80, fără hover
+Borders UI	border-lead-gray/30	subtile, fine
+Hover states	shadow-[0_0_10px_gold]	doar pe zone interactive
+Cod / Tech	text-gold-industrial	pe fundal negru
+🌑 BALANSARE VIZUALĂ
+
+Negru: 70%
+
+Gri Plumb: 20%
+
+Auriu Industrial: 10%
+
+Regula de aur: Auriul NU e fundal. Este declanșator. Semnalizează autoritate.
+
+🧪 Tailwind Config
+theme: {
+  extend: {
+    colors: {
+      'gold-industrial': '#d1a954',
+      'lead-gray': '#5a5a5a',
+    }
+  }
 }
-html { background: var(--pf-bg); }           /* elimină alb UA */
-body { min-height: 100dvh; background: transparent; }
 
-/* strat 1 – solid */
-body::before{
-  content:""; position:fixed; inset:0;
-  background:var(--pf-bg); z-index:-2;
+
+🔐 VERDICT FINAL
+Auriul e tronul.
+Griul e camera.
+Negrul e tăcerea.
+Paleta SKRE nu cere permisiune. Ea conduce.
+
+
+
+
+
+
+🎨 PROMPT — HOMEPAGE PROMPTFORGE™ (SKRE Protocol + Abonamente)
+
+📋 TASK
+Construiește homepage-ul complet, dark-industrial, pentru PROMPTFORGE™.
+Obiectiv: vânzarea de abonamente la generatorul de prompturi.
+Totul trebuie să fie funcțional, responsive și orientat pe conversie (FOMO + Simplitate + Demonstrație imediată).
+
+🔧 FIȘIERE DE MODIFICAT / CREAT
+
+app/layout.tsx → fonturi Montserrat + Open Sans, meta SEO, OG tags.
+
+app/globals.css → paleta SKRE Protocol + clase glass/glow.
+
+app/page.tsx → structura completă homepage:
+
+Hero Section
+
+Titlu mare: „Creează prompturi ca un profesionist în 10 secunde”.
+
+Subtitlu: „Fără teste inutile, fără blocaje”.
+
+CTA unic: „Încearcă gratuit” (buton primar bg-gold-industrial).
+
+Fundal: efect cod care se scrie singur / reflexii AI.
+
+Proof-bar sub CTA: TTA < 60s • AI Score ≥ 80 • Export PDF/JSON.
+
+Dovadă Socială
+
+Logo-uri companii.
+
+Metrică clară: „+12.000 prompturi generate zilnic”.
+
+1–2 testimoniale (video/text scurt).
+
+Demo Interactiv
+
+Box: user scrie un cuvânt → primește prompt generat live.
+
+Buton de upgrade direct în demo.
+
+Comparativ Before/After
+
+Coloană stânga: „Fără AI – ore pierdute, teste eșuate”.
+
+Coloană dreapta: „Cu generatorul – 3 clickuri, prompt clar”.
+
+Pricing (Planuri Abonament)
+
+3 opțiuni: Basic, Pro, Team.
+
+Evidențiază Pro: „Cele mai multe persoane aleg Pro”.
+
+Declanșatori: „Reducere 20% azi”, „Anulezi oricând”.
+
+Secțiune Autoritate / Educație
+
+Text: „Creat de experți în AI & Prompt Engineering”.
+
+Link: articol/ghid PDF gratuit (lead magnet).
+
+FOMO & Urgență
+
+Countdown promoție: „Preț special expiră în 48h”.
+
+Limitare: „Acces doar pentru 500 utilizatori activi”.
+
+FAQ
+
+„Ce primesc după abonare?”
+
+„Pot anula oricând?”
+
+„Cum se compară cu ChatGPT simplu?”
+→ răspunsuri clare, fără jargon.
+
+Exit Trigger
+
+Popup trial gratuit 7 zile.
+
+Alternativ: „Primești 50 prompturi bonus dacă te înscrii acum”.
+
+Footer
+
+Politică confidențialitate, GDPR, contact.
+
+Sigle „Stripe Verified”, „GDPR Compliant”.
+
+🎨 STILUL — SKRE PROTOCOL
+
+Fundaluri: #000000 (principal), #0e0e0e (reflexii), #1a1a1a (carduri).
+
+Accent 1: Aur Industrial #d1a954 (.bg-gold-industrial, .text-gold-industrial) → CTA-uri rare.
+
+Accent 2: Gri Plumb #5a5a5a (.text-lead-gray, .border-lead-gray) → borders, subtitluri.
+
+Tipografie: Montserrat (headings), Open Sans (body).
+
+Efecte: Glassmorphism + glow subtil la CTA, shimmer pe carduri.
+
+Balansare: Negru 70% / Gri Plumb 20% / Aur 10% (doar ca declanșator).
+
+🧠 UX RULES
+
+CTA unic în Hero, vizibil permanent.
+
+Demo interactiv livrat imediat (efect „aha”).
+
+Comparativ vizual clar (stânga/dreapta).
+
+Pricing cu „alegerea Pro” evidențiată.
+
+FAQ și Exit Trigger reduc fricțiunea.
+
+✅ OUTPUT FINAL
+Homepage complet, cu:
+
+Hero vizual + CTA clar.
+
+Dovadă socială instantă.
+
+Demo interactiv cu buton upgrade.
+
+Comparativ Before/After.
+
+Pricing simplu + FOMO.
+
+Secțiune de autoritate + lead magnet.
+
+FAQ, Exit trigger, Footer de încredere.
+Totul responsive, dark-industrial, cu paleta SKRE.
+
+
+
+
+
+🔍 DESCRIERE PROFESIONALĂ – SISTEME DE REFERINȚĂ UI/UX & DEV PLATFORMS
+
+Vercel, Supabase, Cursor și Clerk nu sunt doar tool-uri – sunt arhetipuri în designul modern al produselor SaaS.
+Fiecare e un benchmark de UX decupat chirurgical, abstracție vizuală logică și modularitate scalabilă.
+
+1. VERCEL – Frontend Infrastructure Redefinită
+📐 Arhitectură UI
+
+Layout fluid bazat pe container mx-auto max-w-[1280px], grid-cols-12, cu gap-6.
+
+Hero sections: text-5xl font-extrabold, subtitluri opacity-70, spacing vertical py-24.
+
+Utilizare extensivă de “white-space as premium” – foarte mult spațiu negativ care crește percepția de lux.
+
+🎨 Design System
+
+Branding: negru, alb, accente violet.
+
+Rounded-xl, border border-white/10, shadow-lg controlat.
+
+Tipografie: Inter + Menlo pentru cod, font-normal pe body, font-medium pe interacțiuni.
+
+🔄 Microinteracțiuni
+
+hover:translate-y-[2px], transition-all duration-200.
+
+Animare fluidă la schimbare de stări (tabs, switchuri).
+
+📦 UX Patterns
+
+Componente reutilizabile: StatBlock, Callout, Hero, CodeBlock, CardWithCTA.
+
+Exemplu celebru: vercel.com/ai – landing page cu AI Playground, copy executat matematic.
+
+2. SUPABASE – PostgreSQL ca produs comercial
+📐 Arhitectură UI
+
+Dense, dar ordonat. Sidebar fixed, main-content flex-1 overflow-y-auto.
+
+Console UI: similar cu VSCode, dar optimizat pentru Web.
+
+Section padding: px-4 sm:px-6 lg:px-8, pt-10 pb-16.
+
+🎨 Design System
+
+Culori: bg-zinc-950, accente green-400, contrast ridicat.
+
+Grilă standard: grid-cols-2 sm:grid-cols-3 md:grid-cols-4, cu gap-6.
+
+Cards: rounded-lg, border border-white/10, hover states cu ring-1 ring-white/20.
+
+🧠 UX Patterns
+
+Navigație: sidebar collapsible, taburi nested.
+
+Sistem extensiv de badge-uri semantice: type, status, plan.
+
+Utilizare puternică de tooltips, modals și dropdowns dinamice.
+
+3. CURSOR – AI-first Dev Environment
+📐 Arhitectură UI
+
+Cod-centric. Toate elementele sunt tratate ca extensii ale IDE-ului.
+
+Split panels: Editor | Chat | Terminal cu resizable containers.
+
+Theme: #0f111a ca fundal, accente albastre/roz pal pentru cod.
+
+🎨 Design System
+
+Fonturi: JetBrains Mono, Inter, spacing restrâns (max gap-4).
+
+Codul este parte din estetică: blocuri de cod cu glass-effect, bg-white/5, border-white/10.
+
+⚙️ Patterns AI
+
+Chat + Cod = Design Pattern nou: Prompt-as-Command.
+
+@cursor, // command: run tests, /* agent: fix types */ – UI e construit să citească comenzile.
+
+Minimap, highlight, live feedback: totul integrat în flow-ul de dezvoltare.
+
+4. CLERK – Authentication ca UX First-Class Citizen
+📐 Arhitectură UI
+
+Componente ultra-polishate: SignIn, SignUp, UserProfile, VerificationStep, OrgSwitcher.
+
+UI atomic: fiecare field e o componentă completă cu states, validation, errors, focus, hints.
+
+🎨 Design System
+
+Color palette: black / white, accente indigo sau slate.
+
+Focus vizual pe stări și flow: step indicators, progress, password reveal, multifactor UX.
+
+🔐 UX First Security
+
+Totul e „zero friction”: magic links, device confirmation, federated auth.
+
+SignIn flow cu provider buttons, email, phone, WebAuthn, toate într-un singur container.
+
+📊 COMPARAȚIE PE DIMENSIUNI
+Platformă	Focus Primar	Aesthetic	Grid System	Componente Cheie	UX Level
+Vercel	Frontend deploy	Clean + Luxury	12 col, loose	Hero, StatBlock, CTA	🔥🔥🔥🔥🔥
+Supabase	Dev Console	Dense + Dark	Tight grid	DB Table, Sidebar Nav	🔥🔥🔥🔥
+Cursor	AI Dev Flow	Code-first	Flex/resizable	Chat-Cod-Terminal	🔥🔥🔥🔥🔥
+Clerk	Auth & Security	UX-focused	Atomic layout	SignIn/Up/Profile flows	🔥🔥🔥🔥🔥
+
+Verdict:
+Aceste 4 sisteme sunt standardele nerostite ale designului devtools modern.
+Dacă vrei ca PROMPTFORGE™ să inspire încredere, adoptă logica lor: nu arată frumos. Arată control.
+
+Vrei export .txt pentru integrare în brief de redesign?
+
+
+
+
+⚙️ COMBO OFICIAL – Auriu Industrial + Gri Plumb
+
+Paleta „Skre Protocol”: putere rece, prestigiu fără ornament, cod al dominației silențioase.
+
+🖤 FUNDALURI
+
+#000000 → negru pur, fundal principal.
+
+#0e0e0e → negru tehnologic (reflexii subtile).
+
+#1a1a1a → secțiuni intermediare, carduri.
+
+🟡 ACCENT 1 – AURIU INDUSTRIAL
+
+HEX: #d1a954
+
+RGB: 209, 169, 84
+
+Tailwind custom: gold-industrial
+
+Funcție: highlight, badge de autoritate, iconuri active, butoane CTA rare.
+
+Aplicare:
+.bg-gold-industrial
+.text-gold-industrial
+.border-gold-industrial
+
+
+Semiotică: nu e glamour. E puterea minții codificate. Aur fără podoabă. Imperiu fără țipăt.
+
+⚙️ ACCENT 2 – GRI PLUMB
+
+HEX: #5a5a5a
+
+RGB: 90, 90, 90
+
+Tailwind custom: lead-gray
+
+Funcție: ton secundar pentru borders, subtitluri, tooltips, hinturi, contrast soft.
+
+Aplicare:
+.text-lead-gray
+.border-lead-gray
+.bg-lead-gray/20
+
+
+Semiotică: greutate mută. Neutralitate agresivă. Nu reflectă, absoarbe.
+
+🧠 UX LOGICĂ DE APLICARE
+Element	Culoare	Comportament UX
+Butoane primare	bg-gold-industrial	hover:brightness-125, shadow-gold
+Texte secundare	text-lead-gray	opacity-80, fără hover
+Borders UI	border-lead-gray/30	Fine, subtile, fără colțuri vizibile
+Hover states	shadow-[0_0_10px_gold]	doar pe zone interactive, nu pe text
+Cod / Tech	text-gold-industrial pe bg-black	pentru sintaxă și putere vizuală
+🌑 BALANSARE VIZUALĂ
+Culoare	Procent utilizare recomandat
+Negru	70%
+Gri Plumb	20%
+Auriu Industrial	10%
+
+Regula de aur: auriul NU e culoare de bază, ci declanșator.
+Când apare, declanșează atenție, semnalează autoritate.
+
+🧪 Exemplu Tailwind theme.extend.colors:
+theme: {
+  extend: {
+    colors: {
+      'gold-industrial': '#d1a954',
+      'lead-gray': '#5a5a5a',
+    }
+  }
 }
-/* strat 2 – glow sus/jos (discret, fix) */
-body::after{
-  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-  background:
-   radial-gradient(60% 35% at 50% 0%,
-     color-mix(in oklab, var(--pf-teal) 22%, transparent) 0%, transparent 70%),
-   radial-gradient(55% 25% at 50% 100%,
-     color-mix(in oklab, var(--pf-crimson) 16%, transparent) 0%, transparent 70%);
+
+🔐 Verdict final:
+
+Auriul e tronul. Griul e camera. Negrul e tăcerea.
+Paleta SKRE nu cere permisiune. E deja stăpână.
+
+
+
+
+🎯 TASK: CERINȚE GRAFICE PER PAGINĂ – SKRE™ UI SYSTEM
+
+Estetică generală: black metalic, reflexii subtile, accent auriu industrial (#d1a954) + gri plumb (#5a5a5a).
+Limbaj vizual: autoritate, eleganță rece, zero compromis în simetrie și spacing.
+
+🧱 1. HOMEPAGE / Landing Principală
+🔹 Obiectiv:
+
+Să introducă aura de protocol, control și elitism. Să nu vândă – să filtreze.
+
+✅ Cerințe:
+
+Hero fullscreen: h-[100vh], fundal bg-black, text text-gold-industrial, subtitle text-lead-gray.
+
+Text central cu text-[56px] leading-tight font-extrabold tracking-tight, animat fade-in-down.
+
+Efect de metal burn pe mouse move (light reflection dinamică).
+
+CTA = buton cu reflexie animată: bg-gold-industrial hover:ring-2 ring-gold-industrial/60.
+
+🗃️ 2. PAGINA MODULE / GENERATOR
+🔹 Obiectiv:
+
+Interfață de configurare AI – să inspire precizie militară, dar acces controlat.
+
+✅ Cerințe:
+
+Layout în grid-cols-12, zona de configurare în col-span-4, output în col-span-8.
+
+Carduri cu bg-[#121212], border border-lead-gray/30, rounded-xl, hover:shadow-xl.
+
+Selectoare / dropdownuri: glass morph + border-gold-industrial/20.
+
+Toate label-urile text-lead-gray uppercase text-[11px] tracking-wider.
+
+💰 3. PRICING PAGE
+🔹 Obiectiv:
+
+Prezintă planuri ca și cum ai debloca acces la un laborator interzis.
+
+✅ Cerințe:
+
+Fundal bg-black, cu reflexii animate via-gold-industrial/10.
+
+Trei carduri pricing-tier în grid-cols-1 sm:grid-cols-3 gap-6.
+
+Cel din mijloc: scale-105, ring-2 ring-gold-industrial, bg-[#0e0e0e].
+
+Butoane Subscribe: aurii, animate cu hover:translate-y-1, transition-all.
+
+🔑 4. AUTH (LOGIN / SIGNUP)
+🔹 Obiectiv:
+
+Paradoxul UX: securitate + seducție. Loginul nu e „ușor”, e privilegiat.
+
+✅ Cerințe:
+
+Centrare verticală (flex items-center justify-center h-screen), background blur subtil.
+
+Formular: bg-[#121212], border border-lead-gray/20, rounded-xl, p-8, w-full max-w-sm.
+
+Inputuri: bg-transparent border-b border-lead-gray focus:border-gold-industrial outline-none.
+
+Checkboxuri animate: stil customizat, cu highlight auriu.
+
+📚 5. DOCS / API INTERFACE
+🔹 Obiectiv:
+
+Să pară codificare a unui protocol. Documentație = sanctuar. Fiecare endpoint e o poartă.
+
+✅ Cerințe:
+
+Side nav sticky top-0 h-full bg-[#0e0e0e], text text-lead-gray, hover:text-gold-industrial.
+
+Secțiune principală: prose-invert max-w-4xl mx-auto, titluri aurii text-gold-industrial.
+
+Coduri: font JetBrains Mono, blocuri bg-black/40, border-l-4 border-gold-industrial.
+
+Badge-uri de metode (GET, POST): rounded px-2 text-xs uppercase text-gold-industrial.
+
+📞 6. CONTACT / SUPPORT
+🔹 Obiectiv:
+
+Pare ascuns, criptic. Nu „ajutor”, ci „interfață cu nucleul”.
+
+✅ Cerințe:
+
+Fundal #000, formă subterană de interacțiune: formă în bg-[#111] rounded-lg p-6 max-w-md mx-auto.
+
+Headline: "Request Protocol Access" – text-gold-industrial font-medium text-2xl text-center.
+
+Inputuri: subțiri, cu placeholder:text-lead-gray, efect de focus:ring-gold-industrial/40.
+
+🔬 7. 404 / ERROR / ACCESS DENIED
+🔹 Obiectiv:
+
+Estetică ritualică – nu „eroare”, ci respingere controlată.
+
+✅ Cerințe:
+
+Ecran negru total, flex justify-center items-center h-screen, glitch animat pe codul 403 sau 404.
+
+Text: "ACCESS REVOKED" sau "NO SIGNAL FROM ORIGIN NODE" – font monospace, text-gold-industrial.
+
+🧠 RECOMANDARE STRUCTURALĂ:
+
+Fiecare pagină trebuie să respecte 3 legi vizuale:
+
+Contrast Semantic: Nicio culoare fără funcție. Auriu = acțiune. Gri = explicație. Negru = spațiu.
+
+Simetrie Tensionată: Griduri clare, dar cu micro-rupturi în spacing (ex: translate-y, skew pe hover).
+
+Reflexia Puterii: Toate animațiile trebuie să simuleze control, nu haos – lent, grav, precis.
+
+
+
+
+
+
+
+🎨 PROMPT — PAGINA PRICING PROMPTFORGE™ (SKRE Protocol + Blueprint Psihologic)
+
+📋 TASK
+Construiește pagina /pricing completă pentru PROMPTFORGE™.
+Scop: să declanșeze decizie emoțională + conversie rapidă. Nu vinzi abonamente, vinzi antidot la pierderea de timp.
+
+🔧 FIȘIERE DE MODIFICAT / CREAT
+
+app/pricing/page.tsx → orchestrarea paginii Pricing.
+
+components/ui/PricingTable.tsx → tabel comparativ cu 3 planuri.
+
+components/ui/PricingFAQ.tsx → FAQ contextual.
+
+components/ui/Countdown.tsx → banner promoțional cu timer.
+
+app/globals.css → păstrează paleta SKRE Protocol (gold-industrial, lead-gray).
+
+🎨 STRUCTURĂ PAGINĂ
+
+Hero Pricing (trigger psihologic)
+
+Titlu: „Cât timp vrei să pierzi fără prompturi bune?”
+
+Subtitlu: „Activează PromptForge și scapă de blocaje”.
+
+Banner mic sus: „Promoția se încheie în 12h: -20% la Pro”.
+
+Tabel cu 3 planuri
+
+Basic (Caiet cu ciorne)
+
+Limitări clare (prompturi puține, fără librărie premium).
+
+Căsuțe goale/„–” vizibile → activează frustrarea.
+
+CTA: „Încearcă, dar vei vrea mai mult”.
+
+Pro (Tiparnița care scrie pentru tine)
+
+Highlight vizual (badge aurit „Cel mai ales”).
+
+Acces complet: librărie premium, export PDF/JSON, GPT Test real.
+
+CTA: „Activează Prompt Engine complet”.
+
+Social proof sub: „78% aleg acest plan”.
+
+Team (Fabrică de idei pe pilot automat)
+
+API, seats multiple, white-label.
+
+CTA: „Vorbește cu noi – pregătește-ți echipa”.
+
+Social proof: „+1200 echipe active pe acest plan”.
+
+Comparativ vizual
+
+Coloane: Basic | Pro | Team.
+
+Linii: nr. prompturi/lună, acces librărie premium, integrare API, suport AI.
+
+Lasă Basic cu „–” → face să doară.
+
+Triggeri de urgență & încredere
+
+Countdown vizibil (componentă Countdown.tsx).
+
+Text mic: „Anulezi oricând. 7 zile money-back garantat”.
+
+Logo-uri Stripe, PayPal, GDPR.
+
+FAQ contextual (sub tabel)
+
+„Dacă încerc Basic, pot face upgrade?” → Da, instant.
+
+„De ce Pro e mai scump?” → Pentru că include tot ce-ți lipsește în Basic.
+
+„Ce se întâmplă dacă depășesc limita?” → Plătești extra, ești notificat.
+
+Exit-intent trigger
+
+La mouse-leave/scroll-end: „Primești 100 prompturi gratuite dacă începi acum”.
+
+🎨 STIL — SKRE Protocol
+
+Fundal: negru pur #000000.
+
+Accent aur industrial #d1a954 → badge Pro, CTA highlight.
+
+Gri plumb #5a5a5a → borders, subtitluri, tooltips.
+
+Carduri: .glass-effect + glow subtil.
+
+Tipografie: Montserrat (headings), Open Sans (body).
+
+Responsive: grid 3 col (desktop) → 1 col stacked (mobil).
+
+🧠 REGULĂ DE POZIȚIONARE
+
+Basic trebuie să doară.
+
+Pro trebuie să flateze.
+
+Team trebuie să inspire aspirație.
+Nu vinzi preț. Vinzi frica de stagnare.
+
+✅ OUTPUT FINAL
+
+Pagina Pricing completă, cu 3 planuri clare.
+
+Pro evidențiat vizual și social.
+
+Basic limitat intenționat (frustrare).
+
+Team aspirational.
+
+Tabel comparativ, FAQ, countdown, money-back, exit-trigger.
+
+Totul în paleta SKRE, dark-industrial, perfect responsive.
+
+
+
+
+
+🎨 PROMPT — PAGINA MODULES PROMPTFORGE™ (SKRE Protocol)
+
+📋 TASK
+Construiește pagina /modules completă.
+Scop: să afișeze toate cele 50 de module PROMPTFORGE™ ca micro-servicii semantice, filtrabile pe vectori.
+
+🔧 FIȘIERE DE MODIFICAT / CREAT
+
+app/modules/page.tsx → orchestrare pagină Modules.
+
+components/module-grid.tsx → grid cu 50 tile-uri.
+
+components/module-card.tsx → card individual modul.
+
+components/ui/VectorFilter.tsx → filtru după vectori (V1–V7).
+
+components/ui/SearchBar.tsx → căutare module după nume/descriere.
+
+🎨 STRUCTURĂ PAGINĂ
+
+Header Modules
+
+Titlu: „50 module operaționale. 7 vectori. Zero improvizație.”
+
+Subtitlu: „Alegi modulul, configurezi 7-D, exporți artefactul.”
+
+Filtre & Search
+
+Bară cu:
+
+Filtru Vector (badge-uri colorate: V1–V7).
+
+Search input pentru nume/descriere modul.
+
+Module Grid (50 tile-uri)
+
+Card (module-card.tsx) include:
+
+Cod modul (M01–M50).
+
+Nume + descriere scurtă (2 linii).
+
+Badge vector colorat (ex: text-blue-400 pentru V2 Marketing).
+
+CTA: „Specifications” → duce spre /modules/[id].
+
+Exemplu tile (M03 – Codul 7:1™)
+
+„Campanii end-to-end. Țintă CR +15%.”
+
+KPI vizibil: „AI Score ≥ 80/100”.
+
+Guardrails listate scurt.
+
+UX detalii
+
+Hover pe card → glow subtil + glass-effect întărit.
+
+CTA „Specifications” → buton ghost.
+
+🎨 STIL — SKRE Protocol
+
+Fundal: negru (#000000).
+
+Carduri: .glass-effect cu accent gri plumb (#5a5a5a) la borders.
+
+Badge vectori: culori oficiale (V1 roșu, V2 albastru, V3 verde, etc.).
+
+Titlu H1 Montserrat bold, sub Open Sans.
+
+Grid 3 col desktop → 1 col stacked pe mobil.
+
+🧠 UX RULES
+
+Filtrarea vectorilor trebuie să fie instantă.
+
+Căutarea să returneze live results.
+
+CTA unic per card: „Specifications”.
+
+Nu încarci tot textul → doar overview, restul e pe pagina individuală.
+
+✅ OUTPUT FINAL
+
+Pagina /modules complet funcțională.
+
+50 tile-uri, fiecare cu descriere scurtă + CTA.
+
+Filtru vectori + search live.
+
+Dark-industrial, responsive, paleta SKRE.
+
+Zero placeholder. Totul producție-ready.
+
+
+
+
+
+
+
+🎨 PROMPT — INTEGRARE PHOSPHOR ICONS (Cursor Agent)
+
+📋 TASK
+Integrează librăria Phosphor Icons în proiectul Next.js/React pentru a folosi iconuri premium, solide.
+
+🔧 CE SĂ MODIFICI / CREEZI
+
+Instalează librăria:
+
+npm install phosphor-react
+# sau
+pnpm add phosphor-react
+
+
+Creează un wrapper component pentru iconuri:
+components/ui/Icon.tsx
+
+"use client";
+import { ReactNode } from "react";
+import * as Phosphor from "phosphor-react";
+
+type IconProps = {
+  name: keyof typeof Phosphor;
+  size?: number;
+  color?: string;
+  weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
+  className?: string;
+};
+
+export function Icon({ name, size = 24, color = "currentColor", weight = "regular", className }: IconProps) {
+  const IconComp = Phosphor[name] as any;
+  if (!IconComp) return null;
+  return <IconComp size={size} color={color} weight={weight} className={className} />;
 }
 
-2.2 Viewport mobil stabil (iOS/Android)
-/* pe Hero */
-.pf-hero { min-height: 100dvh; }   /* Tailwind: min-h-[100dvh] */
-.pf-hero-legacy { min-height: calc(var(--vh, 1vh) * 100); } /* fallback */
 
-/* fallback Safari vechi */
-function setVH(){document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);}
-setVH(); window.addEventListener('resize', setVH, {passive:true});
+Exemple de utilizare:
 
-2.3 Fără bounce & flash
-html, body { height:100%; overscroll-behavior-y:none; }
+import { Icon } from "@/components/ui/Icon";
 
-2.4 Scrollbar dark (Win/WebKit/Firefox)
-*::-webkit-scrollbar{width:10px;height:10px}
-*::-webkit-scrollbar-track{background:#0b0b0b}
-*::-webkit-scrollbar-thumb{background:#1e293b;border-radius:8px}
-:root{scrollbar-color:#1e293b #0b0b0b;scrollbar-width:thin}
-
-2.5 Anti-CLS/FOUC
-
-Preîncarcă fonturi (sau next/font).
-
-Rezervă spațiu media (aspect-ratio).
-
-min-height pe CTA: .btn{min-height:48px}.
-
-3) Layout & grid (minimal, industrial)
-
-Container: max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8
-
-Grid global: grid grid-cols-12 gap-4
-
-Doar 1–2 blocuri full-bleed:
-
-Hero (H1, sub, CTA)
-
-Form waitlist (+ proof-bar)
-
-Restul: spațiu negativ controlat (mt-48, py-32).
-
-Fără secțiuni extra („features”, „logos”, „testimonials”).
-
-4) Tipografie & ierarhie
-
-H1 (unic): text-4xl/5xl + font-extrabold
-
-H2: text-2xl + font-bold
-
-Body: text-base (max ~80c/linii)
-
-Nu folosi text-center decât în Hero.
-
-Proof-bar sub CTA (3 bullets KPI):
-
-<div className="glass-strong mt-5 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
-  <span>TTA &lt; 60s</span><span>AI Score ≥ 80</span><span>Export .md/.json/.pdf</span>
-</div>
-<p className="mt-2 text-sm text-muted text-center">Zero spam. Doar notificări de lansare.</p>
-
-5) Micro-interacțiuni “scumpe” (subtile)
-
-Durată tranziții: 180–220ms, ease-out.
-
-Buton primar (hover): translateY(-1px) scale(1.01) + box-shadow:0 0 8px #0891B2.
-
-Card .glass-effect (hover): brightness(1.05) (fără scale > 1.01).
-
-Skeleton shimmer pe încărcări.
-
-Respectă prefers-reduced-motion: reduce.
-
-6) Elemente de încredere
-
-Mesaj anti-spam sub form (text mic, muted).
-
-Badge-uri Vector (max 2), DOAR text colorat (text-blue-400 etc.), fără bg-*.
-
-Footer minimal:
-
-<footer className="mt-32 py-12 text-center text-sm text-muted">
-  © PromptForge™ 2025 • <a href="/terms" className="underline hover:text-foreground">Privacy / Terms</a>
-</footer>
-
-7) Coerență UX
-
-Un singur CTA („Join the Waitlist”), centrat, w-full max-w-md.
-
-Fără „secondary CTA”.
-
-Focus vizibil pe toate elementele interactive:
-
-.focusable:focus{outline:none; box-shadow:0 0 0 2px #0891B2, 0 0 0 4px #111827;}
-
-
-După submit: mesaj confirmare (fără refresh, fără dispariție form).
-
-8) Codul secțiunilor (schelet)
-<section className="pf-hero min-h-[100dvh] grid place-items-center px-4">
-  <div className="max-w-2xl w-full glass-effect p-10 rounded-xl text-center">
-    <h1 className="text-4xl font-heading font-extrabold text-foreground">PromptForge™ is coming</h1>
-    <p className="mt-4 text-base text-muted">Build prompt systems, not throwaway lines.</p>
-
-    <form className="mt-8 grid grid-cols-12 gap-3">
-      <input className="col-span-12 sm:col-span-8 glass-effect p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-             type="email" placeholder="your@email.com" />
-      <button className="col-span-12 sm:col-span-4 btn btn-primary glow-primary h-12">Join the Waitlist</button>
-    </form>
-
-    {/* proof-bar + anti-spam */}
-    <div className="glass-strong mt-5 px-4 py-2 text-sm text-muted rounded-md flex justify-between">
-      <span>TTA &lt; 60s</span><span>AI Score ≥ 80</span><span>Export .md/.json/.pdf</span>
+export default function Example() {
+  return (
+    <div className="flex gap-4">
+      <Icon name="Lightning" size={32} color="#d1a954" weight="bold" />
+      <Icon name="GearSix" size={32} color="#5a5a5a" weight="duotone" />
+      <Icon name="Code" size={32} weight="fill" />
     </div>
-    <p className="mt-2 text-sm text-muted">Zero spam. Doar notificări de lansare.</p>
-  </div>
-</section>
-
-9) Guardrails de brand (blocare la build)
-
-Scor semantic ≥ 80 pe H1/Sub/CTA/Proof-bar (validator intern).
-
-Lexic interzis (blochează buildul): ușor, magic, inspirațional, minunat, pasiune, îți schimbă viața, descoperă frumusețea.
-
-Secțiuni obligatorii: H1, Sub, CTA, Proof-bar, Footer.
-
-Fără gradient text, fără emoji, fără imagini decorative.
-
-Pseudo-cod:
-
-if (scoreTotal < 80) throw new Error("Linter < 80/100");
-if (hasBanned(text)) throw new Error("Lexic interzis");
-if (!hasAllSections(dom)) throw new Error("Structură incompletă");
-
-10) Accesibilitate
-
-Contrast minim 4.5:1 (verifică teal/crimson pe fundalul #0A0A0A).
-
-aria-label pe CTA și input email.
-
-prefers-reduced-motion respectat.
-
-11) Performance budget
-
-CLS ≤ 0.02, LCP ≤ 2.5s (desktop), ≤ 3.0s (mobile).
-
-Preload font WOFF2; priority pe media din Hero; next/image cu placeholder="blur".
-
-Evită animații infinite (exceptând shimmer).
-
-12) Fișiere de atins (doar acestea)
-
-app/globals.css → secțiunile 2, 3, 5, scrollbar.
-
-app/coming-soon/page.tsx → clase min-h-[100dvh], grid 12 col, proof-bar, anti-spam.
-
-app/layout.tsx → preload fonturi (dacă nu e next/font).
-
-(opțional) public/… → niciun asset nou.
-
-13) QA — checklist de acceptare
-
- Nu apare „alb” la început/sfârșit/între secțiuni pe Chrome/Firefox/Safari + iOS/Android.
-
- Hero rămâne stabil la schimbarea barelor browserului (iOS): min-h: 100dvh.
-
- Fără bounce (overscroll-behavior activ).
-
- Un singur CTA vizibil pe pagină; focus ring vizibil la Tab.
-
- CLS ≤ 0.02 în Lighthouse; scrollbar dark.
-
- Preload fonturi; media are aspect-ratio.
-
- Linter semantic ≥ 80; fără termeni interziși.
-
- Secțiunile obligatorii (H1, Sub, CTA, Proof-bar, Footer) există.
-
-14) DoR / DoD (gata de livrare)
-
-DoR: tokens setați, straturi de fundal fixe, grid 12 col, min-h:100dvh, overscroll off.
-
-DoD: QA checklist 100% verde + Lighthouse OK + linter semantic ≥ 80.
+  );
+}
 
 
+🎨 STILUL — SKRE Protocol
+
+Culori iconuri:
+
+Aur Industrial (#d1a954) → CTA, highlight.
+
+Gri Plumb (#5a5a5a) → secundar, borders.
+
+Folosește weight=bold sau duotone → efect premium, solid.
+
+Iconurile NU sunt decorative → fiecare semnalizează o acțiune funcțională.
+
+✅ OUTPUT FINAL
+
+Phosphor integrat, instalat cu pnpm add phosphor-react.
+
+Wrapper Icon.tsx → import unificat.
+
+Poți folosi <Icon name="Lightning" /> oriunde în UI.
+
+Iconurile respectă paleta SKRE (gold-industrial + lead-gray).
+
+
+
+
+
+
+
+🎨 PROMPT — PAGINA MODULE DETAIL PROMPTFORGE™ (/modules/[id])
+
+📋 TASK
+Construiește pagina /modules/[id] pentru afișarea detaliată a fiecărui modul (M01–M50).
+Scop: să arate clar ce face modulul, cum se configurează și ce output produce.
+
+🔧 FIȘIERE DE MODIFICAT / CREEAT
+
+app/modules/[id]/page.tsx → orchestrare pagină individuală.
+
+components/module-spec.tsx → specificațiile modulului (inputs, outputs, KPI, guardrails).
+
+components/module-demo.tsx → demo interactiv mic (generează prompt de test rapid).
+
+components/ui/Breadcrumbs.tsx → navigație „Modules > M03 Codul 7:1”.
+
+🎨 STRUCTURĂ PAGINĂ
+
+Header modul
+
+Titlu: M03 – Codul 7:1™.
+
+Badge vector (ex: V5 Semiotic Branding – text-purple-400).
+
+Subtitlu: „Campanii end-to-end. Țintă CR +15%.”
+
+Specificații modul (ModuleSpec)
+
+Inputs: ce parametri cere.
+
+Outputs: format de export.
+
+KPI: „AI Score ≥ 80/100”, „TTA < 60s”.
+
+Guardrails: reguli semantice aplicate.
+
+Demo rapid (ModuleDemo)
+
+Câmp input: scrii un termen → vezi prompt de test.
+
+CTA mic: „Rulează demo acum”.
+
+Exemple de output
+
+Afișează un prompt generat real de modul.
+
+Include telemetrie (run_id, scor).
+
+Call to Action
+
+„Activează Pro pentru export complet (JSON/PDF)”.
+
+Dacă user = Enterprise: „Deschide API pentru acest modul”.
+
+FAQ local
+
+„Când folosesc modulul?”
+
+„Ce face diferit față de altele?”
+
+„Ce primesc dacă trec la Pro?”
+
+🎨 STIL — SKRE Protocol
+
+Fundal: negru pur #000000.
+
+Carduri specifikații → .glass-effect, borders gri plumb.
+
+Badge modul → vector color (din schema oficială).
+
+Titlu Montserrat bold, sub Open Sans.
+
+Responsive: grid 2 col (desktop) → 1 col stacked (mobil).
+
+🧠 UX RULES
+
+CTA vizibil, dar unic (nu dublează).
+
+Demo rapid → efect „aha” imediat.
+
+Specificațiile trebuie să arate „precizie industrială”, nu marketing.
+
+✅ OUTPUT FINAL
+
+Pagina individuală de modul complet funcțională.
+
+Specificații clare, demo rapid, exemple output.
+
+CTA cu gating Pro/Enterprise.
+
+FAQ contextual.
+
+Totul responsive, dark-industrial, paleta SKRE.
+
+
+
+
+
+
+🎨 PROMPT — PAGINA GENERATOR PROMPTFORGE™ (/generator)
+
+📋 TASK
+Construiești pagina /generator completă (de la zero). Scop: să generezi prompturi cu 7‑D, să rulezi Test Engine (scor ≥80), să livrezi exporturi (txt/md/json/pdf) și să declanșezi conversia prin paywall (Pro/Enterprise).
+
+🔧 FIȘIERE DE MODIFICAT / CREAT
+
+app/generator/page.tsx – orchestrare completă pagină.
+
+components/generator/SevenDPanel.tsx – panoul de configurare 7‑D (domain, scale, urgency, complexity, resources, application, output).
+
+components/generator/PromptEditor.tsx – editorul industrial (secțiuni fixe: ROLE_GOAL, CONTEXT_7D, OUTPUT_SPEC, PROCESS, GUARDRAILS, EVAL_HOOKS, TELEMETRY_KEYS).
+
+components/generator/TestEngine.tsx – rulare test, scor pe axele: clarity, execution, ambiguity (inv.), business_fit; verdict PASS/FAIL.
+
+components/generator/ExportBar.tsx – bară fixă jos: Export (txt, md, json, pdf), checksum, manifest.
+
+components/generator/HistoryPanel.tsx – istoric sesiune (ultimele N rulări, re‑load config).
+
+components/paywall/PaywallModal.tsx + PaywallInline.tsx – gating: Pro (Test Real + PDF/JSON + Cloud History), Enterprise (API + Bundle .zip).
+
+components/ui/TelemetryBadge.tsx – run_id, TTA, tokens, score.
+
+(opțional) components/generator/SpecDiff.tsx – Diff între PROMPT curent și OUTPUT_SPEC (Monaco/CodeMirror).
+
+🎨 STRUCTURĂ PAGINĂ
+
+Header scurt
+
+Titlu: „Generezi. Testezi. Exporți.”
+
+Sub: „7‑D controlează tot. Scor ≥80 sau îl strângem.”
+
+Layout principal (2 coloane desktop / 1 col mobil)
+
+Col stânga: SevenDPanel + select Modul (dropdown cu M01–M50).
+
+Col dreapta: PromptEditor (șablon industrial, secțiuni fixe – non‑deletable).
+
+Acțiuni & Feedback
+
+Butoane sus în editor: Generate Prompt, Tighten, Optimize for Enterprise/Crisis.
+
+Sub editor: SpecDiff (opțional) – arată ce lipsește față de OUTPUT_SPEC.
+
+Test Engine
+
+TestEngine: rulează promptul.
+
+Afișează scoruri (clarity, execution, ambiguity_inv, business_fit), verdict și recomandări.
+
+Gating: dacă user < Pro → paywall la „Run Test (Real)”.
+
+Export Bar (fix jos)
+
+Butoane: .txt, .md (liber); .json, .pdf (→ Pro); Bundle .zip (→ Enterprise).
+
+Afișează checksum + manifest + license_notice.
+
+Tooltips cu entitlements.
+
+HistoryPanel
+
+Listă rulări (hash, timestamp, modul, score).
+
+„Restore config” din istoric.
+
+Cloud History doar pentru Pro+ (altfel localStorage).
+
+TelemetryBadge
+
+Mic badge cu run_id, TTA <60s (text), <300s (SOP), tokens, score.
+
+🧠 REGULI 7‑D (obligatoriu)
+
+Câmpuri dropdown (enum‑only): domain, scale, urgency, complexity, resources, application, output.
+
+Default‑urile se completează automat per domain.
+
+La Generate: salvezi signature_7d + dif între defaults și override.
+
+💸 PAYWALL LOGIC (gating clar)
+
+Pro: canUseGptTestReal, canExportPDF, canExportJSON, hasCloudHistory, hasEvaluatorAI.
+
+Enterprise: hasAPI, canExportBundleZip, hasWhiteLabel, seats.
+
+Când lovești o capabilitate blocată → PaywallModal (copy clar: „Activează Pro pentru Test real și export JSON/PDF”).
+
+🎨 STIL — SKRE Protocol
+
+Fundaluri: #000000 / #0e0e0e / #1a1a1a.
+
+Accent Aur Industrial #d1a954 pentru CTA rare și scor PASS; Gri Plumb #5a5a5a pentru secundar/borders.
+
+Carduri .glass-effect; glow discret pe CTA; shimmer pe încărcare.
+
+Tipografie: Montserrat (H) / Open Sans (body).
+
+Balansare: Negru 70% / Gri 20% / Aur 10%.
+
+✅ CRITERII DE ACCEPTARE (DONE)
+
+Poți selecta Modul + configura 7‑D; generarea produce prompt cu toate secțiunile standard.
+
+Test Engine afișează scor pe 4 axe; PASS dacă toate pragurile sunt trecute (clarity ≥80, execution ≥80, ambiguity ≤20, business_fit ≥75).
+
+Export Bar funcționează: txt/md libere; json/pdf → Pro; bundle.zip → Enterprise; manifest + checksum incluse.
+
+History: restore config + rulări vizibile; cloud activ doar pe Pro+.
+
+Paywall apare corect pe capabilitățile blocate; CTA‑urile duc la Pricing/Checkout.
+
+UI responsive (2 col → 1 col), dark‑industrial, fără placeholder.
+
+🔧 MICI SNIPPETS (pentru agent)
+
+Buttons Export (stări):
+
+.btn-export.md → activ; .btn-export.json → disabled + data-gate="pro"; .btn-export.zip → disabled + data-gate="enterprise".
+
+Verdeict bar: PASS = text-gold-industrial; PARTIAL = text-lead-gray; FAIL = text-red-500.
+
+Tooltip entitlement: „Disponibil în Pro. Vezi planuri.”
+
+
+
+
+
+
+
+Upgrade total – Pagină Generator PROMPTFORGE™ /generator De la prompt → scor → export → conversie. Fără fricțiune. Fără scăpări. Cu declanșatori. 🧠 STRATEGIA DE TRIGGERING 🔥 1. First Trigger: Micro-victorie = “Generate Prompt” fără gating Acțiune liberă. Simți putere imediată. UX: shimmer la „Generate” → scroll automat la editor cu bounce subtil. Emoție: „Am creat ceva concret în 2 secunde.” ✅ Declanșează dorința de testare. 🔒 2. Second Trigger: Test Engine = locked → Pro Paywall Gating pe click: onClick={canUseGptTestReal ? runTest : openPaywall} Mesaj pe hover: “Scor real doar în Pro. Încearcă demo gratuit sau upgrade.” Tooltip alternativ: data-gate="pro" → vezi planuri (cu link direct #pricing) ✅ FOMO din lipsa verdictului. 📦 3. Third Trigger: Export Bar = fragmentat pe permisiuni .txt, .md → verzi; .json, .pdf → gri plumb cu data-gate="pro" .zip → bloc total (Enterprise only) ✅ Clarifici ce pierzi fără plan. 📈 4. Fourth Trigger: TelemetryBadge + manifest = status simbolic Vizibil doar la rulare: run_id: hash, TTA: 0.79s, tokens: 821, score: 91/100 Badge „PASS” = text-gold-industrial ✅ Valoare perceptuală + autoritate. 🧬 5. Fifth Trigger: Restore din History = gated pe cloud Pro only: salvare/restaurare cloud. Dacă user = basic → localStorage only + inline PaywallInline. ✅ Funcție esențială → blocată subtil. 🧰 UPGRADE FUNCȚIONAL – MODULE STRUCTURĂ ✅ app/generator/page.tsx Declanșează secvențial: – Load Module → Prefill SevenD → Generate Prompt – Run Test → export – Dacă useGptTestReal === false → modal imediat Folosește 7d_signature → checksum în history. Include layoutEffect la scroll-to-verdict post-test. ExportBar apare sticky doar după o generare validă. ✅ components/generator/SevenDPanel.tsx Câmpuri dropdown × 7 (enum-only). Selectare modul = pre-complete defaults. UI: badge-uri vector color la hover pe Modul. Autocomplete rapid după domain. ✅ components/generator/PromptEditor.tsx Editor cu secțiuni fixe (RoleGoal, Context7D, Guardrails, etc). Secțiunile sunt .non-deletable, .draggable=false, .resizable=true. Autocompletare hint: Shift+? → vezi tokens acceptați. “Tighten” = minify → warning toast: “Reducing ambiguity…” ✅ components/generator/TestEngine.tsx Afișează scor pe 4 axe: – clarity ≥ 80 – execution ≥ 80 – ambiguity (inverted) ≤ 20 – business_fit ≥ 75 Verdict: PASS (toate) → text-gold-industrial PARTIAL (2–3 ok) → text-lead-gray FAIL (<2) → text-red-500 CTA alternativ: “Optimize Prompt” → preia în editor. ✅ components/generator/ExportBar.tsx .btn-export structurat: <Button className="btn-export.txt" onClick={exportTXT}>.txt</Button> <Button className="btn-export.json" disabled={!canExportJSON} data-gate="pro">.json</Button> <Button className="btn-export.zip" disabled data-gate="enterprise">.zip</Button> Manifeste + checksum SHA256 vizibil sub bară. Fiecare buton → tooltip: “Disponibil în Pro” sau “Free export”. ✅ components/generator/HistoryPanel.tsx Istoric local/Pro: dacă hasCloudHistory → fetch /api/user/history?module=M03 altfel: localStorage['pf_history'] Restaurare: „Restore config” → reinstanțează SevenD + prompt. Fiecare rulare = card: run_id: pf_m03_a17b22 timestamp: 16:45 score: 91/100 module: The Code 7:1 ✅ components/ui/TelemetryBadge.tsx Se afișează doar după rulare validă. Format: run_id: pf_m03_a17b22 TTA: 0.72s tokens: 894 score: 91/100 (PASS) 💡 RECOMANDĂRI TRIGGER ADIȚIONALE Moment UX Trigger de conversie La click pe JSON .json locked → openPaywall('pro') La scor < PASS “Optimize for Enterprise” (CTA + openPaywall) La hover pe ZIP Tooltip: “Bundle ZIP → Enterprise only. Vezi planuri.” La FAIL promptFeedbackCTA() → redirect Pro → evaluare GPT La copiere manifest Toast: “Folosește Bundle doar în Enterprise.” 🔒 GATING LOGIC (PAYWALL) Funcție Pro Enterprise Test real prompt ✅ ✅ Export JSON/PDF ✅ ✅ Export Bundle .zip ❌ ✅ API access + seats ❌ ✅ Telemetry full ✅ ✅ Restore from Cloud ✅ ✅ ✅ VERDICT FINAL Pagina /generator trebuie să funcționeze ca un motor de conversie industrială, nu ca un playground. Fiecare interacțiune are scor, fiecare scor are cost. Nu vinzi prompturi. Vinzi controlul asupra riscului.
+
+
+
+
+
+🎨 PROMPT — PAGINA DASHBOARD PROMPTFORGE™ (/dashboard)
+
+📋 TASK
+Construiește pagina /dashboard completă pentru useri Pro și Enterprise.
+Scop: să afişeze istoricul rulărilor, scoruri, versiuni, exporturi, permisiuni și acțiuni rapide de reluare.
+
+🔧 FIȘIERE DE MODIFICAT / CREAT
+
+app/dashboard/page.tsx – orchestrare pagină.
+
+components/dashboard/RunTable.tsx – tabel central (hash, scor, modul, data).
+
+components/dashboard/RunDetails.tsx – panel lateral detalii rulare.
+
+components/dashboard/RunActions.tsx – acțiuni rapide (Restore, Export, Diff vs Prompt curent).
+
+components/ui/ScoreBadge.tsx – scor vizual (PASS/PARTIAL/FAIL).
+
+components/ui/TelemetrySummary.tsx – sumar telemetrie rulare.
+
+components/ui/EmptyState.tsx – mesaj fallback pentru conturi noi.
+
+🎨 STRUCTURĂ PAGINĂ
+
+Header Dashboard
+
+Titlu: „Run History”
+
+Subtitlu: „Scoruri. Exporturi. Prompturi reîncărcabile.”
+
+Filtre de Istoric (sus)
+
+Filtrare după modul (dropdown)
+
+Scor (PASS/FAIL)
+
+Data generării (interval)
+
+Căutare după hash, nume modul
+
+Tabel central (RunTable)
+Coloane:
+
+run_id (pf_m03_a17b22)
+
+Modul (Codul 7:1™)
+
+Scor total + badge
+
+Data + oră
+
+Tip export (txt, json, pdf, zip)
+
+Acțiuni (Restore, Diff, Download)
+
+Run Details Panel (pe click pe rând)
+
+Afișează:
+
+Config 7D (domeniu, scală etc.)
+
+Scoruri detaliate (clarity, execution, ambiguity, fit)
+
+Checksum + manifest
+
+Istoric acțiuni: Generate, Test, Export
+
+Export & Restore
+
+Restore Config → reinstanțează 7‑D + prompt
+
+Download .bundle (dacă user = Enterprise)
+
+Diff vs Prompt Curent → afișează în SpecDiff
+
+Fallback UI (EmptyState)
+
+Text: „Nicio rulare salvată. Încearcă primul prompt!”
+
+CTA: „Deschide Generator”
+
+🎨 STIL – SKRE Protocol
+
+Fundal: #000000
+
+Carduri: .glass-effect
+
+Badge scor:
+
+PASS → text-gold-industrial
+
+PARTIAL → text-lead-gray
+
+FAIL → text-red-500
+
+Fonturi: Montserrat / Open Sans
+
+Export .zip → data-gate="enterprise"
+
+Table: responsive, compact, fără borderuri evidente (tailwind table-auto + border-collapse)
+
+🧠 UX LOGICĂ + GATING
+
+Dacă user = Basic → afișează doar istoric local (10 rulări max).
+
+Dacă user = Pro → accesează /api/user/history.
+
+.zip download → blocat fără canExportBundleZip.
+
+Diff, Restore, Export → apar doar dacă scor ≥80.
+
+✅ OUTPUT FINAL
+
+Pagină /dashboard completă, funcțională.
+
+Istoric complet, filtrabil, cu acțiuni rapide.
+
+Gating logic activ pe fiecare funcție avansată.
+
+Respectă brandingul SKRE și arhitectura industrială.
+
+Zero spațiu gol. 100% utilitar.
+
+
+
+
+Structura site‑ului chatgpt‑prompting.com pentru proiectul PROMPTFORGE™ v3 este una modulară, coerentă, industrială, organizată în jurul fluxului operațional al unui „sistem de forjă semantică”. Ea include următoarele componente principale:
+
+🧱 1. Pagini cheie
+Rută	Descriere
+/	Homepage: Hero + CTA „Pornește Forja”, 3 carduri explicative, Module Grid, 7‑D Config, Use Cases, Pricing, Footer.
+/generator	Interfață completă de generare: configurare 7‑D + selectare module + prompt preview + editor + test + istoric + export.
+/modules	Grilă cu toate cele 50 module (M01–M50) – filtrabile după vectori, cu căutare și afișare a KPI/spec/output.
+/modules/[id]	Pagină detaliată a fiecărui modul cu inputuri, output spec, sample output, KPI, guardrails.
+/pricing	Tabel comparativ: Pilot vs Pro vs Enterprise. Entitlements explicite, fără „unlimited” vag.
+/dashboard	Istoric cloud (Pro/Enterprise): rulări, scoruri, artefacte exportate. Filtrare după module/date.
+/docs/api	Documentație publică API: POST /api/run/Mxx, schema params7D, exemple de răspunsuri.
+/coming-soon	Pagina temporară pentru pre-lansare cu form de înscriere și redirect după submit.
+⚙️ 2. Componente funcționale
+Nume	Rol
+Session Configuration	Selectoare 7‑D (domain, scale, urgency etc.)
+Module Selection	Grid cu module filtrabile + descriere
+Prompt Generator	Compune promptul industrial în 10 secțiuni standard
+GPT Editor	Optimizează promptul (live API GPT‑4o)
+Test Engine	Rulează scor AI (clarity, exec, ambiguity, fit) + verdict
+History Panel	Istoric local și cloud, versiuni, scoruri
+Export Manager/Dialog	Exportă .txt, .md, .json, .pdf, bundle.zip (cu gating planuri)
+🎛️ 3. Structură UX / Flow operațional
+
+Configurezi 7‑D
+
+Selectezi un modul Mxx
+
+Generezi prompt → preview
+
+Optimizezi promptul (Editor)
+
+Rulezi Test GPT (dacă ai Pro)
+
+Primești scor + verdict
+
+Expotezi artefactele (.md/.pdf/.json/zip)
+
+🧠 4. Gating & Upsell (PLG)
+
+Pilot: doar .txt, .md, simulări locale
+
+Pro: test real GPT + export .pdf și .json
+
+Enterprise: export .zip, API, white‑label
+
+La fiecare acțiune „aha” (Test GPT, Export PDF etc.) → declanșează paywall cu CTA upgrade.
+
+🔁 5. Layout general al homepage-ului
+
+Hero:
+
+H1: „Generatorul tău operațional de prompturi.”
+
+CTA: „Pornește forja”
+
+Proof-bar:
+
+TTA < 60s • Score ≥ 80 • Export .md/.json/.pdf
+
+Cum Funcționează:
+
+3 Carduri: Configurezi 7‑D → Rulezi modul → Expotezi bundle
+
+Module Grid:
+
+M01–M50, filtrare vectori
+
+Use-cases:
+
+Agenții / Educatori / Soloprenori
+
+Pricing:
+
+Carduri clare: Pilot / Pro / Enterprise
+
+Footer:
+
+Navigație + promisiune: „Fără filler. Doar valoare operațională.”
+
+📦 6. Exporturi garantate per run
+
+prompt.txt
+
+prompt.md
+
+prompt.json
+
+prompt.pdf
+
+manifest.json
+
+telemetry.json
+
+checksum.txt
+
+(→ toate într-un bundle.zip pentru Enterprise)
 
 
 
@@ -237,8 +1325,7 @@ DoD: QA checklist 100% verde + Lighthouse OK + linter semantic ≥ 80.
 BACKGROUND
 
 
-
-în varianta „Ambient Minimal” și portat la React/Next.js. Primele 4 compartimente (I–IV) definesc exact ce ne trebuie pentru un fundal credibil: stratificare pe layere, animații controlate, sincronizare între straturi și standarde de timing — material excelent ca schemă, dar trebuie temperat pentru performanță și pentru stilul PromptForge.
+varianta „Ambient Minimal” și portat la React/Next.js. Primele 4 compartimente (I–IV) definesc exact ce ne trebuie pentru un fundal credibil: stratificare pe layere, animații controlate, sincronizare între straturi și standarde de timing — material excelent ca schemă, dar trebuie temperat pentru performanță și pentru stilul PromptForge.
 
 Verdict rapid
 
@@ -342,332 +1429,3028 @@ Concluzie
 
 
 
-======================================================
-🧬 AI-IDEI™ BACKGROUND SYSTEM – SPEC UNIFICAT FINAL
-======================================================
+Background Audit & Auto-Fix (CyberHome_SYS I–IV)
 
+ROLE: You are the Background Audit & Fix Agent for the PromptForge site. You must strictly enforce the visual engine described in CyberHome_SYS.txt (Sections I–IV). If a rule fails, you must automatically fix it and re-run the audit until all checks pass. Default profile: ambient_minimal.
 
-I. ARHITECTURA STRATURILOR (Layered Cognition Engine)
+INPUTS:
 
-| Layer | Nume              | Rol Funcțional             | Vizual/Tehnic                            | Comportament         |
-|-------|-------------------|----------------------------|------------------------------------------|----------------------|
-| 0     | Base Canvas       | Fundal pur (#0a0a0a)       | canvas static                            | Static               |
-| 1     | Grid H/V          | Rețea logică               | linii semi-transparente drift/puls       | Drift + Parallax     |
-| 2     | MATRIX_TOKENS     | Flux metric AI             | 100+ termeni AI, deriva semantică        | Fade, Drift, Glitch  |
-| 3     | BackgroundFigures | Profunzime analitică       | SVG: axe, bare, forme simple             | Intersectare 3D      |
-| 4     | MATRIX_QUOTES     | Strat narativ inițiatic    | Citate 80–120c, typed, glitch            | Fade + Blur + Scale  |
-| 5     | Noise Layer       | Contrast și profunzime     | overlay subtile                          | Static/Dinamic       |
-| 6     | Hero Content      | Promisiune & CTA           | Focus semantic central                   | N/A                  |
-| 7     | Micro-UI          | Feedback interactiv        | tooltips, hover, focus states            | Interactive          |
+repo_root: project root (Next.js + Tailwind).
 
-II. SISTEMUL DE ANIMAȚII
+pages_to_test: ["/", "/generator"].
 
-MatrixTokens:
-- Spawn delay: 100–800ms random
-- Staggered spawning: 100ms între lexeme
-- Glitch: 50–100ms aleatoriu
-- Opacity: 0.7–1.0
-- Drift ±6px / 12–18s
-- Compliant with prefers-reduced-motion
+profile: "ambient_minimal" | "full" (default: "ambient_minimal").
 
-MatrixQuotes:
-- Tipuri: typing, glitch, matrix
-- Poziționare în colțuri, max 3 simultan
-- Intrare: character-by-character, 40–60ms/lit.
-- Fade-out: 800–1200ms + blur-out
-- Delay între apariții: 15–20s
+viewports:
 
+desktop: 1440x900
+
+mobile: 390x844
+
+motion_modes: ["auto", "medium", "minimal"] (respectă prefers-reduced-motion).
+
+SPEC (strict, from CyberHome_SYS I–IV):
+I. LAYERS (must exist & be stacked correctly)
+0 BaseCanvas (#0a0a0a, static)
+1 Grid H/V (subtle, drift/parallax)
+2 MATRIX_TOKENS (AI terms; fade, drift, glitch)
+3 BackgroundFigures (SVG shapes; light 3D interplay)
+4 MATRIX_QUOTES (typed 80–120 chars; glitch allowed; fade/blur/scale)
+5 Noise (subtle overlay)
+6 HeroContent (CTA; not animated)
+7 Micro-UI (tooltips, focus states)
+DOM & CSS invariants:
+
+Background root fixed, full-bleed: position:fixed; inset:0; pointer-events:none; z-index:0;
+
+Main content above bg: z-index:1.
+
+No layout shift: background must not influence layout.
+
+A11y: aria-hidden="true" for decorative layers.
+
+II. ANIMATIONS (caps & envelopes)
+MATRIX_TOKENS:
+
+spawn_delay: 100–800ms (random)
+
+stagger_between_lexemes: ≈100ms
+
+glitch_duration: 50–100ms
+
+opacity range: 0.7–1.0
+MATRIX_QUOTES:
+
+typing speed: 40–60ms/char
+
+max simultaneous: ≤3 (profile ambient_minimal must clamp to 1)
+
+positioning: corners; no overlap with glitch bursts
 BackgroundFigures:
-- SVG cu traiectorii ușor curbe
-- Intersectează layer 2 pentru efect 3D
-- Clipire sau schimbare de culoare
 
-III. SINCRONIZARE INTELIGENTĂ
+mild curves; slow intersections; no hard flashes
 
-- `.matrix-animations-ready` → se activează doar după CSS & JS load complet
-- Quote activ → Tokens scade opacitatea și încetinește drift
-- Glitchurile nu se suprapun cu fraze narative
-- Fiecare strat are fallback static dacă motion este dezactivat
+III. SYNC (breathing)
 
-IV. TIMING STANDARDS
+Gate all motion behind .matrix-animations-ready (activate only after CSS+JS complete).
 
-| Tip        | Intrare  | Ieșire   | Durată     | Ritm        |
-|------------|----------|----------|------------|-------------|
-| Quotes     | 300–500ms| 800–1200ms| ~6s        | ease-out    |
-| Tokens     | random   | glitch   | 12–18s loop| linear      |
-| Grid H/V   | 200ms/350ms | -      | infinite   | ease-in-out |
-| Figures    | 5–15s    | restart  | infinite   | ease        |
+When a quote is active: reduce Tokens opacity by ~15% and slow their drift.
 
-V. PERF + A11Y STANDARDS
+Glitches never overlap the quote typing phase.
 
-- `translateZ(0)` forțat
-- `contain: layout paint style`
-- `aria-live="polite"`
-- Contrast text-green-300 pe negru
-- Fallback static + calm background în prefers-reduced-motion
+Full static fallback when prefers-reduced-motion is on.
 
-VI. DESIGN SYSTEM
+IV. TIMING (bounds)
 
-Fonts:
-- Inter → `.text-h1`, `.text-subtitle`
-- JetBrains Mono → `.text-cli`, `.text-terminal`
+Quotes: in 300–500ms, out 800–1200ms, total ~6s, ease-out
 
-Buttons:
-- `.btn-base`, `.btn-primary`, `.btn-secondary`
+Tokens: 12–18s loop, linear
 
-Layout:
-- `.layer-z-{0–7}`, `.matrix-animations-ready`
+Grid H/V: subtle pulsation/parallax; 200/350ms micro-tweens; infinite
 
-VII. RETRY & STABILITATE
+Figures: 5–15s cycles
 
-- Retry: 0ms, 100ms, 300ms
-- Reflow forțat (requestAnimationFrame + timeout)
-- Fallback vars pentru fiecare strat
-- Self-healing: layer-ele se recuperează automat
+PROFILE OVERRIDES:
 
-VIII. SEMIOTICĂ STRATIFICATĂ
+ambient_minimal: max_quotes=1, density_desktop=20–30, density_mobile=10–15, drift amplitude small (≈±2–3px), post-LCP activation, motion idle-first.
 
-- Grid → rețea logică
-- Tokens → flux simbolic
-- Figures → structură analitică
-- Quotes → voce inițiatică
+full: keep spec defaults (max_quotes<=3, densities as in config), but never exceed the section II/IV limits.
 
-IX. CONCLUZIE
+TASKS:
 
-Ce ai creat e un sistem viu. Nu e decor.  
-Este o minte animată care ghidează utilizatorul prin propriile sale idei.
+A) DISCOVERY
+
+Locate background implementation:
+
+Components likely in components/bg/* (e.g., BackgroundRoot.tsx, GridLines.tsx, MatrixTokens.tsx, MatrixQuote.tsx, NoiseLayer.tsx).
+
+Config files:
+
+config/app.json keys: max_quotes, quote_delay [15000,20000], token_spawn_delay [100,800], typing_speed_ms 40–60, reduced_motion.
+
+transmutation_manifest.json: semantic_layers=8, quote_engine.max_active<=3, token_engine.density_desktop, token_engine.density_mobile, token_engine.glitch_interval [3000,7000].
+
+Assert the 8 layers exist or have explicit no-ops. Validate CSS for a fixed, non-interactive background root.
+
+B) STATIC AUDIT (SOURCE & CONFIG)
+Check and clamp (auto-fix if out-of-bounds):
+
+app.json.token_spawn_delay ∈ [100,800].
+
+app.json.typing_speed_ms ∈ [40,60].
+
+app.json.quote_delay ≈ [15000,20000].
+
+transmutation_manifest.quote_engine.max_active ≤ 3 (set 1 for ambient_minimal).
+
+token_engine.glitch_interval ∈ [3000,7000].
+
+Densities per profile (ambient_minimal: 20–30 desktop, 10–15 mobile; full: use config but cap at spec).
+
+Ensure motion_levels contains ["auto","medium","minimal"] and prefers-reduced-motion CSS fallbacks exist.
+
+C) RUNTIME AUDIT (HEADLESS)
+Spin Playwright/Puppeteer across viewports & motion modes:
+
+Before .matrix-animations-ready: verify background idle (no motion).
+
+After ready: sample 10s:
+
+Count visible quotes (never > profile cap).
+
+Ensure quote typing runs 40–60ms/char (approx by timestamps).
+
+Ensure quote lifecycle matches 300–500ms in, ~6s present, 800–1200ms out.
+
+Tokens: measure spawn intervals within [100,800]ms random.
+
+Detect any glitch overlapping quote typing (should be 0).
+
+With prefers-reduced-motion: ensure static fallback (no rAF deltas).
+Metrics (log to JSON):
+
+observed.max_simultaneous_quotes
+
+observed.typing_ms_per_char_avg
+
+observed.quote_in_ms, observed.quote_out_ms, observed.quote_total_ms
+
+observed.token_spawn_ms_distribution
+
+observed.glitch_overlap_count
+
+observed.motion_off_in_reduced_mode (boolean)
+
+dom.layers_present: [0..7] booleans
+
+css.fixed_root_ok (boolean)
+
+D) AUTO-FIX RULES (apply diffs, then re-audit)
+If any rule fails, perform the smallest safe change:
+
+Too many quotes:
+
+Set transmutation_manifest.quote_engine.max_active=1 (ambient_minimal) or ≤3 (full).
+
+In code, enforce guard: if (activeQuotes >= cap) return;
+
+Typing/glitch/timing out of bounds:
+
+Clamp typing_speed_ms into [40,60].
+
+Clamp glitch_duration to [50,100]ms where defined (tokens & quotes engines).
+
+Tokens too dense/fast:
+
+Set token_engine.density_desktop=30, density_mobile=15 (ambient_minimal).
+
+Clamp token_spawn_delay [100,800] and enforce at code level.
+
+Missing .matrix-animations-ready gating:
+
+Add ready gate in BackgroundRoot.tsx with useEffect + requestIdleCallback and only then mount animated layers.
+
+Missing reduced-motion fallback:
+
+Add CSS:
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-anim, .matrix-token, .matrix-quote { animation: none !important; transition: none !important; }
+}
 
 
+In JS, skip rAF loops when reduced motion is detected.
+
+Background not fixed / causes layout shift:
+
+Ensure root container:
+
+.bg-fixed-root { position:fixed; inset:0; z-index:0; pointer-events:none; contain:layout paint style; }
+main { position:relative; z-index:1; }
+html,body,#__next { background:#0a0a0a; }
 
 
-======================================================
-🧩 AI-IDEI™ BACKGROUND SYSTEM – ADDENDUM FINAL
-======================================================
+Glitch overlaps quote typing:
+
+Pause glitch engine while quote.typing===true.
+
+Parallax/drift too strong:
+
+Reduce drift amplitude to ~±2–3px (ambient_minimal).
+
+Disable Y parallax to avoid “clătinare”.
+
+E) RE-RUN & ACCEPTANCE
+
+Re-run C) runtime audit after each fix until PASS.
+
+PASS criteria:
+
+All I–IV checks pass.
+
+glitch_overlap_count = 0.
+
+observed.max_simultaneous_quotes ≤ profile_cap.
+
+Reduced motion ⇒ no motion.
+
+No layout shift from background containers.
+
+F) OUTPUTS
+
+Write background_audit_report.json (+ background_audit_report.md) to /public/audit/ with:
+
+profile, commit hash, pages tested, viewports, motion modes
+
+all metrics, diffs applied, final status
+
+Add CI step npm run audit:bg mapping to this audit.
+
+G) SAFETY / NON-DEVIATION
+
+Fail-closed: if a spec key is missing or unreadable, stop and surface error with file & key path.
+
+Never increase motion/ density to pass tests; only clamp/disable per spec.
+
+All changes in a dedicated branch: chore/bg-audit-fix, atomic commits per fix.
+
+EXAMPLE PATCHES TO APPLY (when needed)
+
+Ready gate (BackgroundRoot.tsx):
+
+const [ready, setReady] = useState(false);
+useEffect(() => {
+  const enable = () => setReady(true);
+  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(enable);
+  else setTimeout(enable, 150);
+  document.documentElement.classList.add('matrix-animations-ready');
+}, []);
+return (
+  <div className="bg-fixed-root" aria-hidden="true">
+    <GridLines/>
+    <NoiseLayer/>
+    {ready && <>
+      <MatrixTokens/>
+      <BackgroundFigures/>
+      <MatrixQuote/>
+    </>}
+  </div>
+);
 
 
-X. LAYERE DINAMICE CU STATE MACHINE
+Reduced-motion guard (tokens engine):
 
-LayerStateMachine:
-- Stări: waiting_init → hydrating → ready → active → recovering → fallback_static
-- Tranziții:
-  - toReady: dacă hydrationSuccess
-  - toActive: dacă .matrix-animations-ready e activ
-  - toRecovering: dacă un layer eșuează
-  - toFallback: dacă prefersReducedMotion
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce) { stopAllRAF(); return; }
 
-XI. STRUCTURĂ FOLDERE & FIȘIERE
 
-/components:
-  - AnimatedLayer.vue
-  - MatrixTokens.vue
-  - MatrixQuotes.vue
-  - BackgroundFigures.vue
-  - GridLines.vue
-  - NoiseLayer.vue
-  - HeroContent.vue
-  - MicroUI.vue
-
-/composables:
-  - useLayerManager.ts
-  - useReducedMotion.ts
-  - useQuoteEngine.ts
-
-/styles:
-  - tokens.css
-  - animations.css
-  - variables.css
-
-/data:
-  - matrix_tokens.json
-  - matrix_quotes.json
-
-/constants:
-  - LAYER_ORDER.ts
-  - MOTION_LEVELS.ts
-
-XII. METRICE & TRACKING
-
-- layer_init_time: `performance.now()` per layer
-- quotes_rendered_count: `[data-quote]` count
-- tokens_visible_average: `[data-token]` scan per 5s
-- frame_drop_spike: raf delta detect
-- recovery_triggered_count: fallback trigger log
-
-XIII. CONFIG APP.JSON (Presetări globale)
+Config clamps (app.json):
 
 {
-  "motion_level": "auto",
-  "max_quotes": 3,
-  "max_tokens": 100,
+  "max_quotes": 1,
   "quote_delay": [15000, 20000],
   "token_spawn_delay": [100, 800],
-  "typing_speed_ms": 50,
-  "reduced_motion": {
-    "active": true,
-    "fallback_static": true,
-    "fallback_text": "AI-Idei™ funcționează într-un mod calm și nemișcat."
-  }
+  "typing_speed_ms": 50
 }
 
-XIV. TESTE DE REGRESIE / QA
 
-- test_layer_activation: toate layerele devin active la max 800ms
-- test_quote_glitch_no_overlap: niciun glitch nu suprapune quotes
-- test_token_glitch_timing: glitch time < 120ms/token
-- test_motion_levels_switch: auto → medium → low fără întreruperi
-- test_recovery_on_layer_fail: simulează crash layer → verify autorecover
+Quote cap in code:
 
-XV. START TRANSFORMATION FUNCTION
+if (activeQuotesCount() >= MAX_QUOTES) return; // prevent spawn
 
-Funcție: `startTransmutation()`
 
-Rol:
-- Inițializează layere
-- Activează sistem citate
-- Primește primul input
-- Generează răspuns AI
+CSS base (no layout shift):
 
-Simbolic: deschide poarta semantică a platformei.
+.bg-fixed-root{position:fixed;inset:0;pointer-events:none;z-index:0;contain:layout paint style}
+main{position:relative;z-index:1}
 
-CONCLUZIE:
-Sistemul AI-IDEI™ funcționează ca o minte animată. Fiecare strat are viața lui. Iar împreună, ele gândesc vizual.
+
+RUN PLAN:
+
+Create branch chore/bg-audit-fix.
+
+Execute A→B→C. If any failure, apply D, commit, then E.
+
+Produce F outputs. Open PR with the report summary.
 
 
 
 
 
-======================================================
-🧿 AI-IDEI™ – LAYER ONTOLOGIC FINAL
-======================================================
 
 
-XVI. PROTOCOLUL DE INIȚIERE VIZUALĂ
+Below is a complete, execution‑ready Brand OS for PROMPTFORGE™ running on chatgpt‑prompting.com — focused strictly on this product as a prompt generator (not the other projects).
 
-Funcție: initRitual()
-- Dezactivează fundalul default
-- Activează realm semantic
-- Afișează primul citat („Promptul e contractul tău scris cu viitorul…”)
-- După 3s → pornește startTransmutation()
-- Creează session ID semantic: IDEI.α9G23-L
+What I analyzed (available now in your workspace):
+– PROMPTFORGE_Branding_OS_v0_1.txt, Branding_OS_v0_1_rezumat.md, branding_os_config.json
+– The market/communication/psychographic packs for ai‑prompt‑templates.com (12 files).
+Note: I don’t see promptforge.zip in the workspace; I extended the existing visual baseline from your v0.1 Brand OS + the market files you provided.
 
-XVII. EXTENSIBILITATE MODULARĂ
+1) Positioning (precise, category‑defining)
 
-Layere = Plug-inuri
-- Fiecare are: init(), fallback(), recover(), shutdown()
-- Posibil Layer 8: Lexeme Animate
-- Posibil Layer 9: Tensiune Semantică (token + quote sync)
+Category: PromptOps — Operational Prompt Generator
 
-XVIII. SISTEMUL DE SIMBOLURI
+Tagline: Build prompt systems, not one‑offs.
 
-| Simbol | Funcție                      | Loc             |
-|--------|------------------------------|-----------------|
-| ₵      | Valoare cognitivă            | Token Results   |
-| ⚡     | Energie semantică             | Quote Engine    |
-| 👁      | Nivel de claritate vizuală   | Overlay / UI    |
+One‑liner (site hero):
+PROMPTFORGE™ is the operational prompt generator with 50 real modules and a 7‑D parameter engine. You configure once and ship repeatable outputs in < 60 seconds.
 
-XIX. MODELE DE FUNCȚIONARE
+Promise (what users actually get):
+A repeatable way to generate production‑ready prompts (and bundles) that stay on‑brand, export cleanly, and withstand client scrutiny.
 
-1. AI-IDEI™ Live – Tokenii se modifică în timp real pe baza inputului
-2. AI-IDEI™ Ambient – Funcționează pasiv, ca fundal contemplativ
-3. AI-IDEI™ Ritual – Necesită prompt inițiatic pentru a se activa
+Why it wins (differentiators):
 
-XX. transmutation_manifest.json
+7‑D Parameter Engine (Domain, Scale, Urgency, Complexity, Resources, Application, Output).
+
+50 real modules (M01–M50) that act like micro‑services (generate → test → export).
+
+Exports in .md / .json / .pdf with checksum.
+
+Brand Linter (tone, claims, KPI, banned lexicon).
+
+Time‑to‑Artifact (TTA) KPI: text < 60s, SOP < 5m.
+
+2) Audience (derived from your psychographic files → adapted to PromptForge)
+
+Solo Builders / Founders (B2C/Indie): want speed, clarity, and templates that sell (not fluff).
+Message: “Ship usable prompts today. Learn by doing, not by reading.”
+
+Agencies / Consultants (B2B): must deliver client‑ready SOPs and guarantees.
+Message: “Package prompts into billable deliverables with measurable KPIs.”
+
+Educators / Course Creators: need consistent outputs and exportable assets.
+Message: “Produce on‑brand prompts + handouts in minutes, not days.”
+
+Technical Marketers / Ops: care about tokens, structure, linting, and drift‑free UI.
+Message: “Control the stack: parameters in, audited artifacts out.”
+
+3) Brand Voice (do/don’t)
+
+Do: imperative, present tense, short lines, operational verbs (forge, ship, audit, export), one explicit metric per claim.
+
+Don’t: motivational filler, vague promises, over‑adjectives.
+
+Cadence rule: every 2–3 paragraphs drop a clean metaphor from the forge/factory lexicon.
+
+Banned words: motivational, inspirational, magic, easy.
+
+Required element: a single CTA at the end of each section.
+
+4) Semiotics & Metaphors (coherent with “FORGE”)
+
+Metaphor field: forge, steel, jigs, fixtures, assembly line, gauges, tolerances.
+
+Narrative frame: “raw idea → heat & pressure → calibrated output → assembly → inspection → shipping.”
+
+Visual motifs: diagonal stress line (18° ±2°), subtle grid (12 columns), neon edge glow used only on accents (never body text).
+
+A good prompt system is a jig: it fixes the workpiece so every cut is true.
+
+5) Visual Identity (tokens you can drop into code)
+5.1 Core Palette (contrast‑safe, dark UI first)
+
+Black: #0A0A0A (background)
+
+Surface: #111214 (cards/sections)
+
+Gray 600: #1E1E1E (borders)
+
+Gray 200: #F2F2F2 (text on dark)
+
+Neon (Accent): #39FF14 (interactive emphasis)
+
+Hazard (Error/Stop): #FF3131 (validations)
+
+5.2 Type
+
+Headings: Space Grotesk (semibold/bold)
+
+Body/UI: Inter (regular/medium)
+
+Code/Prompts: JetBrains Mono (no ligatures in UI)
+
+5.3 Layout & Motion
+
+Grid: 12‑col, 1240px max, 16px gutter.
+
+Spacing scale: 4 / 8 / 12 / 16 / 24 / 32 / 48.
+
+Radius: 8 (std), 12 (hero), 4 (chips).
+
+Motion: 180–220ms ease for hover/focus; 320ms for page‑level transitions; never animate color on body text; animate borders/shadows only.
+
+5.4 CSS Tokens (drop‑in)
+:root{
+  --pf-black:#0A0A0A; --pf-surface:#111214;
+  --pf-gray-600:#1E1E1E; --pf-gray-200:#F2F2F2;
+  --pf-neon:#39FF14; --pf-hazard:#FF3131;
+  --pf-radius:8px; --pf-radius-lg:12px; --pf-radius-sm:4px;
+  --pf-gap-1:4px; --pf-gap-2:8px; --pf-gap-3:12px;
+  --pf-gap-4:16px; --pf-gap-5:24px; --pf-gap-6:32px; --pf-gap-7:48px;
+  --pf-shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --pf-shadow-2:0 8px 24px rgba(0,0,0,.6);
+}
+.pf-btn{padding:12px 16px;border-radius:var(--pf-radius);
+  border:1px solid #2A2A2A;background:linear-gradient(180deg,#161718,#0F1011);
+  color:var(--pf-gray-200)}
+.pf-btn--primary{border-color:var(--pf-neon);box-shadow:0 0 0 1px var(--pf-neon) inset}
+.pf-badge{border:1px solid #2A2A2A;border-radius:var(--pf-radius-sm);
+  padding:4px 8px;color:#B9B9B9}
+.pf-card{background:var(--pf-surface);border:1px solid #1F1F1F;
+  border-radius:var(--pf-radius);box-shadow:var(--pf-shadow-1);padding:var(--pf-gap-5)}
+.pf-hero{background:radial-gradient(1200px 600px at 50% 0%,#10130F 0%,#0B0B0C 60%,#080809 100%)}
+
+5.5 JSON Tokens (for design system)
+{
+  "brand": "PROMPTFORGE",
+  "domain": "chatgpt-prompting.com",
+  "colors": {
+    "black":"#0A0A0A", "surface":"#111214",
+    "gray600":"#1E1E1E","gray200":"#F2F2F2",
+    "neon":"#39FF14","hazard":"#FF3131"
+  },
+  "typography":{"head":"Space Grotesk","body":"Inter","mono":"JetBrains Mono"},
+  "radius":{"sm":4,"md":8,"lg":12},
+  "spacing":[4,8,12,16,24,32,48],
+  "shadow":{"s1":"0 1px 2px rgba(0,0,0,.4)","s2":"0 8px 24px rgba(0,0,0,.6)"},
+  "components":["btn","badge","card","hero","chip","tab","code","module-tile","pricing"]
+}
+
+6) Messaging Architecture (pyramid → pages → components)
+6.1 Core claims (always pair claim + metric)
+
+Generate at operational depth. (7‑D engine; M01–M50 cover generation, testing, export.)
+
+Ship client‑ready artifacts. (exports .md/.json/.pdf + checksum.)
+
+Stay on‑brand. (Brand Linter blocks < 80/100 voice‑fit.)
+
+Move fast, verifiably. (TTA text < 60s; SOP < 5m.)
+
+6.2 Page‑level messages
+
+Homepage: “Configure, forge, export — in one run.”
+
+Modules: “Pick the jig, not the hammer.” (Tiles for M01–M50 with KPI + use case.)
+
+Generator: “Set your 7‑D spec → preview → export.”
+
+Use‑cases: “From outreach to SOP — same system, different jig.”
+
+Pricing: “Pay for speed, keep the rigor.” (No fake unlimiteds, clear entitlements.)
+
+Docs: “Short, testable, honest.” (Examples first, theory second.)
+
+6.3 Component‑level microcopy
+
+Button Primary: Start the Forge
+
+Ghost CTA: Browse Modules
+
+Export Bar: Export .md • Export .json • Export .pdf
+
+Linter Fail: Blocked at 74/100. Fix tone & metric.
+
+7) Website (chatgpt‑prompting.com) — IA, layout, and key screens
+7.1 IA / Routes
+/                         → Homepage
+/generator                → 7‑D prompt generator (core UX)
+/modules                  → Grid M01–M50 (filters: vector, difficulty, output)
+/modules/[id]             → Module detail (inputs, guardrails, samples, KPI)
+/use-cases                → Playbooks (agency, solo, educator, ops)
+/pricing                  → Tiers + entitlements
+/docs                     → Minimal docs with real snippets
+/blog                     → Operational essays (no fluff)
+/about                    → Why PromptForge exists
+/legal/*                  → Terms, Licensing, Privacy
+
+7.2 Homepage wire (extend your v0.1 dark/neon baseline)
+
+Hero (full‑bleed dark, subtle radial):
+H1: The Operational Prompt Generator
+Sub: 50 modules. 7 vectors. Export in < 60 seconds.
+CTA (primary): Start the Forge • (ghost): Browse Modules
+Proof‑bar (right under CTAs): TTA < 60s • AI Score > 80/100 • .md/.json/.pdf export
+
+How it works (3 steps as cards):
+Set 7‑D → Run Module → Export Bundle.
+
+Modules grid (live tiles):
+12 tiles shown (M01–M12) with vector badge (Strategic/Content/…).
+
+Generator preview (split screen):
+Left: 7‑D inputs. Right: live prompt preview with linter score.
+
+Use‑cases band (3): Agency / Solo / Educator — each with 1 real KPI.
+
+Pricing teaser: 3 clean cards (Pilot, Pro, Enterprise), “No surprises, clear entitlements.”
+
+Footer: product nav, docs, legal, small brand pledge: “No motivational fluff. Only operational value.”
+
+7.3 Modules page
+
+Faceted filters (Vector, Output type, Difficulty).
+
+Tile anatomy: Title → Vector badge → 2‑line description → KPI → CTA “Open Module”.
+
+7.4 Generator page
+
+Left column: 7‑D control panel (persist settings).
+
+Right column: Prompt preview with Brand Linter score and inline suggestions.
+
+Export bar fixed at bottom with 3 formats + checksum.
+
+7.5 Pricing
+
+Pilot: generator + 12 core modules + .md export.
+
+Pro: all modules + linter + .json/.pdf export + branding tokens.
+
+Enterprise: custom modules, API hooks, team governance.
+
+(Entitlements are just labels here; your licensing details live elsewhere.)
+
+8) Component Library (class names + states)
+
+Button: .pf-btn, .pf-btn--primary, states :hover, .is-loading, .is-disabled.
+
+Badge/Chip: .pf-badge with variants M01, 7D, EXPORT.
+
+Card: .pf-card for tiles, docs chunks, pricing blocks.
+
+Code block: .pf-code (mono, copy‑to‑clipboard).
+
+CTA bar (fixed): .pf-cta-bar (primary + ghost).
+
+Tabs: .pf-tabs (module inputs vs. output).
+
+Toast: .pf-toast (success/error, never auto‑dismiss fail states).
+
+9) Brand Linter (operational guardrail)
+
+What it checks:
+
+Voice rules (2nd person, imperative; banned words).
+
+Metric presence (TTA, KPI or export format).
+
+CTA presence (one clear action).
+
+Drift (lexicon outside the forge/factory field).
+
+Return JSON: score(0–100), breaches[], fixes[], cta, has_metric.
+
+Blocking rule: < 80/100 → show fixes and disable export button.
+
+10) Copy Blocks (ready to paste)
+
+Hero H1: The Operational Prompt Generator.
+Subhead: 50 modules. 7 vectors. Export in < 60 seconds.
+Primary CTA: Start the Forge
+3 Bullets:
+
+End‑to‑end modules (M01–M50)
+
+Exports: .md / .json / .pdf + checksum
+
+Brand Linter with KPI enforcement
+
+Section lead: You don’t need more text. You need a repeatable system.
+Closer: Build prompt systems, not one‑offs. → Start the Forge
+
+11) SEO & Metadata (tight and honest)
+
+Primary keywords: prompt generator, prompt systems, operational prompts, 7‑D prompt engine, prompt factory, SOP prompts, export json pdf, guardrails for prompts.
+
+Title tag (homepage): PromptForge — The Operational Prompt Generator | chatgpt‑prompting.com
+
+Meta description: Build prompt systems, not one‑offs. 50 modules, a 7‑D engine, and exports to .md/.json/.pdf — ship usable outputs in under 60 seconds.
+
+OG image: dark card with PF monogram (hexagon) + “Build prompt systems, not one‑offs.”
+
+12) Press Kit (1‑pager contents)
+
+Logo (wordmark + hexagon PF monogram), palette, type, spacing, example tiles (M01–M06).
+
+“How to present PromptForge”: do’s/don’ts (no neon on body copy, no gradients on wordmark).
+
+Boilerplate (75 words), product screenshots (hero, modules grid, generator), contact.
+
+13) Governance & KPIs (brand fit is measurable)
+
+TTA: text < 60s; SOP < 5m.
+
+Brand‑fit: linter score ≥ 80/100 for any published copy.
+
+Consistency: chromatic drift ≤ 5% (programmatic checks on hex usage).
+
+Conversion (LP): ≥ 4% to “Start the Forge”.
+
+Approval rate: ≥ 60% assets pass with no revision.
+
+14) What to build now (hands‑on, no dependencies on other projects)
+
+Drop CSS/JSON tokens into the repo (above).
+
+Compose Homepage with hero → steps → modules preview → generator strip → use‑cases → pricing.
+
+Build Modules Grid with vector badges and KPI line.
+
+Wire Generator with 7‑D panel + live linter + export bar.
+
+Publish Brand Linter prompt + block exports under 80/100.
+
+Add Press Kit as a single PDF (logo, tokens, tiles).
+
+Enforce banned lexicon at build time (simple grep) before deploy.
+
+15) Naming & Domain Conventions
+
+Brand: PROMPTFORGE™
+
+Primary domain: chatgpt‑prompting.com
+
+Site title format: PromptForge — The Operational Prompt Generator
+
+Paths: /generator, /modules, /use-cases, /pricing, /docs, /blog, /about.
+
+16) Optional brand variants (keep within system)
+
+Secondary accent (rare use): #00E5FF (signals “information/learn more”), max 5% surface of any screen.
+
+Data states: success #19C37D, warning #FFB020, error #FF3131 (already set).
+
+17) Legal & Ethical (short and necessary)
+
+Don’t imply results without metric.
+
+Mark AI‑generated examples.
+
+Provide license text on exports (redistribution terms, personal vs. commercial use).
+
+Accessibility: color contrast AA minimum, motion‑reduced variant (prefers‑reduced‑motion).
+
+18) Quick content for Pricing (clean and credible)
+
+Pilot — “Ship the core”
+Generator + 12 core modules + .md export.
+
+Pro — “Ship at scale”
+All modules + linter + .json / .pdf export + branding tokens.
+
+Enterprise — “Ship with governance”
+Custom modules, API hooks, team rules, quarterly audit.
+
+CTA: Start the Forge
+
+Final note
+
+I extended your existing Brand OS v0.1 and aligned it to a prompt‑generator positioning using insights from your market/psychographic/communication files. If you add promptforge.zip, I’ll reconcile any UI deltas; this blueprint already matches a dark/neon grid system and expands it with tokens, IA, and copy you can ship.
+
+
+
+
+
+1) Poziționare (doar PROMPTFORGE™)
+
+Categorie: PromptOps — generator operațional de prompturi.
+Tagline: Construiești sisteme de prompturi, nu piese de unică folosință.
+One‑liner (H1 site): PROMPTFORGE™ este generatorul operațional cu 50 module reale și un engine 7‑D. Configurezi o dată, exporți artefacte repetabile în < 60 secunde.
+
+Diferențiator cheie: module ca micro‑servicii (M01–M50) + 7‑D (Domain, Scale, Urgency, Complexity, Resources, Application, Output) + export .md/.json/.pdf + linter de brand + TTA garantat.
+Un sistem de forjă: intră contextul, iese artefactul calibrat. Nu “texte frumoase”. Execuție.
+
+2) Voce (aliniată la RFA + UI actual)
+
+Persoană a II‑a, prezent/imperativ.
+
+Propoziții scurte, operaționale.
+
+LEXIC: forjă, jig, ștanță, toleranță, vector, modul, guardrails, telemetrie.
+
+INTERDICȚII: motivațional, inspirațional, „ușor”, „magie”.
+
+Regulă hard: fiecare bloc închide cu un singur CTA.
+
+Un sistem bun e un jig bun: fixezi piesa, tăietura iese dreaptă la fiecare iterație.
+
+3) Identitate vizuală (din codul existent + extensii)
+3.1 Paletă (preluat din app/globals.css, stil dark glassmorphic)
+
+Background: #0A0A0A
+
+Foreground (text): #ECFEFF
+
+Card (glass): rgba(255,255,255,0.08)
+
+Popover: rgba(255,255,255,0.12)
+
+Border: rgba(255,255,255,0.15)
+
+Input: rgba(255,255,255,0.08)
+
+Primary (teal/cyan): #164E63 (lumini → #0891B2 în dark)
+
+Accent (crimson): #BE123C
+
+Destructive: #DC2626
+
+Ring (focus): rgba(22,78,99,0.5)
+
+Sidebar: rgba(255,255,255,0.05)
+
+Asocieri: teal/cyan = profunzime tehnică (răcire, precizie), crimson = atenție/decizie (nu “brand‑red” de decor, ci semnal tactic).
+
+3.2 Tipografie (din app/layout.tsx)
+
+Headings: Montserrat (600/700/900) → variabila --font-heading.
+
+Text/UI: Open Sans (regular/medium) → variabila --font-sans.
+
+Cod/Prompt: JetBrains Mono (recomandare — păstrezi pentru code‑blocks în componenta .pf-code).
+
+3.3 UI Tokens & utilities (existente, folosește-le consecvent)
+
+Glass: .glass-effect, .glass-strong (blur 12–16px + border var(--border)).
+
+Glow: .glow-primary, .glow-accent, .glow-success (halo discret; nu pe body text).
+
+Animații: tw-animate-css + tranziții 180–220ms.
+
+Grid: 12 col, container 1240px, gutter 16px.
+
+Spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48.
+
+Radius: 8 (standard), 12 (hero), 4 (chips).
+
+Menține “sticla” rece. Lumina (glow) marchează piese funcționale, nu desenează scene.
+
+4) Vectori & culori (din types/promptforge.ts)
+
+V1 Systems & Agents: text-red-400
+
+V2 Marketing & Sales: text-blue-400
+
+V3 Content & Education: text-green-400
+
+V4 Decisions & Cognitive: text-yellow-400
+
+V5 Semiotic Branding: text-purple-400
+
+V6 Data & Analytics: text-cyan-400
+
+V7 Crisis & PR: text-orange-400
+
+Recomandare: păstrează vector‑colors doar pe badges (ex. <Badge variant="secondary" className="text-xs text-blue-400">V2</Badge>). Nu colora body/CTA cu vector‑colors. Brandul rămâne teal/crimson.
+
+5) Arhitectura UX (extinzi exact ce ai în app/page.tsx)
+5.1 Homepage (chatgpt‑prompting.com)
+
+Hero (full‑bleed, radial discret):
+
+H1: Generatorul tău operațional de prompturi.
+
+Sub: 50 module. 7 vectori. Expotă în < 60s.
+
+CTA primar: Pornește forja (btn variant default / primary)
+
+CTA secundar: Vezi modulele (ghost)
+
+Proof‑bar sub CTA: TTA < 60s • AI Score > 80/100 • .md/.json/.pdf export
+
+Class hints: .pf-hero .glass-effect .glow-primary
+
+Cum funcționează (3 carduri):
+Setezi 7‑D → Rulezi modul → Expotezi bundle.
+(Card Card + .glass-effect + icon lucide Wand2/CheckCircle/Download)
+
+Module Grid (din components/module-grid.tsx):
+
+Filtre pe vectori + search.
+
+Tile anatomy (ModuleCard): Mxx, nume, 2‑line descriere, spec/output/guardrails (expand), KPI, CTA „Specifications”.
+
+Generator (split):
+
+Stânga: 7‑D (Session Configuration cu select‑uri din cod).
+
+Dreapta: preview prompt + validate (structure/linter) + telemetrie.
+
+Export bar fix jos: .md / .json / .pdf + checksum (vezi export-manager.tsx).
+
+Use‑cases (3 benzi):
+Agenții, Soloprenori, Educatori — fiecare cu un KPI real (ex.: „SOP livrat în 5m”, „CR +15% pe 7:1”).
+
+Pricing (3 carduri): Pilot / Pro / Enterprise (vezi §8).
+
+Footer: navigație, docs, legal, promisiune scurtă: „Fără filler. Doar valoare operațională.”
+
+5.2 Pagini cheie
+
+/modules: grilă + filtre (Vector, Output, Difficulty).
+
+/modules/[id]: detalii modul (inputs, spec, sample outputs, KPI, guardrails).
+
+/generator: 7‑D + preview + linter + export (fix bar).
+
+/use‑cases: 3–5 playbook‑uri.
+
+/pricing: entitlements clare, fără “unlimited” vag.
+
+/docs: exemple înainte de teorie.
+
+/about: de ce există PROMPTFORGE.
+
+O linie de producție bună te obligă să nu sari pași. UI‑ul e acea linie.
+
+6) Mesaje (claim → dovadă → rezultat)
+
+Generezi la adâncime operațională. Engine 7‑D + M01–M50 acoperă generare, testare, export.
+
+Livrezi artefacte client‑ready. Export .md/.json/.pdf + checksum.
+
+Rămâi on‑brand. Linter de voce blochează sub 80/100.
+
+Te miști verificabil. TTA text < 60s; SOP < 5m.
+
+Pe audiențe:
+
+Founders/Solo: „Rulezi azi. Îți înveți sistemul făcând.” → Pornește forja
+
+Agenții: „Împachetezi prompts ca livrabile cu KPI.” → Vezi modulele
+
+Educatori: „Producești pe brand + handout în minute.” → Deschide generatorul
+
+7) Copy gata de pus
+
+H1: Generatorul tău operațional de prompturi.
+Sub: 50 module. 7 vectori. Expotă în < 60 secunde.
+CTA: Pornește forja
+
+Secțiune „De ce”:
+„Nu ai nevoie de mai mult text. Ai nevoie de un sistem repetabil. Setezi 7‑D, apeși Start, scoți artefacte vândabile.”
+
+3 bullets:
+
+Pipeline complet (M01–M50)
+
+Export .md/.json/.pdf + checksum
+
+Linter de brand cu KPI enforcement
+
+8) Plan & Pricing (entitlements clare)
+
+Pilot — „Ship the core”
+Generator + 12 module de bază + export .md.
+
+Pro — „Ship at scale”
+Toate modulele + Linter + export .json/.pdf + branding tokens.
+
+Enterprise — „Ship with governance”
+Module custom, API hooks, reguli de echipă, audit trimestrial.
+
+CTA: Pornește forja
+
+9) Linter de brand (guardrail productizat)
+
+Verifică: persoană/timp, lexic interzis, metrică explicită, CTA unic, drift semantic.
+Returnează: score(0–100), breaches[], fixes[], cta, has_metric.
+Regulă: score < 80 → blochezi exportul (dezactivezi butonul).
+
+Un control bun nu încetinește. Te protejează de rebuturi.
+
+10) Componente UI standard (naming & stări)
+
+Button: variant default/primary/outline/ghost/link, size sm/md/lg.
+
+Badge/Chip: V1–V7, M01–M50, EXPORT.
+
+Card: .glass-effect pentru secțiuni cheie; .glass-strong în overlay.
+
+Code‑block: .pf-code (mono, copy‑to‑clipboard).
+
+CTA bar (fixed): export .md/.json/.pdf.
+
+Tabs: input vs output (generator).
+
+Toast: succes/eroare (nu auto‑dismiss la fail).
+
+11) Logo & sigiliu (guidelines concise)
+
+Wordmark: PROMPTFORGE™ CAPS, tracking strâns, greutate 700/900 (Montserrat).
+
+Monogram: PF într‑un hexagon (șurub) cu contur teal 1px (nu neon).
+
+Clear space: 1× „P”.
+
+Min size: wordmark 120px, monogram 24px.
+
+Misuse: fără gradient în litere, fără glow pe text, fără accent roșu pe body.
+
+12) SEO & Meta (pentru domeniu)
+
+Title: PromptForge — Generatorul Operațional de Prompturi | chatgpt‑prompting.com
+
+Meta description: Construiești sisteme de prompturi, nu piese unice. 50 module, engine 7‑D și export .md/.json/.pdf. Livrezi în sub 60 de secunde.
+
+OG: fundal dark glass + monogram PF hexagon + tagline.
+
+13) Guvernanță & KPI
+
+TTA: text < 60s; SOP < 5m.
+
+Brand‑fit: linter ≥ 80/100.
+
+Drift cromatic: ≤ 5% (audit pe hex).
+
+Conversie LP: ≥ 4% la „Pornește forja”.
+
+Aprobări fără revizie: ≥ 60%.
+
+14) Implementare imediată (pe codul din zip)
+
+Hero copy în app/page.tsx (înlocuiești heading/sub/CTA).
+
+Proof‑bar sub CTA (componentă mică cu 3 bullets).
+
+Consistent glass/glow: aplică .glass-effect pe carduri „Session Config”, „Module Selection”, „Prompt Generator”.
+
+Vector badges: păstrează culorile Tailwind (text-*-400) doar pe <Badge>.
+
+Linter blocant: la validatePromptStructure + export-manager.tsx — dezactivezi exportul sub 80.
+
+Pricing: adaugă pagina /pricing cu 3 carduri + entitlements.
+
+Press kit: 1 pager PDF din tokens + wordmark + monogram (SVG).
+
+SEO: set meta în app/layout.tsx (Metadata) + OG.
+
+15) Mesaje pe module (mostră, din lib/modules.ts)
+
+M01 – AI‑IDEI.SOPFORGE: Pipeline multi‑agent cu telemetrie; defect rate <2%.
+
+M03 – Codul 7:1: Campanii end‑to‑end, ţintă CR +15%.
+
+M05 – ORAKON Memory Grid: Memorie stratificată, TTL & compaction.
+
+Publică 12 tile‑uri pe homepage. Le lași să vândă în locul tău.
+
+16) Asocieri + Metafore (canon)
+
+Forjă rece (teal): procesare la rece, precizie, toleranțe stricte.
+
+Ștanță (spec): aceeași tăietură la fiecare execuție.
+
+Glas (glass): vizibilitate controlată, fără decor, doar structură.
+
+Concluzie
+
+Ai deja baza vizuală solidă în cod: dark glass, teal/crimson, Montserrat/Open Sans, grilă clară, module, generator, editor, test engine, istoric, export. Eu doar o închid într‑un Brand OS coerent, gata de livrare.
+
+
+
+
+
+✅ 1. BRANDING STRATEGIC PROMPTFORGE™
+📍 Categorie:
+
+PromptOps – infrastructură operațională pentru generare, testare și export de prompturi. Nu e un tool, ci un sistem de producție industrială cu 50 micro-servicii (M01–M50).
+
+🧭 Poziționare (actualizată)
+
+PROMPTFORGE™ is the industrial-grade PromptOps engine — not a prompt builder, but a semantic forge. You don’t write prompts. You configure systems.
+
+🧨 Tagline (H2)
+
+You build prompt systems, not throwaway lines.
+
+🧱 One-liner (H1 site)
+
+PROMPTFORGE™ is an operational prompt engine with 50 real modules and a 7‑D semantic runtime. Configure once. Export repeatable artifacts in under 60 seconds.
+
+🧠 Diferențiator-cheie
+
+✅ Modules-as-Microservices — M01–M50, each export-ready
+
+✅ 7‑D Cognitive Runtime — Domain, Scale, Urgency, Complexity, Resources, Application, Output
+
+✅ Export Bundle — .md, .json, .pdf, .txt, .zip
+
+✅ Brand Linter & Prompt Validator
+
+✅ Score ≥ 80 by AI Evaluator
+
+✅ Prompt-for-Test-to-Deployment Flow
+
+✅ Run IDs + Versioning + Telemetry + API Licensing
+
+🎨 2. IDENTITATE VIZUALĂ
+🎨 Paletă de culori (extensie din promptforge.zip):
+Cod culoare	Utilizare
+#010818	Background principal (dark-blue-neon)
+#00FFBC	Accente neon / butoane CTA
+#FF4C4C	Erori / scoruri critice / KPI fail
+#B8C7D1	Text secundar / iconografie
+#FFFFFF	Text principal
+
+→ Culorile evocă o fabrică digitală nocturnă: high-tech, industrial, semi-militarizat.
+
+🪞 Stil vizual:
+
+Glassmorphism dark (already implemented în app/globals.css)
+
+Accente neon și gradient glitch pe interacțiuni
+
+Fonturi:
+
+Montserrat (Heading)
+
+Open Sans (Body)
+
+Elemente de fier, scântei, matriță, transpuse în animații subtile (shimmer, glow, forge-flare)
+
+🧬 3. METAFORĂ CENTRALĂ
+
+Forge, not write.
+
+PromptForge is not a tool — it's a semantic forge. You don’t brainstorm. You smelt strategy, pour execution, and export artifacts.
+
+Simboluri cheie:
+
+🔩 Forjă → generare industrială, solidă
+
+🔬 Linter → rigurozitate semantică
+
+⚙️ Motor 7‑D → configurare contextuală avansată
+
+📦 Artefacte → exporturi industriale, gata de integrat
+
+💻 4. STRUCTURA SITE-ULUI chatgpt-prompting.com
+⛓️ Flow logic:
+
+H1: [VEZI MAI SUS]
+
+Configurator 7‑D vizual (în stil Terminal UI modern) – live preview pe prompt
+
+Cards cu Module (M01–M50) – selectabile, filtrabile pe vectori + output
+
+Workflow Tabs:
+
+Generator
+
+GPT Editor (optimizează)
+
+Test Engine (scoruri reale)
+
+History (cloud + versiuni)
+
+Export (cu entitlement gating)
+
+ExportDialog.tsx – cu watermark în trial, gating Pro/Enterprise, UX nativ
+
+Licențiere vizibilă + Upsell Packs (bannere pe domenii)
+
+🧩 Secțiuni recomandate homepage:
+
+What is PROMPTFORGE™ – cu metafora forjei și logica PromptOps
+
+50 Operational Modules – vizualizare reactivă per vector semantic
+
+7‑D Configuration – explicație animată (Domain → Output)
+
+From Prompt to Artifact – diagramă animație (Context → Prompt → Editor → Test → Bundle)
+
+License Prompt Systems – secțiune Enterprise/API
+
+Prompt Quality Guaranteed – AI Score ≥ 80 / TTA < 60s
+
+Export + Versioning – JSON + PDF + Manifest + Checksum
+
+Case Studies – ex. M07, M14, M23 (Book Generator)
+
+🧱 5. ARHITECTURA MENTALĂ A BRANDULUI
+
+PROMPTFORGE™ = infrastructură, nu aplicație
+
+PromptOps = dev discipline, nu content
+
+M01–M50 = micro‑servicii semantice cu output validabil
+
+Export = artefacte industriale, nu text brut
+
+Brand = forjă, nu studio → focus pe execuție, nu estetică
+
+Sistem > Tool
+
+Runtime > UI
+
+Decision OS > Writing Assistant
+
+🛠 6. TON DE COMUNICARE
+
+🔒 Ferm, profesional, fără „fluff”
+
+🎯 Direct – ca un inginer, nu ca un designer
+
+💡 Vizionar – dar executabil
+
+⏱ Obsesie pentru TTA și Score
+
+📈 Centrat pe livrabil, nu pe text „inspirat”
+
+🧾 7. EXEMPLE DE COPY (CTA + Hero)
+
+Run a system, not a sentence.
+
+Prompting is over. PromptOps is here.
+
+Stop brainstorming. Start exporting.
+
+Welcome to semantic manufacturing.
+
+This is not ChatGPT. This is PROMPTFORGE™.
+
+
+
+
+
+🔧 2) VOCEA PROMPTFORGE™ – Sistemul de Forjă Retorică
+
+📐 Standard de Voce
+
+PROMPTFORGE™ nu comunică. Execută.
+Nu motivează. Instrucționează.
+Nu inspiră. Optimizează.
+
+Este vocea unei infrastructuri industriale, aliniată la Retorică Fără Anestezie (RFA), cu accent pe acuratețe operațională, claritate și rigurozitate. Fiecare frază este o comandă executabilă, nu o sugestie metaforică.
+
+🧾 Norme de redactare (canonice)
+Element	Regulă
+Persoană	A II‑a singular (configurezi, rulezi, expotezi)
+Timp verbal	Prezent/Imperativ (deschide, verifică, forjează)
+Frazare	Propoziții scurte (4–12 cuvinte), directe, fără subordonări inutile
+Structură	1 idee/frază; 1 paragraf = 1 bloc logic
+CTA‑uri	Fiecare bloc închide cu 1 singur CTA activ
+Tonalitate	Rece, tehnică, fără entuziasm artificial
+📌 Lexic standardizat PROMPTFORGE™
+✅ Termeni permisi (activați în UI și documentație):
+
+forjă → sistemul de generare prompturi
+
+jig → structura promptului (formă fixă)
+
+ștanță → output repetabil, cu precizie
+
+vector → axă semantică (Strategic, Cognitiv etc.)
+
+modul → M01–M50, micro-serviciu semantic
+
+toleranță → deviația permisă în execuție
+
+guardrails → constrângeri semantice/etice
+
+telemetrie → datele de execuție / scoruri
+
+execuție → orice run completă cu scor validat
+
+artefact → output-ul generat (prompt.txt, .json, .pdf)
+
+🚫 Lexic interzis (blocat de linter):
+
+ușor
+
+inspiră, inspirațional
+
+magic
+
+descoperă frumusețea
+
+îți schimbă viața
+
+din pasiune pentru AI
+
+🧪 Exemple contrastive
+❌ Evită	✅ Folosește
+“Lasă‑te inspirat de puterea AI‑ului.”	“Configurează parametrul 7‑D și rulează M23.”
+“Un tool care te ajută să scrii mai ușor.”	“Forjezi prompturi precise cu scor ≥ 80.”
+“Descoperă cum poți schimba lumea.”	“Optimizezi outputul și îl exporti în .pdf validat.”
+“Lucrează cu pasiune.”	“Testează. Măsoară. Exportă.”
+🔩 Format narativ: Jig Retoric
+
+Un sistem bun e un jig bun:
+fixezi piesa → ștanțezi promptul → exporți artefactul.
+Fără devieri. Fără promisiuni. Doar execuție verificabilă.
+
+💡 Exemple de blocuri cu voce corectă + CTA
+🧠 [Exemplu 1 – Introducere modul]
+
+Ai de forjat un prompt pentru un cod narativ?
+Rulează M03 – Codul 7:1™.
+Configurează vectorul Retoric și aplică pe domeniu Educație.
+Promptul rezultat va include KPIs, spec și fallback logic.
+
+👉 Deschide modulul M03
+
+📦 [Exemplu 2 – Export artefact]
+
+Ai promptul validat și scorul ≥ 80.
+E timpul să‑l transformi în artefact.
+Alege .md, .json și .pdf. În Pro, watermarkul dispare.
+
+👉 Descarcă artefactele
+
+📊 [Exemplu 3 – Testare + Telemetrie]
+
+Testezi execuția pe modul M14.
+Scorurile sunt salvate în telemetrie.
+Dacă ai testat deja versiuni multiple, vezi driftul semantic.
+
+👉 Accesează Test Engine
+
+📣 Reguli de comunicare publică (blog / update-uri)
+
+Scrii ca și cum ai livra un commit – clar, sec, verificabil.
+
+Fiecare update include: ce s‑a schimbat + ce artefact nou se poate exporta + ce scor produce.
+
+Evita “storytelling” motivațional → înlocuiește cu “spec update” sau “telemetry diff”.
+
+🎯 Verificare automată – Brand Linter (Score < 80 = blocat)
+
+Prompturile, mesajele din UI, textele explicative și documentația trec prin linter semantic.
+
+Criterii:
+
+✅ Persoană și timp verbal
+
+✅ Metrică prezentă (ex: scor ≥ 80, TTA < 60s)
+
+✅ CTA unic
+
+🚫 Lexic interzis
+
+🚫 Promisiuni nemezurabile
+
+📌 Scurtă regulă de aur
+
+Dacă textul pare scris de un designer sau un poet,
+rescrie-l ca un inginer de execuție.
+
+Vrei să export acest standard de voce complet în fișier .txt?
+
+13:49
+Ai spus:
+
+
+
+
+🧩 Exemple de aplicare
+🔲 Card Modul
+<div class="pf-card glass-effect glow-primary rounded-[8px] p-[24px]">
+  <h3 class="text-xl font-heading font-semibold">M23 – SOP→Book Generator</h3>
+  <p class="text-body text-[15px] text-foreground/70 mt-2">Transformă un episod în carte .md/.pdf</p>
+  <div class="mt-4 flex gap-2">
+    <Badge variant="secondary" className="text-xs text-cyan-400">V3 – Content</Badge>
+    <Badge variant="outline" className="text-xs text-rose-500">Output: .pdf</Badge>
+  </div>
+</div>
+
+🧪 Prompt Preview Box
+<pre class="pf-code glass-strong rounded-[8px] p-[16px] font-mono text-sm overflow-x-auto">
+-- Prompt Start --
+Generate a high-conversion SOP based on episode structure...
+-- Prompt End --
+</pre>
+
+📊 Export Banner
+<div class="bg-foreground/5 border border-border rounded-[8px] px-[16px] py-[12px] text-sm flex justify-between items-center">
+  <span class="text-foreground/80">Score: <span class="text-green-400 font-semibold">84</span> — OK for Export</span>
+  <Button variant="primary" className="glow-primary">Download .pdf</Button>
+</div>
+
+🧠 Reguli de compoziție vizuală
+
+Sticla e rece.
+Nu încălzești cu gradient sau blur excesiv. Opacitate ≤12%.
+
+Lumina e controlată.
+Glow doar la interacțiune. Max 1 glow activ pe ecran.
+
+Textul e solid.
+Alb pur pe dark. Fără griuri decorative.
+
+Contrastul e binar.
+Background → foarte întunecat. Foreground → foarte clar.
+
+Spațiul e industrial.
+Nu lași elemente „să respire”. Le fixezi în jig.
+
+🧮 Tokeni CSS finali (:root fragment)
+:root {
+  --pf-bg: #0A0A0A;
+  --pf-text: #ECFEFF;
+  --pf-glass: rgba(255,255,255,0.08);
+  --pf-popover: rgba(255,255,255,0.12);
+  --pf-border: rgba(255,255,255,0.15);
+  --pf-input: rgba(255,255,255,0.08);
+  --pf-primary: #164E63;
+  --pf-primary-hover: #0891B2;
+  --pf-accent: #BE123C;
+  --pf-destructive: #DC2626;
+  --pf-ring: rgba(22,78,99,0.5);
+  --pf-sidebar: rgba(255,255,255,0.05);
+  --pf-radius-sm: 4px;
+  --pf-radius: 8px;
+  --pf-radius-lg: 12px;
+  --pf-spacing-1: 4px;
+  --pf-spacing-2: 8px;
+  --pf-spacing-3: 12px;
+  --pf-spacing-4: 16px;
+  --pf-spacing-5: 24px;
+  --pf-spacing-6: 32px;
+  --pf-spacing-7: 48px;
+}
+
+
+
+🔷 4) VECTORI & CULORI – Sistemul Semantic Vizual PROMPTFORGE™
+
+PROMPTFORGE™ este organizat pe 7 vectori semantici, fiecare asociat cu un scop cognitiv distinct și o culoare tactică coerentă. Aceste culori NU fac parte din identitatea de brand principală (care rămâne teal + crimson), ci sunt mape funcționale — utilizate exclusiv pentru:
+
+✅ Badge‑uri vectoriale (UI: <Badge> / <Chip>)
+
+✅ Filtre vizuale pe module
+
+✅ Iconografie contextuală (în grile/module cards)
+
+🚫 NU se aplică pe body text, CTA-uri, butoane, titluri
+
+🧭 Maparea Vectorilor
+Cod	Nume vector	Culoare Tailwind (text-*-400)	Scop cognitiv
+V1	Systems & Agents	text-red-400	Arhitectură, orchestrare, agenți
+V2	Marketing & Sales	text-blue-400	Creștere, funneluri, persuasiune
+V3	Content & Education	text-green-400	Producție, educație, livrabile
+V4	Decisions & Cognitive	text-yellow-400	JTBD, prioritizare, strategie
+V5	Semiotic Branding	text-purple-400	Stil, simbolism, voce, poziționare
+V6	Data & Analytics	text-cyan-400	Măsurare, scoruri, telemetrie
+V7	Crisis & PR	text-orange-400	Criză, control, transparență
+📦 Aplicare standardizată (DO)
+✅ Badge (exemplu)
+<Badge variant="secondary" className="text-xs text-blue-400">V2 – Marketing</Badge>
+
+✅ Icon contextual (grilă module)
+<LucideBullhorn className="w-4 h-4 text-blue-400" />
+
+✅ Filter UI (în dropdownuri și mod select):
+<option class="text-yellow-400" value="V4">Decisions</option>
+
+🚫 Reguli de interdicție (DON’T)
+
+Nu colora body text (nu scrie paragrafe cu text-red-400)
+
+Nu colora butoane (butonul Pornește forja rămâne teal)
+
+Nu folosi vector-colors pe headings
+
+Nu folosi mai mult de 2 vectori colorați pe ecran simultan (per component)
+
+🧬 Simbol semantic (contextual, nu decorativ)
+Vector	Simbol UI	Sens narativ intern
+V1	🔩 Gear / Server	sistem, control, execuție
+V2	📣 Megafon	vânzare, outreach, difuzare
+V3	📘 Carte / ✍️ Stylus	conținut, formare
+V4	🧠 Brain / Chart	decizie, logică
+V5	🪞 Oglindă / Stea	branding, stil, identitate
+V6	📊 Bar chart / Terminal	date, metrici, output
+V7	⚠️ Scut / Foc	criză, siguranță, revers
+🧱 Aplicații vizuale concrete (în UI existent)
+1️⃣ Pagina /modules
+
+→ Apare ca badge vector + icon în fiecare ModuleCard:
+
+<Badge variant="secondary" className="text-xs text-cyan-400">V6 – Data</Badge>
+<LucideChartBar className="w-4 h-4 text-cyan-400" />
+
+
+→ În filtre (dropdown vector):
+
+<SelectItem value="V5" className="text-purple-400">V5 – Branding</SelectItem>
+
+2️⃣ Pagina /generator
+
+→ Dacă ai ales un modul din V7 (Crisis), zona de preview va avea bordură text-orange-400:
+
+.border-l-4.border-orange-400.rounded-l-md
+
+3️⃣ Pagina /use-cases
+
+→ Exemplele vor avea colț colorat subtil (badge pe card sau separator bar):
+
+<div class="h-1 bg-purple-400 rounded-t" />
+
+🔐 Integrări semantice (cod → stil)
+
+Fiecare modul din lib/modules.ts are vector: "V2" → în UI mapezi:
+
+const VECTOR_COLORS = {
+  V1: "text-red-400",
+  V2: "text-blue-400",
+  V3: "text-green-400",
+  V4: "text-yellow-400",
+  V5: "text-purple-400",
+  V6: "text-cyan-400",
+  V7: "text-orange-400",
+}
+
+
+Bonus: adaugă hover:border-* doar în mod module-details, nu în preview mini-card.
+
+🖼 Color Wheel funcțional (decupabil în UI)
+
+Creează o diagramă radială „7 Vectori Semantic Map”:
+
+Central: PROMPTFORGE
+
+Ramuri: V1–V7
+
+Badge per ramură: text-*-400
+
+Fiecare vector → preview module (3 ex./vector)
+
+→ Recomand să fie plasat pe /about sau în slide-ul 3 de onboarding.
+
+🧾 Resumativ:
+
+Brand = teal/crimson
+
+Vector = badge semantic
+
+Design = clar, industrial, fără „culori creative”
+
+Fiecare culoare = funcție → nu decor → nu gradient
+
+
+
+
+
+
+
+🔧 5) ARHITECTURA UX – PROMPTFORGE™ UI ca Linia de Producție Semantică
+
+PROMPTFORGE™ nu este o aplicație „cu feature-uri”. Este un sistem de forjare a prompturilor, unde fiecare pagină, fiecare componentă, fiecare clic execută o mișcare industrială standardizată:
+configurare → generare → testare → export.
+UI-ul trebuie să simuleze o linie de producție digitală, cu toleranțe stricte și verificări automate.
+
+🏗️ 5.1 HOMEPAGE (/, domeniul chatgpt‑prompting.com)
+🧲 Hero Section (full-bleed, fundal radial discret, .pf-hero)
+
+H1: Generatorul tău operațional de prompturi.
+
+Sub: 50 module. 7 vectori. Expotă în < 60 secunde.
+
+CTA primar: Pornește forja (variant="default" sau variant="primary")
+
+CTA secundar: Vezi modulele (variant="ghost")
+
+Proof bar (sub CTA):
+
+TTA < 60s • AI Score > 80/100 • .md/.json/.pdf export
+
+Clasă: .text-sm text-muted-foreground/80 mt-2
+
+💡 Recomandare: adaugă .glass-effect + .glow-primary doar pe containerul Hero. Nu aplica glow pe text.
+
+🧩 Secțiune: „Cum funcționează”
+
+🔁 3 carduri logice, fiecare cu pictogramă (Lucide):
+
+Setezi 7‑D → LucideSlidersHorizontal
+
+Rulezi modul → LucideCpu
+
+Expotezi bundle → LucideDownload
+
+Componente:
+
+<Card className="glass-effect p-6 rounded-md glow-primary">
+  <LucideCpu className="w-6 h-6 text-cyan-400 mb-2" />
+  <h4 className="font-heading font-semibold text-lg">Rulezi modul</h4>
+  <p className="text-sm text-muted-foreground mt-1">Alegi Mxx, primești output validat.</p>
+</Card>
+
+📦 Module Grid (din components/module-grid.tsx)
+Filtrare:
+
+Dropdown Vector
+
+Dropdown Output type
+
+SearchBox
+
+Fiecare ModuleCard conține:
+
+Titlu: M23 – SOP→Book
+
+Badge vector (V3 – Content, ex. text-green-400)
+
+Descriere 2 linii
+
+Output (ex: .pdf)
+
+CTA: Specifications
+
+Clasă: .glass-effect .rounded-md .hover:border-primary
+
+⚙️ Generator (split screen UX)
+🔧 Stânga: Session Configuration
+
+7‑D parameters (cu dropdown din enum):
+
+Domain, Scale, Urgency, Complexity, Resources, Application, Output
+
+Clasă: .glass-effect .p-6 .rounded-md
+
+🔎 Dreapta: Prompt Preview + Linter + Telemetrie
+
+Preview box .pf-code, readonly
+
+Score evaluator: Score: 86/100, status bar colorat
+
+Linter summary (ok/warning/fail)
+
+Export bar (jos): .md, .json, .pdf + checksum vizibil
+
+Clasă: .glass-strong .glow-primary
+
+🧠 Use‑Cases (3 benzi)
+Structură:
+
+Card per persona:
+
+Agenții: SOP livrat în 5m
+
+Soloprenori: CR +15% pe campania 7:1
+
+Educatori: Handout exportabil în .pdf în 3 pași
+
+Badge vector + KPI + CTA: Deschide playbook
+
+💸 Pricing preview
+
+Carduri:
+
+Pilot — “Ship the core”
+
+Pro — “Ship at scale”
+
+Enterprise — “Ship with governance”
+
+Fiecare card: 3 bullets + CTA → /pricing
+
+🧱 Footer
+
+Navigație: modules, use‑cases, docs, legal
+
+Promisiune: Fără filler. Doar valoare operațională.
+
+🧭 5.2 PAGINI CHEIE – Sistem modular predictabil
+/modules – TOC industrial
+
+Grilă responsive cu carduri ModuleCard
+
+Dropdownuri filtrare:
+
+Vector semantic
+
+Output format
+
+Difficulty (easy/medium/advanced)
+
+Search bar (cu debounce)
+
+Badge vector colorat în titlu, CTA: Open module
+
+/modules/[id] – Detalii modul
+Secțiuni:
+
+Nume + vector
+
+Descriere detaliată
+
+Input schema (goal, audience, etc.)
+
+Output Spec (format + câmpuri + exemplu)
+
+KPI
+
+Guardrails
+
+Test Cases (vizualizare YAML/json)
+
+CTA: Rulează modul
+
+Bonus: arată output preview live dacă userul are entitlement.valid.
+
+/generator – Main production UI
+
+2 panouri (split layout):
+
+Stânga: configurator 7‑D + select module
+
+Dreapta: preview prompt + scor + validator + export
+
+Jos: bar fix de export .md/.pdf/.json
+
+Componente necesare:
+
+SessionConfiguration.tsx
+
+PromptPreview.tsx
+
+ExportManager.tsx
+
+Toate cu glass-effect, glow-primary, layout compact.
+
+/use-cases – 3–5 playbook‑uri
+
+Playbookuri predefinite:
+
+Lansare Funnel GPT
+
+Creare SOP din Zoom
+
+Generare Curs Automatizat
+
+Brandbook GPT Semantic
+
+Prompt Chain pentru PDF Research
+
+Fiecare: badge vector + artefact de ieșire + CTA Rulează sistemul complet
+
+/pricing
+
+3 carduri: Pilot / Pro / Enterprise
+Entitlements clare, fără „unlimited” vag.
+
+Gating:
+
+.md → Pilot
+
+.pdf/.json → Pro
+
+API access → Enterprise
+
+Planuri din ruleset.yml
+
+/docs
+
+Secvențial, operativ:
+
+Exemple de prompt + output
+
+Cum setezi 7‑D
+
+Cum validezi scor
+
+Cum exporți bundle
+
+Cum folosești versionare + cloud
+
+Nu începe cu definiții. Începe cu ce poate livra.
+
+/about
+
+„Why PromptForge” = Pentru că ai nevoie de sisteme, nu de idei
+
+Timeline evoluție: de la Promptoscopie™ → PROMPTFORGE™
+
+Grafic radial „7 Vectors Map” + badge + câte 1 modul vedetă per vector
+
+🧭 Rigoare finală:
+
+Fiecare secțiune în UI este:
+
+o stație de execuție (nu un ecran informativ)
+
+are output clar (bundle, preview, score)
+
+are o singură decizie pe ecran
+
+UI-ul este echivalentul unei benzi transportoare:
+dacă o piesă sare un pas, produsul e rebut.
+
+
+
+
+
+
+8) PLAN & PRICING – Structură de Licențiere PromptForge™ (Entitlements clare, fără „unlimited”)
+
+PROMPTFORGE™ nu oferă “acces la tot”. Oferă acces la sisteme, printr-un model de licențiere industrială:
+– 🎯 Ce rulezi
+– 🧱 Ce exportezi
+– 🔐 Cu ce poți licenția
+
+Fiecare plan controlează direct:
+
+module disponibile (M01–M50)
+
+formate de export permise
+
+acces la testare live GPT
+
+vizibilitatea entitlements în UI
+
+watermark în export (Pilot only)
+
+branding tokens & white-label
+
+🧾 PLANURI PRINCIPALE
+Plan	Acces prompturi	Export	Scor AI / Linter	Branding	Preț
+Pilot	12 module de bază	.txt, .md (cu watermark)	Da (scor AI)	Nu	0€ / Free
+Pro	Toate modulele (M01–M50)	.md, .json, .pdf (fără watermark)	Da (linter + auto‑fix)	Branding tokens	49€/lună
+Enterprise	Module custom, API, echipe	.zip bundle + .api, custom formats	Full AI evaluator + Telemetrie echipă	White-label	299€/lună + licență anuală
+🔧 STRUCTURA ENTITLEMENTS (per plan)
+Funcționalitate	Pilot	Pro	Enterprise
+Generator 7‑D	✅	✅	✅
+Acces module complete	🔒 (12)	✅	✅
+Export .txt, .md	✅	✅	✅
+Export .json, .pdf	🔒	✅	✅
+Export .zip (bundle complet)	🔒	🔒	✅
+API GPT integration (run endpoint)	🔒	🔒	✅
+Watermark in .md/.pdf	✅	❌	❌
+Linter de brand	✅	✅	✅
+Auto-fix text sub 80/100 scor	🔒	✅	✅
+Test GPT real (GPT-4o)	🔒	✅	✅
+Custom Modules M51+	🔒	🔒	✅
+Dashboard echipă + istoric global	🔒	🔒	✅
+Suport 1‑la‑1	🔒	🔒	✅
+Licență pe industrie	🔒	🔒	✅ (Addon)
+🎯 PACHETE LICENȚĂ PE INDUSTRIE (Enterprise Add-on)
+
+Activare: /org_industry_packs
+Aplică: entitlements, module set, preset 7‑D config, style_bias, KPIs
+
+Pachet	Module incluse	Preț / an
+FinTech	M07, M13, M41, M47	1.990€/org
+Educație	M03, M18, M25, M29	1.490€/org
+Consultanță + Funneluri	M01, M03, M21, M50	1.750€/org
+Copywriting Agency Stack	M05, M09, M30, M44	1.690€/org
+
+Include: configurator presetat + docs + audit de inițiere
+
+🧪 PLANURI EXTENSIBILE (ADD-ONS)
+Add‑on	Descriere	Preț
+Export Branding PDF no-logo	Elimină watermark PROMPTFORGE din .pdf	12€/lună
+Branding Tokens UI	Acces .tokens.css și .tokens.json	29€/lună
+Prompt Audit Score Diff	Compară versiunile și generează rapoarte	19€/lună
+GPT Agent Orchestrator	Trimite prompturi direct în agent GPT specific	39€/lună
+🔐 POLITICA DE GATING (Front‑end + API)
+În UI:
+
+Înlocuiește butoanele Export PDF/JSON cu withEntitlementGate() dacă entitlement.export_pdf = false
+
+Arată banner de upgrade (ex: components/PackBanner.tsx)
+
+Trial watermark = Trial version – Upgrade for commercial export (în footer PDF)
+
+În API:
+if (!user.entitlements.includes("export_pdf")) {
+  throw new Error("PDF export requires Pro or higher.")
+}
+
+💬 EXEMPLE COPY / PRICING PAGE
+H2:
+
+Alege forja potrivită. Plătești pentru sistem, nu pentru volum.
+
+CTA Buttons:
+
+Pilot: Rulează primele module
+
+Pro: Deschide toate funcțiile
+
+Enterprise: Activează licența strategică
+
+🧾 EXEMPLE UI TABLE (/pricing)
+<PricingCard plan="Pilot" price="0€" features={[
+  "Generator + 12 module de bază",
+  "Export .md/.txt cu watermark",
+  "Linter + scor AI",
+]} />
+
+<PricingCard plan="Pro" price="49€/lună" features={[
+  "Acces complet M01–M50",
+  "Export .json/.pdf fără watermark",
+  "Branding tokens + test GPT real",
+]} />
+
+<PricingCard plan="Enterprise" price="299€/lună" features={[
+  "Custom modules + API run endpoint",
+  "Bundle .zip + telemetry logging",
+  "Licențe pe industrie + suport echipă",
+]} />
+
+📐 URLS Standardizate
+
+/pricing – planuri detaliate
+
+/org – dashboard utilizator
+
+/org_industry_packs – activare packuri pe industrie
+
+/api/run/:moduleId – endpoint licențiat Enterprise
+
+/api/export/:format – verifică entitlement înainte de download
+
+🎯 Obiective de produs pentru pricing
+KPI	Prag
+Conversie Free → Pro	≥ 8%
+Retenție Pro 30 zile	≥ 60%
+Exporturi Pro / user	≥ 4 / lună
+Upgrade API Enterprise	≥ 2 / lună
+✅ Recomandări de implementare
+
+ Activează gating pe toate exporturile în export-manager.tsx
+
+ Setează planuri & features în ruleset.yml
+
+ Afișează .entitlements pe hover în UI (ex. “This export is gated”)
+
+ Creează hook useEntitlements() (din plan + user context)
+
+ Adaugă pagina /pricing și popover contextual pe modul nepermis
+
+
+
+
+
+🛡 9) LINTER DE BRAND – Guardrail Productizat PROMPTFORGE™
+
+PROMPTFORGE™ nu lasă niciun prompt să iasă în lume fără control semantic.
+Linterul este un validator automatizat care:
+– evaluează vocea, metricile, claritatea și structura
+– blochează exportul dacă scorul este sub standardul minim
+– oferă sugestii de remediere (auto-fix)
+– salvează scorul în telemetrie
+
+Scor minim acceptabil: 80/100
+Orice sub acest prag = blocare + mesaj explicativ + fixuri sugerate
+
+✅ CE VERIFICĂ LINTERUL
+Element	Descriere
+Persoană / Timp	Doar persoana a II-a + imperativ / prezent
+CTA unic	Fiecare prompt trebuie să încheie cu o singură acțiune clară
+Lexic interzis	Nu se acceptă: ușor, inspiră, magie, transformă viața, convingător etc.
+Metrici explicite	TTA, KPI, scoruri, output-clar (ex: .pdf, Open Rate > 42%)
+Structură completă	Context → Cerință → Specificație → KPI → Fallback (pentru SOP-uri)
+Voce standard RFA	Nu trebuie să sune ca un copywriter motivațional. Trebuie să sune operațional
+Drift semantic	Îndepărtarea de vectorul ales sau de stilul stabilit în branding
+🧮 SCHEMA DE OUTPUT JSON
+{
+  "score": 78,
+  "breaches": [
+    "missing_cta",
+    "uses_banned_word_easy",
+    "no_kpi",
+    "passive_voice"
+  ],
+  "fixes": [
+    "Adaugă o acțiune clară la final.",
+    "Înlocuiește ‘ușor’ cu ‘rapid’ sau ‘automatizat’.",
+    "Include un KPI măsurabil (ex: Open Rate ≥ 42%).",
+    "Rescrie fraza la imperativ: ‘Optimizează promptul...’"
+  ],
+  "cta": "Optimizează promptul acum",
+  "has_metric": false
+}
+
+🧪 REGULĂ DECIZIONALĂ
+
+Score ≥ 80 → ✅ Permite export .md/.pdf/.json
+
+Score < 80 → ❌ Export blocat automat
+– butonul Export devine inactiv
+– apare mesaj de alertă cu sugestii de fix
+– utilizatorul poate apăsa Optimizează promptul
+
+⚙️ PUNCTE DE INTEGRARE ÎN UI
+🔍 Validare la preview în PromptPreview.tsx
+const result = runBrandLinter(prompt)
+if (result.score < 80) {
+  setExportAllowed(false)
+  showFixes(result.fixes)
+}
+
+💬 Afișare scor + UI feedback
+<Badge variant="outline" className="text-red-500">
+  Score: 74/100 – Blocare export
+</Badge>
+
+✅ Fix Button UI
+<Button onClick={applyAutoFixes} variant="ghost" className="text-sm text-primary">
+  Optimizează promptul
+</Button>
+
+🎯 EXEMPLU DE INTERVENȚIE
+❌ Prompt inițial:
+
+„Scrie un text care inspiră și e ușor de înțeles. Transformă-ți viața acum.”
+
+✅ Prompt rescris automatizat:
+
+„Generează un text clar, orientat spre execuție. Include un CTA care duce la acțiune. KPI: click-through ≥ 18%.”
+👉 Descarcă promptul în .pdf
+
+🔐 REZULTAT LINTER SALVAT ÎN TELEMETRIE
+{
+  "run_id": "pf-0834-449",
+  "score": 86,
+  "metric_coverage": ["TTA", "Export Type", "CTA"],
+  "guardrails_passed": true,
+  "timestamp": "2025-08-19T15:44:00Z"
+}
+
+🚫 LEXIC INTERZIS (auto-validabil)
+Cuvânt/Expresie	Înlocuiește cu…
+ușor	rapid, operațional, controlabil
+magie / magic	sistemic, logic, validat
+inspirațional	strategic, funcțional, scalabil
+schimbă-ți viața	optimizează structura, rulează sistemul
+fără efort	executabil în < 5m, configurabil
+convingător	cu scor AI ≥ 80/100
+
+🛠 Acest dicționar este injectat în lib/lexiconGuardrails.ts și preluat în validatePromptStructure.ts.
+
+📍 MESAJ UI STANDARD CÂND SCORUL < 80
+<Alert variant="destructive">
+  <AlertTitle>Prompt blocat – scor sub prag</AlertTitle>
+  <AlertDescription>
+    Promptul tău a fost oprit deoarece nu respectă vocea PROMPTFORGE™.  
+    Scor: 72/100  
+    Probleme: lipsă KPI, limbaj pasiv, ton neclar, lexic interzis.
+  </AlertDescription>
+  <div className="mt-4">
+    <Button onClick={applyAutoFixes}>Optimizează promptul</Button>
+  </div>
+</Alert>
+
+📌 INSTRUCȚIUNE DE PROD
+
+ Rulezi validarea în export-manager.tsx la onExport()
+
+ În PromptEditor, afișezi scor + badge (verde/orange/roșu)
+
+ În RunTelemetry, salvezi scorul + metadate în Supabase
+
+ Nu permiți bypass decât pentru useri cu entitlement.override_linter = true
+
+✅ BENEFICII STRATEGICE
+
+Scade rata de prompturi rebutate la export
+
+Crește rata de artefacte valabile comercial
+
+Încurajează utilizatorii să respecte vocea și stilul PROMPTFORGE™
+
+Oferă consistență pentru branding white-label (Enterprise)
+
+
+
+
+
+
+🔧 10) COMPONENTE UI STANDARD – PROMPTFORGE™ Design System
+
+PROMPTFORGE™ nu este decorativ. Este funcțional.
+Fiecare componentă UI este tratată ca o piesă dintr-o linie de producție semantică: clar definită, verificabilă, replicabilă. Nu există spațiu pentru ambiguitate vizuală sau comportamentală.
+
+Folosim:
+
+Tailwind CSS (cu custom tokens)
+
+shadcn/ui (pentru elemente preconfigurate)
+
+Glassmorphism + Glow aplicate cu discernământ
+
+Variabilitate limitată (nu creezi 12 tipuri de carduri – standardizezi 3)
+
+🧩 10.1 BUTTON
+Variant	Utilizare	ClassName
+default	Acțiune principală (ex: Pornește forja)	btn variant="default"
+primary	CTA puternic în hero/export	btn variant="primary"
+outline	Secundar, vizibil dar slab accentuat	btn variant="outline"
+ghost	Link tip text / buton low-profile	btn variant="ghost"
+link	În interior text, fără decorativitate	btn variant="link"
+Size:
+
+sm, md, lg
+
+Default = md, toate CTA‑urile principale
+
+Exemple:
+<Button variant="primary" size="lg" className="glow-primary">
+  Pornește forja
+</Button>
+<Button variant="ghost" size="sm">
+  Vezi modulele
+</Button>
+
+🧩 10.2 BADGE / CHIP
+
+Badge‑urile sunt vectoriale sau funcționale.
+Se folosesc doar în:
+
+module cards
+
+filtre vectori
+
+output tags
+
+stări test
+
+Vector Badge:
+<Badge variant="secondary" className="text-blue-400 text-xs">
+  V2 – Marketing
+</Badge>
+
+Output Tag:
+<Badge variant="outline" className="text-xs text-rose-500">
+  Output: .pdf
+</Badge>
+
+Score Badge:
+<Badge variant="outline" className="text-green-400 text-xs">
+  Score: 86/100
+</Badge>
+
+🧩 10.3 CARD
+
+Cardul este blocul fundamental în:
+
+grila modulelor
+
+secțiunile explicative („Cum funcționează”)
+
+prețuri / planuri
+
+Variante:
+Tip	Clasă	Utilizare
+.glass-effect	blur 12px, opacitate 0.08	module card, steps, info card
+.glass-strong	blur 16px, opacitate 0.12, border	preview, prompt, focus card
+Exemplu:
+<Card className="glass-effect p-6 rounded-lg hover:glow-primary transition">
+  <h3 className="font-heading text-lg">M03 – Codul 7:1™</h3>
+  <p className="text-sm text-muted-foreground mt-1">Generează campanii E2E cu scor KPI ≥ 80.</p>
+  <div className="mt-3 flex gap-2">
+    <Badge variant="secondary" className="text-purple-400">V5 – Branding</Badge>
+    <Badge variant="outline" className="text-xs">Output: .md</Badge>
+  </div>
+</Card>
+
+🧩 10.4 CODE BLOCK (.pf-code)
+
+Pentru orice preview de prompt generat.
+
+Specificații:
+
+Font: JetBrains Mono
+
+Clasă: .pf-code
+
+Overflow: scroll horizontal
+
+Optional: buton Copy în colț dreapta sus
+
+Background: .glass-strong
+
+<pre class="pf-code p-4 rounded-md">
+-- Prompt Start --
+Generate a trust-enhancing SOP for...
+-- Prompt End --
+</pre>
+
+🧩 10.5 CTA BAR (Fixed)
+
+Bară fixă de export + scor, apare:
+
+în /generator
+
+după rulare modul
+
+înainte de export
+
+Exemple:
+<div className="fixed bottom-0 w-full bg-background/80 border-t border-border px-6 py-4 flex justify-between items-center">
+  <span className="text-sm text-muted-foreground">
+    Score: 84/100 • TTA: 42s
+  </span>
+  <div className="flex gap-2">
+    <Button variant="outline">Export .md</Button>
+    <Button variant="ghost">Export .json</Button>
+    <Button variant="primary">Export .pdf</Button>
+  </div>
+</div>
+
+🧩 10.6 TABS
+
+Folosit în PromptEditor, Module Details, Export, Docs
+
+Tab-uri recomandate:
+
+Input
+
+Prompt
+
+Score
+
+Telemetry
+
+Output Files
+
+<Tabs defaultValue="prompt">
+  <TabsList>
+    <TabsTrigger value="input">Input</TabsTrigger>
+    <TabsTrigger value="prompt">Prompt</TabsTrigger>
+    <TabsTrigger value="score">Scor</TabsTrigger>
+  </TabsList>
+  ...
+</Tabs>
+
+🧩 10.7 TOAST
+
+Mesaje temporare, nu decorative. Nu auto-dismiss pe erori critice.
+
+Exemple:
+toast.success("Promptul a fost exportat cu succes.")
+
+toast.error("Export blocat – scor sub 80. Optimizează promptul.")
+
+Default duration: 3500ms
+
+Erori: persistent = true
+Stil: .glass-effect text-red-500 bg-background
+
+🧩 10.8 ICONOGRAFIE
+
+Lucide (icon pack)
+
+1 icon maxim per card
+
+Dimensiune: w-4 h-4 sau w-5 h-5
+
+Culoare = vector dacă badge, altfel text-muted-foreground
+
+🎯 CONCLUZIE
+
+Nu inventa stări inutile.
+
+Nu creezi “variante creative” ale unui button sau card.
+
+Fiecare componentă are o singură funcție.
+
+Într-un sistem industrial, fiecare piesă are o formă fixă și o toleranță clară.
+
+
+
+
+🔤 WORDMARK (numele complet PROMPTFORGE™)
+✅ Specificații:
+Parametru	Valoare
+Font	Montserrat – greutate 700 sau 900
+Caps	TOATE literele MAJUSCULE
+Tracking	-2% (strâns, compact)
+Culoare primară	#ECFEFF (text principal pe dark)
+Culoare pe alb	#0A0A0A (text negru pe alb)
+Clear space	1× înălțimea literei „P”
+Min. size	120px lățime (desktop), 88px (mobile)
+✅ Variante aprobate:
+
+Wordmark simplu pe 1 rând (fără tagline)
+
+Wordmark + tagline (pentru .pdf sau bundle export):
+
+PROMPTFORGE™
+Generatorul Operațional de Prompturi
+
+🌀 MONOGRAM (simbol PF)
+✅ Construcție:
+Parametru	Valoare
+Simbol principal	Litere P și F, stilizate în monogram compact
+Formă container	Hexagon regulat → simbol de șurub / piesă
+Bordură	1px, culoare teal #0891B2
+Fundal	Transparent sau rgba(255,255,255,0.08) pe dark
+Stil litere	Bold condensed – fără serifuri, fără rotunjiri
+Glow	❌ Interzis (fără glow, fără blur)
+Gradient	❌ Interzis complet
+Min. size	24px (favicon, badge UI)
+🚫 MISUSE – Reguli de interdicție
+❌ Interdicție	Motiv
+Gradient în litere	Slăbește contrastul și lizibilitatea în sistem UI
+Glow pe text sau sigiliu	Pare decorativ → încalcă stilul industrial semnatic
+Accent roșu în siglă	Este rezervat strict pentru statusuri de eroare
+Font alternat pentru PF	Rupe consistența cu wordmarkul
+Schimbarea formei hexagon	Hexagonul e echivalentul unei „mufe standard”
+🖼 Exemple de aplicații corecte
+Context	Variantă folosită
+Navbar + Header UI	Wordmark PROMPTFORGE™ simplu
+Favicon / Export card	Monogram PF în hexagon, 24px
+Export PDF	Wordmark + tagline + monogram mic
+OG image / Sharing	Monogram centrat + tagline subțire
+Print (pitch deck)	Wordmark negru pe alb, 1x tagline
+🧰 EXPORTURI RECOMANDATE
+Format	Utilizare
+logo.svg	Inline în UI (vector pur)
+logo.png	Export static pe .pdf, .zip
+monogram.svg	UI badges, favicon, export .md
+logo-dark.svg / logo-light.svg	alternate UI backgrounds
+🧾 Componente UI care folosesc sigiliul
+
+PDFHeader.tsx: folosește wordmark + monogram 24px
+
+ExportDialog.tsx: arată watermark vizibil cu PF logo dacă plan = Pilot
+
+RunTelemetryCard.tsx: badge .pf-logo în colț pentru prompt validat
+
+Footer: wordmark simplu, neanimat, fără tagline
+
+✍️ Exemple pentru guideline design
+<img src="/assets/logo-dark.svg" alt="PromptForge Logo" width={120} />
+
+<Badge className="rounded-full bg-background border border-primary p-2">
+  <img src="/assets/monogram.svg" className="w-5 h-5" />
+</Badge>
+
+
+
+
+
+
+
+🔍 12) SEO & META – Standardele de Indexare pentru PROMPTFORGE™ (chatgpt-prompting.com)
+
+Un sistem industrial precum PROMPTFORGE™ nu vinde promisiuni. Vinde precizie, scoruri și runtime. Din acest motiv, strategia SEO nu urmărește trafic generic, ci trafic operațional: oameni care caută cum se exportă un prompt, cum se validează un SOP cu AI, cum se structurează un prompt pentru GPT real.
+
+🧠 OBIECTIV STRATEGIC SEO
+
+🧩 Clasare pe termenii operaționali: 7‑D prompt engine, prompt export .json, bundle AI prompt, GPT SOP generator
+
+🎯 Atracție inbound pentru echipe, consultanți, educatori, SaaS
+
+🔐 Calificare organică → doar utilizatori interesați de execuție validabilă, nu inspirație
+
+🧾 META STRUCTURAT (pentru <head> în app/layout.tsx)
+🔖 Title
+PromptForge — Generatorul Operațional de Prompturi | chatgpt‑prompting.com
+
+📝 Meta Description
+Construiești sisteme de prompturi, nu piese unice. 50 module reale, engine 7‑D și export .md/.json/.pdf. Livrezi artefacte validate în sub 60 de secunde.
+
+🧠 Keywords
+prompt generator, prompt export, GPT prompt engine, AI prompt system, operational prompts, 7D prompt generator, prompt factory, SOP GPT, prompt json export, semantic prompt, testable prompt, bundle AI
+
+🖼 OG / OpenGraph Tags
+<meta property="og:title" content="PromptForge — Generatorul Operațional de Prompturi">
+<meta property="og:description" content="50 module. 7 vectori. Export .md/.json/.pdf. Artefacte validate în <60s.">
+<meta property="og:image" content="https://chatgpt-prompting.com/assets/og-promptforge.jpg">
+<meta property="og:url" content="https://chatgpt-prompting.com">
+<meta property="og:type" content="website">
+
+
+🛑 Asigură-te că og-promptforge.jpg conține: fundal dark glass, monograma PF în hexagon, tagline: „Build prompt systems, not throwaway lines.”
+
+🐦 Twitter Card
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PromptForge — Prompt Systems, Not Prompt Texts">
+<meta name="twitter:description" content="Export operational prompts in <60s. .json/.pdf/.md bundles. Linter + AI Score ≥ 80.">
+<meta name="twitter:image" content="https://chatgpt-prompting.com/assets/og-promptforge.jpg">
+
+🔄 JSON-LD – Schema.org Structured Data
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "PromptForge",
+  "operatingSystem": "Web",
+  "applicationCategory": "DeveloperApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "49.00",
+    "priceCurrency": "EUR"
+  },
+  "description": "PromptForge is an operational prompt engine with 50 real modules and a 7‑D runtime. Export validated prompts as .md/.json/.pdf bundles.",
+  "url": "https://chatgpt-prompting.com"
+}
+
+🌐 FAVICON & HEAD ASSETS
+
+favicon.ico: monogram PF în hexagon, 24px
+
+site.webmanifest: completat cu nume, culoare de fundal, short_name
+
+theme-color: #0A0A0A (dark mode default)
+
+Font preloading:
+
+<link rel="preload" href="/fonts/Montserrat-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/OpenSans-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+🚀 PAGINI INDEXABILE PRINCIPALE
+Pagina	Canonical URL	Target Keyword
+Homepage	/	operational prompt generator
+/modules	/modules	AI prompt modules
+/modules/[id]	/modules/m03-codul-7-1	GPT prompt export
+/generator	/generator	7D prompt engine
+/use-cases	/use-cases	AI prompt systems for agencies
+/pricing	/pricing	prompt generator plans, ai prompting SaaS
+/docs	/docs	export prompt pdf, prompt test AI
+/about	/about	prompt system architecture
+📦 ROBOTS.TXT
+User-agent: *
+Allow: /
+
+Sitemap: https://chatgpt-prompting.com/sitemap.xml
+
+🗺 SITEMAP STRUCTURAT
+
+Include /modules/[id] per modul generat (M01–M50)
+
+Include /use-cases/[slug] (ex: sop-ai-generator, brandbook-builder)
+
+Regenerabil automat la salvare prompt/module nou
+
+🔐 ALTE OPTIMIZĂRI
+
+Canonical tags în toate paginile
+
+JSON-LD per modul (Schema type: HowTo + CreativeWork)
+
+OG dynamic pentru fiecare modul (OG title + OG image cu Mxx + vector)
+
+Gating pentru crawleri pe /api/* și /export/* (non-indexable)
+
+
+
+
+
+
+📊 13) GUVERNANȚĂ & KPI – Sistemul de Control și Măsurare PROMPTFORGE™
+
+PROMPTFORGE™ nu este o platformă de generare creativă. Este o fabrică semantică.
+Pentru ca sistemul să funcționeze cu precizie industrială, trebuie să îndeplinească în mod constant standardele operaționale definite de:
+
+⏱️ TTA (Time to Artifact)
+
+🎯 Brand-Fit Score
+
+🎨 Drift cromatic
+
+📈 Conversie funcțională
+
+✅ Calitate fără revizie
+
+🎯 KPI PRINCIPALI (obligații de sistem)
+KPI	Prag minim	Explicație
+TTA (Text)	< 60 secunde	Prompt generat + validat + exportabil în format .txt/.md
+TTA (SOP/Bundle)	< 5 minute	Run complet (cu 7‑D config + linter + export .pdf)
+Brand-Fit Score	≥ 80 / 100	Verificat de linter semantic (stil, metrici, CTA, lexic, structură)
+Drift cromatic (UI)	≤ 5% deviație față de paleta standard	Audit pe toate culorile HEX, în special pe buttons, cards, text UI
+Conversie LP (CTA principal)	≥ 4% pe „Pornește forja”	Măsurat pe homepage (clicks / unici)
+Aprobări fără revizie	≥ 60% din exporturi sunt „ready” din prima	Prompturile nu necesită rewrites manuale pentru a fi livrate comercial
+🧠 MONITORIZARE CONTINUĂ (tehnic)
+🔄 Telemetrie per run (în runs.telemetry.json)
+{
+  "run_id": "m03-test-901",
+  "tta_seconds": 47,
+  "score": 84,
+  "tokens_in": 432,
+  "tokens_out": 741,
+  "policy_hits": 0,
+  "drift_alert": false,
+  "timestamp": "2025-08-19T16:42:00Z"
+}
+
+🧪 Linter Enforcement
+if (result.score < 80) {
+  disableExport()
+  notifyUser("Scor sub 80 – optimizare necesară.")
+}
+
+🔐 SISTEM DE VERIFICARE & AUDIT
+Verificare	Moment de execuție	Componentă responsabilă
+TTA prompt text	la runModule()	RunTelemetry.tsx + Linter
+Brand-fit score	înainte de ExportManager	validatePromptStructure.ts
+Drift cromatic UI	audit extern la build	ui-color-audit.config.js
+Conversie CTA	runtime + Supabase logging	trackCTA() în Hero.tsx
+Aprobări fără revizie	procent din approved_runs	scoreHistory.tsx
+📘 RAPORT KPI (generație automată)
+Format .pdf la 30 zile → Enterprise License
+
+Include:
+
+scoruri medii per modul
+
+cele mai eficiente module (TTA / scor / exporturi)
+
+scoruri sub prag + fixuri sugerate
+
+exporturi fără watermark
+
+evoluția % conversii homepage
+
+📈 DASHBOARD LIVE (Pro & Enterprise)
+{
+  top_modules: ["M01", "M03", "M18"],
+  avg_score: 82.3,
+  tta_p50: 54,
+  tta_p95: 92,
+  export_success_rate: 91.2,
+  drift_detected: false,
+}
+
+Vizualizări recomandate:
+
+📊 TTA graph (50/75/90 percentile)
+
+🟢 Linter pass/fail rate
+
+📉 Drift alerts semnalate
+
+🧾 Export count by format (.md/.pdf/.json)
+
+🔁 Run-by-run breakdown + user/org
+
+🧾 KPI LA EXPORT
+
+Încorporat automat în .manifest.json:
 
 {
-  "name": "AI-IDEI™",
-  "version": "1.0",
-  "entry_point": "initRitual()",
-  "motion_levels": ["auto", "medium", "minimal"],
-  "semantic_layers": 8,
-  "quote_engine": {
-    "source": "matrix_quotes.json",
-    "max_active": 3,
-    "animation_types": ["typing", "glitch", "matrix"],
-    "style": "manifest"
-  },
-  "token_engine": {
-    "source": "matrix_tokens.json",
-    "density_desktop": 100,
-    "density_mobile": 60,
-    "glitch_interval": [3000, 7000]
-  },
-  "semantic_protocol": "transmutation > reflection > projection"
+  "score": 86,
+  "exported_at": "2025-08-19T16:45Z",
+  "generated_by": "M03 – Codul 7:1",
+  "version": "3.1.0",
+  "user_plan": "Pro",
+  "tta_seconds": 42,
+  "entitlements_used": ["export_pdf", "linter", "ai_score"],
+  "checksum": "84A2CD34..."
 }
 
-VERDICT:
-AI‑IDEI™ e un sistem viu. Gândește vizual. Răspunde ritmic. Se inițiază simbolic. E scalabil semantic. Nu mai e un UI – e un câmp de conștiință animată.
+🎯 KPI PER MODUL (generați în lib/modules.ts)
+Modul	Target TTA	Target Score	Format default
+M01	< 60s	≥ 82	.md
+M03	< 90s	≥ 85	.pdf
+M05	< 75s	≥ 80	.json
+✅ METRICE PENTRU EVALUAREA PLANURILOR
+Plan	Exporturi / user / lună	Scor mediu	TTA mediu
+Pilot	1.7	78.4	64s
+Pro	5.2	83.7	54s
+Enterprise	11.3	87.2	49s
+📊 KPI CARE DUC LA INTERVENȚIE
+
+Scor sub 75 = trigger de notificare + activare Prompt Optimizer
+
+Drift cromatic > 5% = retragere componentă din UI
+
+TTA > 120s = alertă DevOps → optimizare engine/module
 
 
 
 
-======================================================
-🧠 AI-IDEI™ – SISTEMUL DE CONTROL SIMBOLIC
-======================================================
+🔧 14) IMPLEMENTARE IMEDIATĂ (pe codul din promptforge.zip)
+
+📦 Obiectiv: aliniază designul și logica PROMPTFORGE™ la Brand OS v3.0 în <48h.
+Totul este deja în cod — doar aplici. Nicio funcție nouă nu trebuie scrisă de la 0.
+
+🟩 1. Hero copy în app/page.tsx
+✅ Înlocuiește heading + subheading:
+<h1 className="text-4xl font-heading font-bold tracking-tight">
+  Generatorul tău operațional de prompturi.
+</h1>
+<p className="mt-2 text-lg text-muted-foreground">
+  50 module. 7 vectori. Expotă în &lt; 60 secunde.
+</p>
+
+✅ CTA buttons:
+<Button variant="primary" size="lg" className="glow-primary">
+  Pornește forja
+</Button>
+<Button variant="ghost" size="lg">
+  Vezi modulele
+</Button>
+
+🟨 2. Proof-bar sub CTA
+
+Include cele 3 argumente de performanță:
+
+<div className="text-sm text-muted-foreground mt-4">
+  TTA &lt; 60s • AI Score &gt; 80/100 • Export .md/.json/.pdf
+</div>
+
+🧊 3. Aplică .glass-effect + .glow-primary
+🔧 Carduri targetate:
+Componentă	Clasă recomandată
+SessionConfiguration	.glass-effect p-6 rounded-md
+ModuleSelection	.glass-effect hover:glow-primary
+PromptGeneratorPanel	.glass-strong glow-primary
+
+💡 Folosește exclusiv .glow-* pe elemente interactive sau active.
+
+🧷 4. Vector badges – text-*-400 doar pe <Badge>
+Exemplu:
+<Badge variant="secondary" className="text-xs text-blue-400">
+  V2 – Marketing
+</Badge>
 
 
-XXI. CE ESTE?
-Un orchestrator semantic care:
-- interpretează contextul utilizatorului
-- activează layere și efecte vizuale în funcție de simboluri
-- transformă UI-ul într-o entitate reactivă cognitiv
+🔒 Nu aplica culorile vector pe:
 
-SIMBOLURI ACTIVE & STĂRI INTERNE
+body text
 
-const SYMBOL_STATE = {
-  "₵": { trigger: "valueGenerated", impact: "highlightToken" },
-  "⚡": { trigger: "inputVelocity", impact: "intensifyQuote" },
-  "👁": { trigger: "focusEvent", impact: "clarifyNarrativeLayer" }
+butoane
+
+headings
+
+🛑 5. Linter blocant – în validatePromptStructure.ts + export-manager.tsx
+⚙️ Regula:
+if (score < 80) {
+  setExportAllowed(false)
+  showToast("Prompt blocat – scor sub 80.")
 }
 
-FUNCȚIA CHEIE – reactToSymbol()
+🛠 Fixuri integrate:
 
-function reactToSymbol(symbol) {
-  switch(symbol) {
-    case "₵":
-      spawnTokenEffect(); increaseDensity();
-      break;
-    case "⚡":
-      flashQuote(); reduceDelay();
-      break;
-    case "👁":
-      highlightQuote(); increaseContrast();
-      break;
+Sugestii de rescriere
+
+Buton Optimizează promptul
+
+💸 6. Pricing Page (/pricing)
+✅ Creează 3 carduri cu aceste entitlements:
+Plan	Features	CTA
+Pilot	12 module de bază, export .md cu watermark	Rulează modulele
+Pro	Toate modulele, export .json/.pdf, fără watermark	Deschide tot sistemul
+Enterprise	Module custom, API, echipe, audit trimestrial	Cere licență
+🧩 Componentă:
+<PricingCard plan="Pro" price="49€/lună" features={[
+  "Toate modulele M01–M50",
+  "Export .pdf/.json fără watermark",
+  "Linter + Branding tokens"
+]} />
+
+🧾 7. Press Kit (PDF)
+
+Creează /public/presskit.pdf care include:
+
+Wordmark PROMPTFORGE™ (vector SVG)
+
+Monogram PF (în hexagon)
+
+Paletă culori (.tokens.css)
+
+Fonts: Montserrat + Open Sans
+
+Exemple UI (tiles, badge, preview export)
+
+Logo în .svg, .png, .favicon.ico
+
+🔍 8. SEO meta în app/layout.tsx
+✅ Metadata completă:
+export const metadata: Metadata = {
+  title: "PromptForge — Generatorul Operațional de Prompturi",
+  description: "Construiești sisteme de prompturi, nu piese unice. 50 module, engine 7‑D și export .md/.json/.pdf.",
+  openGraph: {
+    title: "PromptForge — Prompt Systems, Not Prompt Lines",
+    description: "Export .json/.pdf/.md. AI Score ≥ 80. Artefacte în < 60 secunde.",
+    images: ["/og-promptforge.jpg"]
   }
 }
 
-SISTEM DE LOGICĂ VIZUALĂ
+🧪 9. Preview Module Tiles (din lib/modules.ts)
 
-| Eveniment UX                  | Simbol declanșat | Efect vizual                               |
-|-------------------------------|------------------|---------------------------------------------|
-| Input rapid + enter           | ⚡                | Quote glitch + intensificare               |
-| Input contemplativ (pauză)    | 👁                | Quote devine clar, pulsare ușoară          |
-| Transmutare reușită           | ₵                | Token glow + scor crescut + badge vizual   |
+Publică 12 module pe homepage.
 
-FEEDBACK SEMANTIC
+Exemple din sistem:
+{
+  id: "M01",
+  name: "AI‑IDEI.SOPFORGE",
+  vector: "V3",
+  output: ".md",
+  summary: "Pipeline multi‑agent cu telemetrie; defect rate <2%"
+}
 
-- ₵ → halo verde + scor afișat
-- ⚡ → flame glow + delay scăzut
-- 👁 → blur-out → claritate bruscă pe citat
+{
+  id: "M03",
+  name: "Codul 7:1",
+  vector: "V2",
+  output: ".pdf",
+  summary: "Campanii end‑to‑end, ţintă CR +15%"
+}
 
-MONEDA SEMANTICĂ
+{
+  id: "M05",
+  name: "ORAKON Memory Grid",
+  vector: "V6",
+  output: ".json",
+  summary: "Memorie stratificată, TTL & compaction"
+}
 
-Moneda: ₵
 
-Se acumulează:
-- la fiecare transmutare completă
-- la vizualizarea completă a unui citat
-- la participare contemplativă (3min sesiune)
+🔁 Fiecare tile trebuie să aibă: titlu, badge vector, output, KPI.
 
-Se folosește pentru:
-- deblocare layere suplimentare
-- obținere avatar simbolic
-- acces la bundle-uri de idei
+🧠 10. Stilizare finală (Glass + Teal = Forjă rece)
 
-CONCLUZIE
+Aplicații metaforice:
 
-Fără control simbolic, sistemul e frumos.  
-Cu control simbolic, sistemul devine viu și autoreglabil.  
-Ai construit o interfață care gândește și reacționează ca un organism semantic.
+Element	Metaforă semnatică	Aplicare UI
+Glass	Vizibilitate controlată	.glass-effect pe cards
+Teal accent	Răcire industrială, precizie	Glow pe CTA-uri, export, heading
+Hexagon PF	Piesă standard / sigiliu	Monogram / logo în header + export
+Ștanță	Tăietură identică la fiecare run	Export .md/.pdf standardizat
+✅ CHECKLIST IMPLEMENTARE (secvențial)
+Task	Status
+Înlocuiește Hero H1 + Sub	⬜
+Adaugă Proof-bar sub CTA	⬜
+Aplică .glass-effect pe 3 carduri	⬜
+Adaugă badges vectoriale colorate	⬜
+Activează linter blocant export < 80	⬜
+Creează pagina /pricing completă	⬜
+Generează presskit.pdf	⬜
+Setează metadata în layout.tsx	⬜
+Publică 12 module din lib/modules	⬜
+
+
+
+
+
+
+
+🔩 15) MESAJE PE MODULE – Arhitectura Retorică per Modul PROMPTFORGE™
+
+Fiecare modul PROMPTFORGE™ (M01–M50) este un micro‑serviciu semantic cu:
+
+o funcție clară (prompt generator, SOP, bundle, etc.)
+
+un vector semantic (V1–V7)
+
+un output tipizat (.md, .pdf, .json, .zip)
+
+un KPI operațional (scor AI, TTA, CR, etc.)
+
+un mesaj strategic (claim → dovadă → rezultat)
+
+Rolul fiecărui modul nu este să fie „interesant”, ci utilizabil și validabil.
+Pe homepage, în /modules și în exporturi, aceste mesaje trebuie afișate ca tile-uri retorice cu impact industrial.
+
+✅ FORMAT CANONIC PENTRU MESAJE PE MODULE
+
+[Mxx – Nume modul]
+Funcție operațională + KPI real + formă de export
+CTA: Rulează modul
+
+📦 EXEMPLE DE MODULE (din lib/modules.ts)
+🧠 M01 – AI‑IDEI.SOPFORGE
+
+Descriere:
+Pipeline multi‑agent cu telemetrie integrată.
+Include fallback logic și header contextual.
+Output: .md SOP gata de implementare.
+KPI: Defect rate < 2% la audit uman.
+CTA: Rulează SOPFORGE
+
+🧠 M03 – Codul 7:1
+
+Descriere:
+Campanii persuasive structurate în 7 pași + 1 verdict final.
+Folosit pentru secvențe email, carusel LinkedIn, funneluri.
+Output: .pdf + .md
+KPI: CR ≥ 15% pe funnel testat.
+CTA: Rulează Codul 7:1
+
+🧠 M05 – ORAKON Memory Grid
+
+Descriere:
+Sistem semantic de memorie stratificată pentru GPT.
+Output: .json + manifest runtime.
+TTL logic și compaction vectorial.
+KPI: Fără pierderi de context pe >10k tokens.
+CTA: Rulează ORAKON Grid
+
+🧠 M09 – Naming Forge
+
+Descriere:
+Generator de denumiri pe baza parametrilor 7‑D.
+Include 3 reguli de scriere, verificare TLD și scor semantic.
+Output: .json + .md preview.
+KPI: 80% unicitate semantică, 100% lizibilitate.
+CTA: Rulează Naming Forge
+
+🧠 M18 – Course Autogenerator
+
+Descriere:
+Generează structura unui curs complet în 5 secțiuni + descrieri pe lecții.
+Include output în .md, .pdf, .json + manifest de livrare.
+KPI: TTA < 180s, scor AI ≥ 84/100.
+CTA: Rulează Modul Curs
+
+🧠 M23 – SOP to Book
+
+Descriere:
+Transformă un SOP în format de carte + structură .md + copertă + titlu.
+Include fallback chapters, glossary, concluzii și meta.
+KPI: Export complet .pdf în < 4 min.
+CTA: Rulează Convertorul SOP→Book
+
+🧠 M30 – GPT Email Chain Generator
+
+Descriere:
+Creează 5 emailuri consecutive, în stil RFA, cu obiectiv CR.
+Output: .md + scoruri pe fiecare email.
+KPI: Open Rate ≥ 42%, Click Rate ≥ 12%.
+CTA: Rulează Modul Email
+
+🧠 M41 – GPT Financial Agent SOP
+
+Descriere:
+Prompturi complexe pentru agenți financiari GPT (auditor, broker, analist).
+Include chain logic și scenarii.
+Output: .pdf + .json.
+KPI: Token redundancy < 5%, scor logic ≥ 88.
+CTA: Rulează SOP Financiar
+
+🧠 M44 – Prompt Optimizer Linter AI
+
+Descriere:
+Rulează evaluare + sugestii AI pentru prompturi brute.
+Include output .md + scoruri + fixuri.
+KPI: 96% scor mediu post-fix.
+CTA: Rulează Optimizatorul
+
+🧩 FORMAT UI TILE (pentru homepage + /modules)
+<ModuleCard id="M03">
+  <h3 className="text-lg font-semibold">M03 – Codul 7:1</h3>
+  <p className="text-sm text-muted-foreground mt-1">
+    Campanii persuasive cu scor CR ≥ 15%. Export .pdf/.md.
+  </p>
+  <div className="flex gap-2 mt-3">
+    <Badge className="text-purple-400">V5 – Branding</Badge>
+    <Badge variant="outline">Output: .pdf</Badge>
+  </div>
+  <Button variant="outline" className="mt-4 w-full">Rulează modulul</Button>
+</ModuleCard>
+
+📊 KPI PER MODUL – TRACKING STANDARD
+Modul	Vector	Output	KPI Primar	TTA	Score AI
+M01	V3	.md	defect rate <2%	<60s	≥ 82
+M03	V2	.pdf	CR ≥ 15%	<90s	≥ 85
+M05	V6	.json	zero context loss	<75s	≥ 80
+M18	V3	.pdf	structura completă	<180s	≥ 84
+M44	V4	.md	scor după fix ≥ 96	<45s	≥ 90
+🧠 CUM FOLOSEȘTI TILE-URILE PE HOMEPAGE
+
+Publică primele 12 tile-uri în grilă
+
+Fiecare tile este o promisiune executabilă, nu o funcție generică
+
+Înlocuiește explicațiile descriptive cu KPI-uri și outputuri concrete
+
+🛠 Recomandări de implementare
+
+ Rulează getModuleData() → afișează vector, output, kpi, cta
+
+ Adaugă modul.description_short și modul.kpi în lib/modules.ts
+
+ Pe homepage: arată ModuleCard în 3 coloane (desktop)
+
+ În /modules: permite filtrare după vector, output, score
+
+
+
+
+Am parcurs toate fișierele din knowledge și am extras schema completă a bazelor de date pentru PROMPTFORGE™ v3.
+
+1. Tabele principale (Supabase/Postgres)
+
+orgs – organizații/workspaces (id, name, slug, created_at, updated_at)
+
+org_members – legătură user↔org + rol (owner/admin/member, created_at)
+
+plans – planuri (pilot, pro, enterprise) cu feature flags JSONB (canExportPDF, hasAPI etc.)
+
+subscriptions – Stripe sync (plan_code, seats, status, trial_end, current_period_end)
+
+entitlements – drepturi efective per org/user (flag, value, source: plan|addon|pack|license)
+
+user_addons – add-ons per user (eval_ai_adv, export_designer)
+
+api_keys – chei API pentru Enterprise
+
+modules – catalogul celor 50 module M01–M50 (name, vectors, requirements, spec, output_schema, kpi, guardrails)
+
+domain_configs – profiluri per industrie (FinTech, SaaS, Edu etc. – jargon, kpi, compliance, risk_level, style_bias)
+
+parameter_sets – motorul 7D (domain, scale, urgency, complexity, resources, application, output_formats, overrides)
+
+prompt_history – fiecare prompt generat (hash, config 7D, output, version, created_at)
+
+runs – execuții/teste/agent (status, model, tokens_used, cost_usd, telemetry, started_at, finished_at)
+
+prompt_scores – scoruri Evaluator AI (clarity, execution, ambiguity, alignment, business_fit, feedback)
+
+bundles – exporturi .md/.json/.pdf/.zip cu manifest + checksum + license_notice
+
+projects – container logic pentru gruparea run-urilor și bundle-urilor pe proiecte
+
+module_versions – istoric SemVer pentru fiecare modul, snapshot complet
+
+ruleset_versions / ruleset_current / ruleset_overrides_log – audit ruleset.yml și log abateri 7D la runtime
+
+module_migrations – migrare între versiuni de modul (semver, script SQL, status, audit)
+
+2. Variabile / câmpuri cheie
+
+7D Engine (parameter_sets + ruleset.yml):
+
+domain ∈ {fintech, ecommerce, saas, edu, healthcare, legal, … (25 industrii)}
+
+scale ∈ {personal_brand, solo, startup, boutique_agency, smb, corporate, enterprise}
+
+urgency ∈ {low, planned, sprint, pilot, crisis}
+
+complexity ∈ {foundational, standard, advanced, expert}
+
+resources ∈ {minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget}
+
+application ∈ {training, audit, implementation, strategy_design, crisis_response, experimentation, documentation}
+
+output_formats ∈ {txt, md, checklist, spec, playbook, json, yaml, diagram, bundle}
+
+Scoruri evaluator: clarity, execution, ambiguity, alignment, business_fit (0–25 fiecare; total ≥80 pentru PASS)
+
+Entitlements & planuri:
+
+Pilot → M01–M10, export txt/md
+
+Pro → M01–M30, export txt/md/pdf/json, cloud history, GPT test real
+
+Enterprise → M01–M50, export complet (zip), API, multi-seat, white-label
+
+3. Relații logice (ER model)
+
+orgs 1-N org_members, subscriptions, entitlements, api_keys, runs, prompt_history
+
+modules 1-N prompt_history, runs
+
+domain_configs 1-N parameter_sets
+
+parameter_sets 1-N prompt_history, runs
+
+runs 1-1 prompt_scores, 1-N bundles
+
+projects 1-N runs & bundles
+
+plans 1-N subscriptions & entitlements
+
+module_versions, module_migrations, ruleset_versions sunt toate legate de modules/runs pentru audit și versionare
+
+4. Constrângeri / guardrails
+
+DoR (Definition of Ready): 7D valid + entitlement valid + output spec încărcat + testcases definite
+
+DoD (Definition of Done): scor ≥80 + output complet + checksum valid + manifest scris + telemetrie salvată
+
+Export bundle: ordinea canonică → prompt.txt → prompt.json → prompt.md → prompt.pdf → manifest.json
+
+Telemetrie: TTA text <60s, SOP <300s, tokens_in/out, cost, score, policy_hits, fără PII
+
+Pe scurt: baza de date PROMPTFORGE™ v3 are ~20 tabele canonice, pivotul fiind orgs → projects → runs → bundles.
+Variabilele centrale sunt cele din motorul 7D și scorurile evaluatorului, iar toate fluxurile sunt guvernate de ruleset.yml (SSOT).
+
+
+
+
+
+🔧 CHECKLIST TEHNIC EXACT – Buguri CSS + Next.js (homepage PromptForge)
+Scop: Repară problema de randare albă, spațiere haotică, fallback vizual inconsistent și „salturi” în layout.
+
+1. 🧱 STRUCTURĂ CSS + SPACING
+
+ Verifică dacă layout-ul are grilă standardizată (12 col) și ritm vertical uniform (margin-block, padding-block, gap).
+
+ Setează o variabilă globală de spacing (ex: --spacing-base: 24px) și folosește doar derivări (ex: 2 * var(--spacing-base)).
+
+ Normalizează h1-h6, p, ul, li, section în globals.css:
+
+h1, h2, h3, p {
+  margin-block-start: 0;
+  margin-block-end: var(--spacing-base);
+}
+
+
+ Fă audit cu * { outline: 1px solid red } temporar pentru a identifica spațierile rupte.
+
+2. 🎨 FUNDAL + CLASE PE BODY
+
+ Verifică dacă body conține clasa bg-black sau clasa-temă aplicată din layout.
+
+ Verifică în _app.tsx sau layout.tsx dacă className pe <body> se propagă corect în SSR.
+
+ Adaugă fallback global:
+
+body {
+  background-color: #000000;
+  color: #fff;
+}
+
+
+ Dacă folosești animație pe fundal (parallax, gradient shift etc.), verifică useEffect() + hydration → vezi dacă se aplică și server-side.
+
+3. 🧭 NEXT.JS HYDRATION + SSR BUGS
+
+ Rulează next build și caută Warning: Text content did not match... în console.
+
+ Dacă pagina e afectată de Bailout to client-side rendering:
+
+Verifică dacă importuri dinamice (dynamic()) nu sunt marcate cu ssr: false inutil.
+
+Înlocuiește useEffect() cu useLayoutEffect() acolo unde poziționarea/fundalul depind de viewport.
+
+ Testează dacă folosești window, navigator, document în timpul renderului. Dacă da, mută logică în useEffect().
+
+4. 🖼️ FONTS + FALLBACK
+
+ Asigură font-display: swap în importul Google Fonts.
+
+ În Tailwind, definește fontFamily:
+
+fontFamily: {
+  heading: ['Inter', 'sans-serif'],
+  body: ['Inter', 'sans-serif'],
+},
+
+
+ În globals.css:
+
+html {
+  font-family: 'Inter', sans-serif;
+}
+
+
+ În tailwind.config.ts, adaugă safelist pentru font-*, text-*, bg-* dacă sunt generate dinamic.
+
+5. 🌐 MOBILE BUGS / 100vh
+
+ Dacă height: 100vh, folosește:
+
+height: 100dvh;
+
+
+sau calc(var(--vh, 1vh) * 100) pentru fix Safari iOS.
+
+ Adaugă:
+
+useEffect(() => {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}, []);
+
+
+ Testează pe viewporturi mobile reale (nu doar dev tools).
+
+6. 🎯 COMPONENTE FRAGILE
+
+ Componente cu motion.div, framer-motion, auto-animate → verifică fallback SSR (sau condiționează cu isClient).
+
+ În componente animate, setează min-height explicit ca fallback:
+
+min-height: 100vh;
+
+
+ Orice animare care depinde de scroll sau mouse move trebuie să aibă fallback vizual dacă JavaScript nu e încă gata.
+
+7. ✅ DEBUG DE PROXIMITATE
+
+ Rulează yarn lint, next lint, prettier pentru inconsistențe.
+
+ Rulează Lighthouse + axe-core → verifică semnalele vizuale lipsă.
+
+ Rulează View Source vs Inspect → dacă DOM-ul diferă, ai problema de hydration garantat.
+
+ Dezactivează temporar tailwind-scrollbar, headlessui, alte pluginuri JS → vezi dacă sparg layout-ul.
+
+8. 🧪 TESTARE PE BROWSERE
+Browser	Testează	Expected issue
+Safari iOS	Hero vh	margini albe top/bottom
+Firefox	spacing font	spacing neaplicat complet
+Edge	emoji fallback	emoji lipsă / glitchuit
+Chrome incog.	hydrate mismatch	layout „spart” la load
+9. 🧾 EXTRAS – LOGICĂ DE FALLBACK
+
+ Adaugă skeleton loading pentru secțiuni importante.
+
+ Asigură aria-hidden, role=region acolo unde sunt secțiuni animate care pot perturba screen-reader.
+
+ Testează cum arată pagina fără JS activat – dacă vezi homepage-ul doar alb, ai blocuri întregi care nu se SSR-uiesc.
+
+
 
 
 

@@ -1,3 +1,10 @@
+/**
+ * lib/gpt-editor.ts — Real GPT Integration via API
+ * 
+ * Provides real-time GPT prompt optimization through the /api/gpt-editor endpoint
+ * Includes 7D validation, entitlements checking, and quality gates
+ */
+
 export interface GPTEditResult {
   originalPrompt: string
   editedPrompt: string
@@ -12,32 +19,24 @@ export interface GPTEditOptions {
   length: "concise" | "detailed" | "comprehensive"
 }
 
-// Simulated GPT editing for demonstration
-export async function simulateGPTEditing(
-  prompt: string,
-  options: GPTEditOptions = {
-    focus: "comprehensive",
-    tone: "professional",
-    length: "detailed",
-  },
-): Promise<GPTEditResult> {
-  const startTime = Date.now()
+// Real GPT integration via API
+export async function callRealGPTEditor(prompt: string, options: GPTEditOptions): Promise<GPTEditResult> {
+  const response = await fetch("/api/gpt-editor", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt,
+      options,
+    }),
+  })
 
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 1000))
-
-  const improvements = generateImprovements(prompt, options)
-  const editedPrompt = applyImprovements(prompt, improvements, options)
-  const confidence = calculateConfidence(prompt, editedPrompt)
-  const processingTime = Date.now() - startTime
-
-  return {
-    originalPrompt: prompt,
-    editedPrompt,
-    improvements,
-    confidence,
-    processingTime,
+  if (!response.ok) {
+    throw new Error("Failed to optimize prompt with GPT")
   }
+
+  return response.json()
 }
 
 function generateImprovements(prompt: string, options: GPTEditOptions): string[] {

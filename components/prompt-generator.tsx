@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { generatePrompt, rerollPrompt, validatePromptStructure } from "@/lib/prompt-generator"
 import { MODULES } from "@/lib/modules"
 import type { SessionConfig, GeneratedPrompt } from "@/types/promptforge"
-import { Copy, Download, RefreshCw, Wand2, CheckCircle, AlertCircle } from "lucide-react"
+import { Copy, Download, RefreshCw, Wand2, Check, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface PromptGeneratorProps {
@@ -204,7 +204,7 @@ export function PromptGenerator({ selectedModule, config, onPromptGenerated }: P
         <div className="mb-6 p-4 glass-strong rounded-lg">
           <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
             {validationResult.score >= 80 ? (
-              <CheckCircle className="w-4 h-4 text-green-400" />
+              <Check className="w-4 h-4 text-green-400" />
             ) : (
               <AlertCircle className="w-4 h-4 text-yellow-400" />
             )}

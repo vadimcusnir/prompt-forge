@@ -1,0 +1,176 @@
+{
+  "bundle_id": "coming_soon_v1_0_0",
+  "name": "PROMPTFORGE™ v3.0 - Coming Soon Bundle",
+  "version": "1.0.0",
+  "description": "Complete implementation bundle for Coming Soon page with waitlist management",
+  "created_at": "2024-12-19T10:00:00Z",
+  "created_by": "Cursos Agent",
+  "promptforge_version": "3.0.0",
+  
+  "artifacts": {
+    "prompt.txt": {
+      "type": "raw_instruction",
+      "size_bytes": 0,
+      "checksum": "sha256:",
+      "description": "Raw Cursos agent instruction in English"
+    },
+    "prompt.md": {
+      "type": "readable_specification",
+      "size_bytes": 0,
+      "checksum": "sha256:",
+      "description": "Comprehensive markdown documentation"
+    },
+    "prompt.json": {
+      "type": "configuration",
+      "size_bytes": 0,
+      "checksum": "sha256:",
+      "description": "7D parameters and technical specifications"
+    },
+    "manifest.json": {
+      "type": "metadata",
+      "size_bytes": 0,
+      "checksum": "sha256:",
+      "description": "This manifest file"
+    }
+  },
+  
+  "implementation": {
+    "framework": "Next.js 15",
+    "architecture": "App Router",
+    "database": "Supabase PostgreSQL",
+    "styling": "Tailwind CSS",
+    "components": "shadcn/ui",
+    "state_management": "React Hooks",
+    "api_pattern": "REST endpoints"
+  },
+  
+  "features": {
+    "auto_install": true,
+    "bootstrap_priority": "highest",
+    "isolation": "complete",
+    "admin_control": true,
+    "waitlist_management": true,
+    "responsive_design": true,
+    "multi_tenant": true,
+    "rls_security": true
+  },
+  
+  "database_tables": [
+    "waitlist_signups",
+    "site_settings"
+  ],
+  
+  "api_endpoints": [
+    "/api/waitlist",
+    "/api/toggle-coming-soon"
+  ],
+  
+  "components": [
+    "ComingSoon",
+    "AdminToggle",
+    "useComingSoon"
+  ],
+  
+  "dependencies": {
+    "required": [
+      "@supabase/supabase-js",
+      "react-hook-form",
+      "zod",
+      "lucide-react"
+    ],
+    "optional": [
+      "next-themes",
+      "date-fns"
+    ]
+  },
+  
+  "environment_variables": {
+    "supabase": [
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ],
+    "coming_soon": [
+      "NEXT_PUBLIC_COMING_SOON",
+      "NEXT_PUBLIC_ADMIN_TOKEN",
+      "NEXT_PUBLIC_COMING_SOON_MESSAGE"
+    ]
+  },
+  
+  "installation": {
+    "complexity": "low",
+    "estimated_time": "5 minutes",
+    "prerequisites": [
+      "Next.js project setup",
+      "Supabase database",
+      "Environment configuration"
+    ],
+    "steps": [
+      "Copy component files",
+      "Copy API routes",
+      "Copy hooks",
+      "Run database migration",
+      "Set environment variables",
+      "Import in main page"
+    ]
+  },
+  
+  "removal": {
+    "complexity": "low",
+    "estimated_time": "3 minutes",
+    "steps": [
+      "Delete component files",
+      "Delete API routes",
+      "Delete hook files",
+      "Remove imports",
+      "Drop tables (optional)"
+    ]
+  },
+  
+  "testing": {
+    "unit_tests": "component rendering",
+    "integration_tests": "API endpoints",
+    "e2e_tests": "user flow",
+    "performance_tests": "bootstrap time"
+  },
+  
+  "security": {
+    "authentication": "admin_token",
+    "authorization": "admin_only",
+    "data_protection": "rls_enabled",
+    "input_validation": "email_format",
+    "sql_injection": "parameterized"
+  },
+  
+  "compliance": {
+    "gdpr": "email_consent",
+    "data_retention": "configurable",
+    "user_rights": "deletion_support",
+    "privacy": "minimal_collection"
+  },
+  
+  "monitoring": {
+    "metrics": [
+      "waitlist_signups_count",
+      "toggle_operations",
+      "error_rates",
+      "response_times"
+    ],
+    "alerts": [
+      "high_error_rate",
+      "database_failure",
+      "admin_access"
+    ]
+  },
+  
+  "support": {
+    "documentation": "prompt.md",
+    "configuration": "prompt.json",
+    "examples": "included",
+    "troubleshooting": "documented"
+  },
+  
+  "license": "PROMPTFORGE™ v3.0",
+  "warranty": "as_is",
+  "support_level": "community"
+}

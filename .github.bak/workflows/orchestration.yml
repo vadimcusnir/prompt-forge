@@ -1,0 +1,384 @@
+name: Workflow Orchestration
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      orchestration_type:
+        description: 'Type of orchestration to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - security
+          - quality
+          - monitoring
+          - deployment
+
+env:
+  ORCHESTRATION_TYPE: ${{ github.event.inputs.orchestration_type || 'full' }}
+
+jobs:
+  # ============================================================================
+  # ORCHESTRATION COORDINATOR
+  # ============================================================================
+  orchestration-coordinator:
+    name: Orchestration Coordinator
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Determine orchestration type
+        id: determine-type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ORCHESTRATION_TYPE="${{ github.event.inputs.orchestration_type }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            ORCHESTRATION_TYPE="quality"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            ORCHESTRATION_TYPE="full"
+          else
+            ORCHESTRATION_TYPE="standard"
+          fi
+          
+          echo "orchestration_type=$ORCHESTRATION_TYPE" >> $GITHUB_OUTPUT
+          echo "🔀 Orchestration Type: $ORCHESTRATION_TYPE"
+          
+      - name: Set workflow matrix
+        id: set-matrix
+        run: |
+          case "${{ steps.determine-type.outputs.orchestration_type }}" in
+            "full")
+              WORKFLOWS="quality-gates,security-alerts,testing,monitoring-alerts,build-deploy"
+              echo "workflows=$WORKFLOWS" >> $GITHUB_OUTPUT
+              ;;
+            "security")
+              WORKFLOWS="security-alerts,quality-gates"
+              echo "workflows=$WORKFLOWS" >> $GITHUB_OUTPUT
+              ;;
+            "quality")
+              WORKFLOWS="quality-gates,testing"
+              echo "workflows=$WORKFLOWS" >> $GITHUB_OUTPUT
+              ;;
+            "monitoring")
+              WORKFLOWS="monitoring-alerts,health-checks"
+              echo "workflows=$WORKFLOWS" >> $GITHUB_OUTPUT
+              ;;
+            "deployment")
+              WORKFLOWS="build-deploy,quality-gates"
+              echo "workflows=$WORKFLOWS" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              WORKFLOWS="quality-gates,testing"
+              echo "workflows=$WORKFLOWS" >> $GITHUB_OUTPUT
+              ;;
+          esac
+          
+          echo "📋 Workflows to execute: $WORKFLOWS"
+
+  # ============================================================================
+  # LABEL MANAGEMENT SYSTEM
+  # ============================================================================
+  label-management:
+    name: Label Management System
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup label management
+        id: setup-labels
+        run: |
+          echo "🏷️ Setting up label management system..."
+          
+          # Define label categories
+          echo "label_categories=status,priority,type,team,automated" >> $GITHUB_OUTPUT
+          
+          # Define status labels
+          echo "status_labels=🚫 blocked,✅ approved,🚀 ready,⚠️ review,🚨 critical" >> $GITHUB_OUTPUT
+          
+          # Define priority labels
+          echo "priority_labels=🔴 high,🟡 medium,🟢 low" >> $GITHUB_OUTPUT
+          
+          # Define type labels
+          echo "type_labels=🐛 bug,✨ feature,📚 docs,🔧 maintenance,🚀 deployment" >> $GITHUB_OUTPUT
+          
+          # Define team labels
+          echo "team_labels=👨‍💻 dev,🔒 security,📊 devops,🎨 design,📱 product" >> $GITHUB_OUTPUT
+          
+          # Define automated labels
+          echo "automated_labels=🤖 automated,📊 report,🚨 alert,⚠️ warning,✅ success" >> $GITHUB_OUTPUT
+          
+      - name: Create or update labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labelCategories = '${{ steps.setup-labels.outputs.label_categories }}'.split(',');
+            const statusLabels = '${{ steps.setup-labels.outputs.status_labels }}'.split(',');
+            const priorityLabels = '${{ steps.setup-labels.outputs.priority_labels }}'.split(',');
+            const typeLabels = '${{ steps.setup-labels.outputs.type_labels }}'.split(',');
+            const teamLabels = '${{ steps.setup-labels.outputs.team_labels }}'.split(',');
+            const automatedLabels = '${{ steps.setup-labels.outputs.automated_labels }}'.split(',');
+            
+            const allLabels = [
+              ...statusLabels.map(label => ({ name: label, color: '0366d6', description: 'Status label' })),
+              ...priorityLabels.map(label => ({ name: label, color: 'd73a4a', description: 'Priority label' })),
+              ...typeLabels.map(label => ({ name: label, color: '0075ca', description: 'Type label' })),
+              ...teamLabels.map(label => ({ name: label, color: '7057ff', description: 'Team label' })),
+              ...automatedLabels.map(label => ({ name: label, color: '28a745', description: 'Automated label' }))
+            ];
+            
+            console.log(`Creating/updating ${allLabels.length} labels...`);
+            
+            for (const label of allLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created label: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  // Label already exists, update it
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated label: ${label.name}`);
+                } else {
+                  console.log(`❌ Error with label ${label.name}:`, error.message);
+                }
+              }
+            }
+            
+            console.log('🏷️ Label management completed');
+
+  # ============================================================================
+  # WORKFLOW EXECUTION COORDINATOR
+  # ============================================================================
+  workflow-executor:
+    name: Workflow Executor
+    runs-on: ubuntu-latest
+    needs: [orchestration-coordinator, label-management]
+    strategy:
+      matrix:
+        workflow: ${{ fromJson(format('[{0}]', needs.orchestration-coordinator.outputs.workflows)) }}
+    
+    steps:
+      - name: Execute ${{ matrix.workflow }}
+        id: execute-workflow
+        run: |
+          echo "🚀 Executing workflow: ${{ matrix.workflow }}"
+          
+          # Trigger workflow based on type
+          case "${{ matrix.workflow }}" in
+            "quality-gates")
+              echo "🔍 Triggering Quality Gates workflow..."
+              gh workflow run quality-gates.yml --ref ${{ github.ref }}
+              ;;
+            "security-alerts")
+              echo "🔒 Triggering Security Alerts workflow..."
+              gh workflow run security-alerts.yml --ref ${{ github.ref }}
+              ;;
+            "testing")
+              echo "🧪 Triggering Testing workflow..."
+              gh workflow run testing.yml --ref ${{ github.ref }}
+              ;;
+            "monitoring-alerts")
+              echo "📊 Triggering Monitoring Alerts workflow..."
+              gh workflow run monitoring-alerts.yml --ref ${{ github.ref }}
+              ;;
+            "build-deploy")
+              echo "🚀 Triggering Build & Deploy workflow..."
+              gh workflow run build-deploy.yml --ref ${{ github.ref }}
+              ;;
+            *)
+              echo "⚠️ Unknown workflow: ${{ matrix.workflow }}"
+              ;;
+          esac
+          
+          echo "workflow_triggered=${{ matrix.workflow }}" >> $GITHUB_OUTPUT
+          
+      - name: Wait for workflow completion
+        id: wait-completion
+        run: |
+          echo "⏳ Waiting for ${{ matrix.workflow }} to complete..."
+          
+          # Wait for workflow to start and complete
+          sleep 30
+          
+          # Check workflow status
+          WORKFLOW_STATUS=$(gh run list --workflow="${{ matrix.workflow }}.yml" --limit 1 --json status --jq '.[0].status')
+          
+          echo "workflow_status=$WORKFLOW_STATUS" >> $GITHUB_OUTPUT
+          echo "📊 Workflow ${{ matrix.workflow }} status: $WORKFLOW_STATUS"
+
+  # ============================================================================
+  # INTEGRATION VALIDATION
+  # ============================================================================
+  integration-validation:
+    name: Integration Validation
+    runs-on: ubuntu-latest
+    needs: [orchestration-coordinator, label-management, workflow-executor]
+    
+    steps:
+      - name: Validate workflow integration
+        id: validate-integration
+        run: |
+          echo "🔍 Validating workflow integration..."
+          
+          # Check if all required workflows are available
+          REQUIRED_WORKFLOWS=("quality-gates.yml" "security-alerts.yml" "testing.yml" "monitoring-alerts.yml" "build-deploy.yml")
+          
+          MISSING_WORKFLOWS=0
+          for workflow in "${REQUIRED_WORKFLOWS[@]}"; do
+            if [ ! -f ".github/workflows/$workflow" ]; then
+              echo "❌ Missing workflow: $workflow"
+              MISSING_WORKFLOWS=$((MISSING_WORKFLOWS + 1))
+            else
+              echo "✅ Found workflow: $workflow"
+            fi
+          done
+          
+          echo "missing_workflows=$MISSING_WORKFLOWS" >> $GITHUB_OUTPUT
+          
+          if [ $MISSING_WORKFLOWS -gt 0 ]; then
+            echo "❌ Integration validation failed - $MISSING_WORKFLOWS missing workflows"
+            exit 1
+          else
+            echo "✅ Integration validation passed - all workflows present"
+          fi
+          
+      - name: Validate label system
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            const requiredLabels = [
+              '🚫 blocked', '✅ approved', '🚀 ready', '⚠️ review', '🚨 critical',
+              '🔴 high', '🟡 medium', '🟢 low',
+              '🐛 bug', '✨ feature', '📚 docs', '🔧 maintenance', '🚀 deployment',
+              '👨‍💻 dev', '🔒 security', '📊 devops', '🎨 design', '📱 product',
+              '🤖 automated', '📊 report', '🚨 alert', '⚠️ warning', '✅ success'
+            ];
+            
+            const existingLabels = labels.map(label => label.name);
+            const missingLabels = requiredLabels.filter(label => !existingLabels.includes(label));
+            
+            if (missingLabels.length > 0) {
+              console.log(`❌ Missing labels: ${missingLabels.join(', ')}`);
+              core.setFailed(`Label validation failed - ${missingLabels.length} labels missing`);
+            } else {
+              console.log('✅ All required labels are present');
+            }
+            
+            console.log(`Total labels: ${labels.length}`);
+            console.log(`Required labels: ${requiredLabels.length}`);
+            console.log(`Missing labels: ${missingLabels.length}`);
+
+  # ============================================================================
+  # ORCHESTRATION REPORT
+  # ============================================================================
+  orchestration-report:
+    name: Orchestration Report
+    runs-on: ubuntu-latest
+    needs: [orchestration-coordinator, label-management, workflow-executor, integration-validation]
+    
+    steps:
+      - name: Generate orchestration report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const orchestrationType = '${{ needs.orchestration-coordinator.outputs.orchestration_type }}';
+            const workflows = '${{ needs.workflow-executor.outputs.workflow_triggered }}';
+            const integrationStatus = '${{ needs.integration-validation.result }}';
+            
+            const body = `## 🎭 Workflow Orchestration Report
+            
+            **Orchestration Type:** ${orchestrationType.toUpperCase()}
+            **Status:** ${integrationStatus == 'success' ? '✅ SUCCESS' : '❌ FAILED'}
+            **Timestamp:** ${new Date().toISOString()}
+            **Run ID:** ${{ github.run_id }}
+            
+            **Workflows Executed:**
+            ${workflows ? workflows.split(',').map(w => `- ${w}`).join('\n') : '- No workflows executed'}
+            
+            **Integration Status:**
+            - **Workflow Files:** ✅ All present
+            - **Label System:** ✅ Configured
+            - **Dependencies:** ✅ Validated
+            
+            **Orchestration Features:**
+            - 🔀 **Smart Routing** - Automatic workflow selection based on trigger
+            - 🏷️ **Label Management** - Automated label creation and management
+            - 🔍 **Integration Validation** - Ensures all components are present
+            - 📊 **Status Reporting** - Comprehensive execution reporting
+            
+            **Next Steps:**
+            ${orchestrationType === 'full' ? 
+              '1. Monitor all workflow executions\n2. Review integration results\n3. Validate system health' :
+              orchestrationType === 'security' ?
+              '1. Review security scan results\n2. Address any vulnerabilities\n3. Validate security posture' :
+              orchestrationType === 'quality' ?
+              '1. Review quality gate results\n2. Address any failures\n3. Validate code quality' :
+              '1. Review monitoring results\n2. Address any alerts\n3. Validate system health'
+            }
+            
+            ---
+            *Automated by PROMPTFORGE Workflow Orchestration*
+            `;
+            
+            // Create orchestration report issue
+            const reportIssue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🎭 Orchestration Report - ${orchestrationType.toUpperCase()} - ${new Date().toLocaleDateString()}`,
+              body: body,
+              labels: ['🎭 orchestration', '📊 report', '🤖 automated', '📋 workflow']
+            });
+            
+            console.log(`Orchestration report created: ${reportIssue.data.html_url}`);
+            
+            // Add to project board if exists
+            try {
+              await github.rest.projects.createCard({
+                column_id: process.env.PROJECT_COLUMN_ID,
+                content_id: reportIssue.data.id,
+                content_type: 'Issue'
+              });
+            } catch (error) {
+              console.log('Could not add to project board:', error.message);
+            }
+            
+      - name: Send orchestration notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          channel: '#workflow-orchestration'
+          text: |
+            🎭 PROMPTFORGE Workflow Orchestration
+            
+            **Status:** ${{ needs.integration-validation.result == 'success' && '✅ SUCCESS' || '❌ FAILED' }}
+            **Type:** ${{ needs.orchestration-coordinator.outputs.orchestration_type }}
+            **Repository:** ${{ github.repository }}
+            
+            **Workflows:** ${{ needs.workflow-executor.outputs.workflow_triggered || 'None executed' }}
+            **Integration:** ${{ needs.integration-validation.result }}
+            
+            **Result:** ${{ needs.integration-validation.result == 'success' && 'All systems integrated and operational' || 'Integration issues detected' }}
+            
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

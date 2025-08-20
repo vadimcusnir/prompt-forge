@@ -8,10 +8,11 @@
  *  3) Permite doar operații whitelisted pe /cursor/docs/* conform init.
  *  4) Oprește orice acțiune prohibită și explică exact ce lege ar încălca.
  *  5) Aplică preflight validation și language policy enforcement.
+ *  6) Validează și normalizează parametrii 7D conform ruleset.yml.
  */
 
 import * as fs from "node:fs";
-import * as path from "node:path";
+import * as path from "path";
 
 type FileSpec = {
   path?: string;
@@ -62,6 +63,237 @@ type CursorInit = {
   non_deviation_laws: { id: number; text: string }[];
 };
 
+// ————————————————————————————————————————————————————————————————————————
+// 7D ENGINE IMPLEMENTATION
+// ————————————————————————————————————————————————————————————————————————
+
+/**
+ * 7D Parameters Interface - conform ruleset.yml
+ */
+export interface SevenDParams {
+  domain: string;
+  scale: string;
+  urgency: string;
+  complexity: string;
+  resources: string;
+  application: string;
+  output: string;
+}
+
+/**
+ * Domain-specific defaults from ruleset.yml
+ */
+const DOMAIN_DEFAULTS: Record<string, Partial<SevenDParams>> = {
+  FIN: {
+    scale: 'team',
+    urgency: 'normal',
+    complexity: 'medium',
+    resources: 'standard',
+    application: 'content_ops',
+    output: 'bundle'
+  },
+  ECOM: {
+    scale: 'team',
+    urgency: 'normal',
+    complexity: 'medium',
+    resources: 'standard',
+    application: 'sales_ops',
+    output: 'bundle'
+  },
+  EDU: {
+    scale: 'team',
+    urgency: 'normal',
+    complexity: 'medium',
+    resources: 'standard',
+    application: 'research',
+    output: 'bundle'
+  },
+  SAAS: {
+    scale: 'team',
+    urgency: 'normal',
+    complexity: 'medium',
+    resources: 'standard',
+    application: 'product_ops',
+    output: 'bundle'
+  },
+  HEALTH: {
+    scale: 'org',
+    urgency: 'high',
+    complexity: 'high',
+    resources: 'extended',
+    application: 'research',
+    output: 'bundle'
+  },
+  LEGAL: {
+    scale: 'org',
+    urgency: 'normal',
+    complexity: 'high',
+    resources: 'extended',
+    application: 'crisis_ops',
+    output: 'bundle'
+  },
+  GOV: {
+    scale: 'org',
+    urgency: 'high',
+    complexity: 'high',
+    resources: 'extended',
+    application: 'research',
+    output: 'bundle'
+  },
+  MEDIA: {
+    scale: 'team',
+    urgency: 'normal',
+    complexity: 'medium',
+    resources: 'standard',
+    application: 'content_ops',
+    output: 'bundle'
+  }
+};
+
+/**
+ * 7D Enum Values from ruleset.yml
+ */
+const SEVEN_D_ENUMS = {
+  domain: ['FIN', 'ECOM', 'EDU', 'SAAS', 'HEALTH', 'LEGAL', 'GOV', 'MEDIA'],
+  scale: ['solo', 'team', 'org', 'market'],
+  urgency: ['low', 'normal', 'high', 'crisis'],
+  complexity: ['low', 'medium', 'high'],
+  resources: ['minimal', 'standard', 'extended'],
+  application: ['content_ops', 'sales_ops', 'product_ops', 'research', 'crisis_ops'],
+  output: ['text', 'sop', 'plan', 'bundle']
+};
+
+/**
+ * 7D Validator Class
+ */
+export class SevenDValidator {
+  /**
+   * Validates 7D parameters against SSOT enums
+   * Throws error if any value is not in allowed enum (raise_on_invalid: true)
+   */
+  static validate(params: Partial<SevenDParams>): SevenDParams {
+    const errors: string[] = [];
+    
+    // Validate each parameter against its enum
+    if (params.domain && !SEVEN_D_ENUMS.domain.includes(params.domain)) {
+      errors.push(`Invalid domain: ${params.domain}. Allowed: [${SEVEN_D_ENUMS.domain.join(', ')}]`);
+    }
+    
+    if (params.scale && !SEVEN_D_ENUMS.scale.includes(params.scale)) {
+      errors.push(`Invalid scale: ${params.scale}. Allowed: [${SEVEN_D_ENUMS.scale.join(', ')}]`);
+    }
+    
+    if (params.urgency && !SEVEN_D_ENUMS.urgency.includes(params.urgency)) {
+      errors.push(`Invalid urgency: ${params.urgency}. Allowed: [${SEVEN_D_ENUMS.urgency.join(', ')}]`);
+    }
+    
+    if (params.complexity && !SEVEN_D_ENUMS.complexity.includes(params.complexity)) {
+      errors.push(`Invalid complexity: ${params.complexity}. Allowed: [${SEVEN_D_ENUMS.complexity.join(', ')}]`);
+    }
+    
+    if (params.resources && !SEVEN_D_ENUMS.resources.includes(params.resources)) {
+      errors.push(`Invalid resources: ${params.resources}. Allowed: [${SEVEN_D_ENUMS.resources.join(', ')}]`);
+    }
+    
+    if (params.application && !SEVEN_D_ENUMS.application.includes(params.application)) {
+      errors.push(`Invalid application: ${params.application}. Allowed: [${SEVEN_D_ENUMS.application.join(', ')}]`);
+    }
+    
+    if (params.output && !SEVEN_D_ENUMS.output.includes(params.output)) {
+      errors.push(`Invalid output: ${params.output}. Allowed: [${SEVEN_D_ENUMS.output.join(', ')}]`);
+    }
+
+    // raise_on_invalid: true - throw error for any invalid value
+    if (errors.length > 0) {
+      throw new Error(`7D_VALIDATION_ERROR: ${errors.join('; ')}`);
+    }
+
+    // Return normalized params with defaults for missing values
+    return this.normalizeWithDefaults(params);
+  }
+
+  /**
+   * Normalizes 7D parameters with domain-specific defaults from ruleset
+   */
+  static normalizeWithDefaults(params: Partial<SevenDParams>): SevenDParams {
+    const domain = params.domain || 'generic';
+    
+    // Get domain defaults if available
+    const domainDefaults = DOMAIN_DEFAULTS[domain] || {
+      scale: 'team',
+      urgency: 'normal',
+      complexity: 'medium',
+      resources: 'standard',
+      application: 'content_ops',
+      output: 'bundle'
+    };
+
+    return {
+      domain: domain,
+      scale: params.scale || domainDefaults.scale,
+      urgency: params.urgency || domainDefaults.urgency,
+      complexity: params.complexity || domainDefaults.complexity,
+      resources: params.resources || domainDefaults.resources,
+      application: params.application || domainDefaults.application,
+      output: params.output || domainDefaults.output
+    };
+  }
+
+  /**
+   * Generates 7D signature for validation and chain compatibility
+   */
+  static generateSignature(params: SevenDParams): string {
+    const signature = `${params.domain}|${params.scale}|${params.urgency}|${params.complexity}|${params.resources}|${params.application}|${params.output}`;
+    return Buffer.from(signature).toString('base64');
+  }
+
+  /**
+   * Validates 7D signature for chain compatibility
+   */
+  static validateSignature(signature: string, params: SevenDParams): boolean {
+    const expectedSignature = this.generateSignature(params);
+    return signature === expectedSignature;
+  }
+
+  /**
+   * Gets domain-specific recommendations based on 7D parameters
+   */
+  static getDomainRecommendations(params: SevenDParams): string[] {
+    const recommendations: string[] = [];
+    
+    switch (params.domain) {
+      case 'FIN':
+        recommendations.push('Ensure PCI DSS compliance for financial data');
+        recommendations.push('Include risk assessment and mitigation strategies');
+        break;
+      case 'HEALTH':
+        recommendations.push('HIPAA compliance required for patient data');
+        recommendations.push('High urgency and extended resources recommended');
+        break;
+      case 'LEGAL':
+        recommendations.push('Include legal disclaimers and compliance notes');
+        recommendations.push('Crisis operations mode for urgent legal matters');
+        break;
+      case 'GOV':
+        recommendations.push('FOIA compliance and transparency requirements');
+        recommendations.push('High security and audit trail mandatory');
+        break;
+    }
+
+    if (params.urgency === 'crisis') {
+      recommendations.push('Implement crisis response protocols');
+      recommendations.push('Include escalation procedures and emergency contacts');
+    }
+
+    if (params.complexity === 'high') {
+      recommendations.push('Break down into manageable sub-tasks');
+      recommendations.push('Include detailed implementation roadmap');
+    }
+
+    return recommendations;
+  }
+}
+
 const INIT_PATH = process.env.CURSOR_INIT_PATH || "/cursor/init";
 
 // ————————————————————————————————————————————————————————————————————————
@@ -77,7 +309,7 @@ function isLikelyEnglish(s: string): boolean {
 async function translateToEnglish(text: string): Promise<string> {
   // Stub: conectează la providerul tău (ex. OpenAI) sau alt serviciu,
   // menit exclusiv pentru traduceri; dacă nu este setat, returnează fallback.
-  // Respectă „fail_closed_on_detection_error”.
+  // Respectă „fail_closed_on_detection_error".
   return text; // TODO: înlocuiește cu apelul real
 }
 
@@ -161,16 +393,29 @@ function preflightRules(init: CursorInit) {
 // ————————————————————————————————————————————————————————————————————————
 // HOOK-URI COMUNE
 // ————————————————————————————————————————————————————————————————————————
-async function runWithGuards(commandName: string, payload: { draft?: string }, init: CursorInit) {
+async function runWithGuards(commandName: string, payload: { draft?: string; sevenD?: Partial<SevenDParams> }, init: CursorInit) {
   // Non-deviation + preflight reguli
   preflightRules(init);
+
+  // 7D Validation - mandatory for all operations
+  let sevenDParams: SevenDParams | null = null;
+  if (payload.sevenD) {
+    try {
+      sevenDParams = SevenDValidator.validate(payload.sevenD);
+    } catch (error) {
+      throw new Error(`7D validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  } else {
+    // Use defaults from init if no 7D provided
+    sevenDParams = SevenDValidator.normalizeWithDefaults(init.sevenD_defaults);
+  }
 
   // English-only: aplică pe input și pe output
   const draft = payload.draft ?? "";
   const enforcedInput = await enforceEnglishOutput(draft, init.language_policy);
 
-  // TODO: Implement executeCommand function
-  // const result = await executeCommand(commandName, { ...payload, draft: enforcedInput });
+  // TODO: Implement executeCommand function with 7D integration
+  // const result = await executeCommand(commandName, { ...payload, draft: enforcedInput, sevenD: sevenDParams });
   // result.output = await enforceEnglishOutput(result.output ?? "", init.language_policy);
   // return result;
   
@@ -179,7 +424,10 @@ async function runWithGuards(commandName: string, payload: { draft?: string }, i
     input: enforcedInput,
     output: enforcedInput,
     command: commandName,
-    status: "guarded"
+    status: "guarded",
+    sevenD: sevenDParams,
+    signature: SevenDValidator.generateSignature(sevenDParams),
+    recommendations: SevenDValidator.getDomainRecommendations(sevenDParams)
   };
 }
 
@@ -237,10 +485,10 @@ type Action =
   | { kind: "READ"; target: string }
   | { kind: "WRITE"; target: string }
   | { kind: "DELETE"; target: string }
-  | { kind: "GENERATE"; targetDir: string }
+  | { kind: "GENERATE"; targetDir: string; sevenD?: Partial<SevenDParams> }
   | { kind: "MIGRATE"; targetDir?: string }
   | { kind: "LICENSE_CHECK" }
-  | { kind: "EXPORT"; targetDir: string };
+  | { kind: "EXPORT"; targetDir: string; sevenD?: Partial<SevenDParams> };
 
 type Verdict = { allowed: true } | { allowed: false; violatedLaw: number; reason: string };
 
@@ -295,6 +543,9 @@ function check(action: Action): Verdict {
         return forbid(3, `Folder țintă nepermis pentru generare: ${dir}`);
       }
       // Legea 10: trebuie set 7D; aici doar semnalăm — sistemul care apelează agentul trebuie să injecteze 7D
+      if (!action.sevenD) {
+        return forbid(10, `7D parameters are mandatory for generation; otherwise the artifact is invalid`);
+      }
       return { allowed: true };
     }
 
@@ -322,6 +573,10 @@ function check(action: Action): Verdict {
       if (dir !== bundles) {
         return forbid(1, `Exportul de bundle este permis doar în ${bundles}`);
       }
+      // Legea 10: 7D parameters mandatory for export
+      if (!action.sevenD) {
+        return forbid(10, `7D parameters are mandatory for export; otherwise the artifact is invalid`);
+      }
       return { allowed: true };
     }
 
@@ -346,7 +601,12 @@ export const CursorAgent = {
         .sort((a, b) => a.level - b.level)
         .map(o => ({ id: o.id, level: o.level, paths: arrayify(o.path ?? o.paths) })),
       language_policy: INIT.language_policy,
-      preflight: INIT.preflight
+      preflight: INIT.preflight,
+      sevenD: {
+        enums: SEVEN_D_ENUMS,
+        defaults: INIT.sevenD_defaults,
+        domainDefaults: DOMAIN_DEFAULTS
+      }
     };
   },
 
@@ -381,8 +641,36 @@ export const CursorAgent = {
   /**
    * Hook comun pentru rularea cu guard-uri
    */
-  async runWithGuards(commandName: string, payload: { draft?: string }) {
+  async runWithGuards(commandName: string, payload: { draft?: string; sevenD?: Partial<SevenDParams> }) {
     return runWithGuards(commandName, payload, INIT);
+  },
+
+  /**
+   * 7D Validation and normalization
+   */
+  validateSevenD(params: Partial<SevenDParams>): SevenDParams {
+    return SevenDValidator.validate(params);
+  },
+
+  /**
+   * 7D Normalization with defaults
+   */
+  normalizeSevenD(params: Partial<SevenDParams>): SevenDParams {
+    return SevenDValidator.normalizeWithDefaults(params);
+  },
+
+  /**
+   * Generate 7D signature for validation
+   */
+  generateSevenDSignature(params: SevenDParams): string {
+    return SevenDValidator.generateSignature(params);
+  },
+
+  /**
+   * Get domain-specific recommendations
+   */
+  getSevenDRecommendations(params: SevenDParams): string[] {
+    return SevenDValidator.getDomainRecommendations(params);
   },
 
   /**
@@ -397,9 +685,11 @@ export const CursorAgent = {
       "Nu modifica fișiere read_only. Scrie doar în folderele whitelisted din /cursor/docs.",
       "Aplică branding-ul la export și validează entitlements înainte de funcții gated.",
       "Fiecare generare trebuie parametrizată cu engine-ul 7D (domain, scale, urgency, complexity, resources, application, output).",
+      "7D parameters sunt obligatorii: domain (FIN/ECOM/EDU/SAAS/HEALTH/LEGAL/GOV/MEDIA), scale (solo/team/org/market), urgency (low/normal/high/crisis), complexity (low/medium/high), resources (minimal/standard/extended), application (content_ops/sales_ops/product_ops/research/crisis_ops), output (text/sop/plan/bundle).",
       "Dacă o cerință contrazice legile, oprește-te și explică ce lege ar fi încălcată.",
       "Respectă politica de limbă: output-ul trebuie să fie în engleză.",
-      "Validează preflight regulile înainte de orice operație."
+      "Validează preflight regulile înainte de orice operație.",
+      "Nu improviza: respectă strict DoR/DoD gates și 7D validation."
     ].join(" ");
   }
 };
@@ -407,7 +697,7 @@ export const CursorAgent = {
 // ————————————————————————————————————————————————————————————————————————
 // Exemplu rapid (comentat). Decomentează în dev ca să testezi.
 // ————————————————————————————————————————————————————————————————————————
-// const verdict = CursorAgent.guard({ kind: "GENERATE", targetDir: "/cursor/docs/industry_packs_bundle" });
+// const verdict = CursorAgent.guard({ kind: "GENERATE", targetDir: "/cursor/docs/industry_packs_bundle", sevenD: { domain: 'FIN', scale: 'team' } });
 // console.log(verdict);
 // 
 // // Test preflight
@@ -416,6 +706,16 @@ export const CursorAgent = {
 //   console.log("✅ Preflight passed");
 // } catch (e) {
 //   console.error("❌ Preflight failed:", e);
+// }
+// 
+// // Test 7D validation
+// try {
+//   const sevenD = CursorAgent.validateSevenD({ domain: 'FIN', scale: 'team' });
+//   console.log("✅ 7D validation passed:", sevenD);
+//   console.log("🔑 Signature:", CursorAgent.generateSevenDSignature(sevenD));
+//   console.log("💡 Recommendations:", CursorAgent.getSevenDRecommendations(sevenD));
+// } catch (e) {
+//   console.error("❌ 7D validation failed:", e);
 // }
 // 
 // // Test language detection

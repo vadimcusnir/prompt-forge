@@ -1,3 +1,10 @@
+/**
+ * lib/test-engine.ts — Real GPT Testing via API
+ * 
+ * Provides real-time GPT prompt testing through the /api/gpt-test endpoint
+ * Includes 7D validation, entitlements checking, and quality gates
+ */
+
 import type { GeneratedPrompt } from "@/types/promptforge"
 import { MODULES } from "./modules"
 
@@ -44,41 +51,36 @@ export interface TestOptions {
   simulateFailures: boolean
 }
 
-export async function runPromptTest(
+// Real GPT test integration via API
+export async function runRealGPTTest(
   prompt: GeneratedPrompt,
-  options: TestOptions = {
-    mode: "comprehensive",
-    validateKPIs: true,
-    checkGuardrails: true,
-    simulateFailures: false,
-  },
-): Promise<TestResult> {
-  const startTime = Date.now()
+  testType: 'clarity' | 'execution' | 'ambiguity' | 'business_fit'
+): Promise<any> {
+  const response = await fetch("/api/gpt-test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt: prompt.prompt,
+      testType,
+      sevenD: {
+        domain: prompt.config.domain,
+        scale: prompt.config.scale,
+        urgency: prompt.config.urgency,
+        complexity: prompt.config.complexity,
+        resources: prompt.config.resources,
+        application: prompt.config.application,
+        output: prompt.config.outputFormat,
+      },
+    }),
+  })
 
-  // Simulate test execution delay
-  const executionDelay = options.mode === "quick" ? 1000 : options.mode === "comprehensive" ? 2500 : 4000
-  await new Promise((resolve) => setTimeout(resolve, executionDelay))
-
-  const module = MODULES[prompt.moduleId]
-  const output = generateTestOutput(prompt, module, options)
-  const scores = calculateTestScores(prompt.prompt, output, options)
-  const validation = validatePromptStructure(prompt.prompt, module, options)
-  const recommendations = generateRecommendations(scores, validation, options)
-
-  const executionTime = Date.now() - startTime
-  const status = determineTestStatus(scores, validation)
-
-  return {
-    id: `test_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-    promptId: prompt.id,
-    timestamp: new Date(),
-    executionTime,
-    output,
-    scores,
-    validation,
-    status,
-    recommendations,
+  if (!response.ok) {
+    throw new Error(`Failed to run ${testType} test`)
   }
+
+  return response.json()
 }
 
 function generateTestOutput(prompt: GeneratedPrompt, module: any, options: TestOptions): string {
@@ -330,7 +332,8 @@ function determineTestStatus(scores: TestScores, validation: ValidationResult): 
   const hasErrors = validation.issues.some((issue) => issue.type === "error")
   const hasWarnings = validation.issues.some((issue) => issue.type === "warning")
 
-  if (hasErrors || scores.overall < 70) {
+  // Strict quality gates: score < 80 = error (no improvisation allowed)
+  if (hasErrors || scores.overall < 80) {
     return "error"
   }
 

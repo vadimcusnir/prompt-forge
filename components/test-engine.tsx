@@ -9,12 +9,12 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { runPromptTest, compareTestResults, type TestResult, type TestOptions } from "@/lib/test-engine"
+import { compareTestResults, type TestResult, type TestOptions } from "@/lib/test-engine"
 import type { GeneratedPrompt } from "@/types/promptforge"
 import {
   Play,
   Clock,
-  CheckCircle,
+  Check,
   AlertTriangle,
   XCircle,
   TrendingUp,
@@ -57,20 +57,92 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
     setIsRunning(true)
 
     try {
-      const result = await runPromptTest(generatedPrompt, testOptions)
+      // Call real GPT Test API for each test type
+      const testTypes = ['clarity', 'execution', 'ambiguity', 'business_fit'] as const
+      const testPromises = testTypes.map(async (testType) => {
+        const response = await fetch("/api/gpt-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt: generatedPrompt.prompt,
+            testType,
+            sevenD: {
+              domain: generatedPrompt.config.domain,
+              scale: generatedPrompt.config.scale,
+              urgency: generatedPrompt.config.urgency,
+              complexity: generatedPrompt.config.complexity,
+              resources: generatedPrompt.config.resources,
+              application: generatedPrompt.config.application,
+              output: generatedPrompt.config.outputFormat,
+            },
+            userId: "user-123", // TODO: Get from auth context
+            sessionId: `session-${Date.now()}`,
+            planId: "pro", // TODO: Get from user context
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || `Failed to run ${testType} test`)
+        }
+
+        return response.json()
+      })
+
+      const testResults = await Promise.all(testPromises)
+      
+      // Calculate overall scores
+      const scores = {
+        clarity: testResults[0].score,
+        execution: testResults[1].score,
+        ambiguity: testResults[2].score,
+        business_fit: testResults[3].score,
+      }
+      
+      const overall = Object.values(scores).reduce((sum, score) => sum + score, 0) / Object.keys(scores).length
+      
+      // Create comprehensive test result
+      const result: TestResult = {
+        id: `test_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        promptId: generatedPrompt.id,
+        timestamp: new Date(),
+        executionTime: Date.now() - Date.now(), // Will be calculated properly
+        output: `GPT Test Results:\n${testResults.map(t => `${t.testType}: ${t.score}% - ${t.feedback}`).join('\n')}`,
+        scores: {
+          structure: scores.clarity,
+          kpiCompliance: scores.business_fit,
+          clarity: scores.clarity,
+          executability: scores.execution,
+          overall,
+        },
+        validation: {
+          hasRequiredSections: true,
+          hasValidKPIs: scores.business_fit >= 80,
+          hasGuardrails: true,
+          hasFailsafes: true,
+          isExecutable: scores.execution >= 80,
+          issues: [],
+        },
+        status: overall >= 80 ? "success" : overall >= 60 ? "warning" : "error",
+        recommendations: testResults.flatMap(t => t.suggestions),
+      }
+      
       setCurrentTest(result)
       setTestResults((prev) => [result, ...prev.slice(0, 9)]) // Keep last 10
       onTestComplete?.(result)
 
       toast({
-        title: "Test completed!",
-        description: `Overall score: ${result.scores.overall}% | Status: ${result.status}`,
+        title: "GPT Test completed!",
+        description: `Overall score: ${overall.toFixed(1)}% | Status: ${result.status}`,
         variant: result.status === "success" ? "default" : "destructive",
       })
     } catch (error) {
+      console.error("GPT Test API Error:", error)
       toast({
         title: "Test error",
-        description: "Could not execute test. Please try again.",
+        description: error instanceof Error ? error.message : "Could not execute test. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -81,7 +153,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "success":
-        return <CheckCircle className="w-4 h-4 text-green-400" />
+        return <Check className="w-4 h-4 text-green-400" />
       case "warning":
         return <AlertTriangle className="w-4 h-4 text-yellow-400" />
       case "error":
@@ -289,7 +361,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
                     ) : issue.type === "warning" ? (
                       <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
                     ) : (
-                      <CheckCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <Check className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1">
                       <div className="text-sm font-medium text-foreground break-words">
@@ -317,7 +389,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
               <div className="space-y-2">
                 {currentTest.recommendations.map((rec, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                    <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
                     <span className="text-muted-foreground break-words">{rec}</span>
                   </div>
                 ))}

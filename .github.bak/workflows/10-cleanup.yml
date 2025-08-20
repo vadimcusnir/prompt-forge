@@ -1,0 +1,307 @@
+name: 10 - Cleanup & Maintenance
+
+on:
+  schedule:
+    - cron: '0 3 * * 0' # Weekly cleanup on Sunday at 3 AM
+  workflow_dispatch:
+    inputs:
+      cleanup_type:
+        description: 'Type of cleanup to perform'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - artifacts
+        - cache
+        - logs
+        - temporary
+      force:
+        description: 'Force cleanup without confirmation'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CLEANUP_DIR: ./cleanup
+  LOG_DIR: ./logs
+
+jobs:
+  artifact-cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.cleanup_type == 'full' || github.event.inputs.cleanup_type == 'artifacts'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup cleanup directory
+        run: |
+          mkdir -p ${{ env.CLEANUP_DIR }}
+          mkdir -p ${{ env.LOG_DIR }}
+
+      - name: Clean old build artifacts
+        run: |
+          echo "🧹 Cleaning old build artifacts..."
+          
+          # Clean Next.js build artifacts
+          if [ -d ".next" ]; then
+            echo "Cleaning .next directory..."
+            rm -rf .next
+          fi
+          
+          # Clean out directory
+          if [ -d "out" ]; then
+            echo "Cleaning out directory..."
+            rm -rf out
+          fi
+          
+          # Clean dist directory
+          if [ -d "dist" ]; then
+            echo "Cleaning dist directory..."
+            rm -rf dist
+          fi
+          
+          echo "✅ Build artifacts cleaned"
+
+      - name: Clean old test artifacts
+        run: |
+          echo "🧹 Cleaning old test artifacts..."
+          
+          # Clean coverage reports
+          if [ -d "coverage" ]; then
+            echo "Cleaning coverage directory..."
+            rm -rf coverage
+          fi
+          
+          # Clean test results
+          if [ -d "test-results" ]; then
+            echo "Cleaning test results..."
+            rm -rf test-results
+          fi
+          
+          # Clean playwright reports
+          if [ -d "playwright-report" ]; then
+            echo "Cleaning playwright reports..."
+            rm -rf playwright-report
+          fi
+          
+          echo "✅ Test artifacts cleaned"
+
+      - name: Clean old export artifacts
+        run: |
+          echo "🧹 Cleaning old export artifacts..."
+          
+          # Clean temporary export files
+          if [ -d "cursor/docs/coming soon" ]; then
+            echo "Cleaning temporary prompt files..."
+            find "cursor/docs/coming soon" -name "*.tmp" -delete
+            find "cursor/docs/coming soon" -name "*.temp" -delete
+          fi
+          
+          # Clean old manifest files
+          if [ -d "cursor/docs" ]; then
+            echo "Cleaning old manifest files..."
+            find cursor/docs -name "*.manifest.old.json" -delete
+            find cursor/docs -name "*.manifest.backup.json" -delete
+          fi
+          
+          echo "✅ Export artifacts cleaned"
+
+  cache-cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.cleanup_type == 'full' || github.event.inputs.cleanup_type == 'cache'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Clean npm cache
+        run: |
+          echo "🧹 Cleaning npm cache..."
+          npm cache clean --force
+          echo "✅ npm cache cleaned"
+
+      - name: Clean pnpm cache
+        run: |
+          echo "🧹 Cleaning pnpm cache..."
+          pnpm store prune
+          echo "✅ pnpm cache cleaned"
+
+      - name: Clean Docker cache
+        run: |
+          echo "🧹 Cleaning Docker cache..."
+          docker system prune -f --volumes
+          echo "✅ Docker cache cleaned"
+
+      - name: Clean GitHub Actions cache
+        run: |
+          echo "🧹 Cleaning GitHub Actions cache..."
+          # This would typically be done by GitHub Actions itself
+          # But we can clean local cache directories
+          if [ -d ".github/cache" ]; then
+            rm -rf .github/cache
+          fi
+          echo "✅ GitHub Actions cache cleaned"
+
+  log-cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.cleanup_type == 'full' || github.event.inputs.cleanup_type == 'logs'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Clean old log files
+        run: |
+          echo "🧹 Cleaning old log files..."
+          
+          # Clean application logs
+          if [ -d "logs" ]; then
+            echo "Cleaning application logs..."
+            find logs -name "*.log" -mtime +7 -delete
+            find logs -name "*.log.*" -mtime +7 -delete
+          fi
+          
+          # Clean npm logs
+          if [ -d "~/.npm/_logs" ]; then
+            echo "Cleaning npm logs..."
+            find ~/.npm/_logs -name "*.log" -mtime +30 -delete
+          fi
+          
+          # Clean system logs
+          if [ -d "/var/log" ]; then
+            echo "Cleaning system logs..."
+            sudo find /var/log -name "*.log" -mtime +30 -delete 2>/dev/null || true
+          fi
+          
+          echo "✅ Log files cleaned"
+
+      - name: Compress old logs
+        run: |
+          echo "📦 Compressing old logs..."
+          
+          # Compress logs older than 3 days
+          if [ -d "logs" ]; then
+            find logs -name "*.log" -mtime +3 -exec gzip {} \;
+            echo "✅ Old logs compressed"
+          fi
+
+  temporary-cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.cleanup_type == 'full' || github.event.inputs.cleanup_type == 'temporary'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Clean temporary files
+        run: |
+          echo "🧹 Cleaning temporary files..."
+          
+          # Clean OS temporary files
+          if [ -d "/tmp" ]; then
+            echo "Cleaning system temp files..."
+            sudo find /tmp -type f -mtime +1 -delete 2>/dev/null || true
+            sudo find /tmp -type d -empty -delete 2>/dev/null || true
+          fi
+          
+          # Clean user temporary files
+          if [ -d "$HOME/.cache" ]; then
+            echo "Cleaning user cache..."
+            find $HOME/.cache -type f -mtime +7 -delete 2>/dev/null || true
+          fi
+          
+          # Clean project temporary files
+          find . -name "*.tmp" -delete
+          find . -name "*.temp" -delete
+          find . -name "*.swp" -delete
+          find . -name "*.swo" -delete
+          find . -name "*~" -delete
+          
+          echo "✅ Temporary files cleaned"
+
+      - name: Clean empty directories
+        run: |
+          echo "🧹 Cleaning empty directories..."
+          
+          # Remove empty directories (except important ones)
+          find . -type d -empty -not -path "./.git*" -not -path "./node_modules*" -not -path "./.next*" -delete
+          
+          echo "✅ Empty directories cleaned"
+
+  system-maintenance:
+    runs-on: ubuntu-latest
+    needs: [artifact-cleanup, cache-cleanup, log-cleanup, temporary-cleanup]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: System health check
+        run: |
+          echo "🔍 Performing system health check..."
+          
+          # Check disk usage
+          DISK_USAGE=$(df -h . | awk 'NR==2 {print $5}' | sed 's/%//')
+          echo "Disk usage: ${DISK_USAGE}%"
+          
+          if [ $DISK_USAGE -gt 80 ]; then
+            echo "⚠️ Disk usage is high: ${DISK_USAGE}%"
+          else
+            echo "✅ Disk usage is acceptable: ${DISK_USAGE}%"
+          fi
+          
+          # Check memory usage
+          MEMORY_USAGE=$(free -m | awk 'NR==2{printf "%.1f%%", $3*100/$2}')
+          echo "Memory usage: $MEMORY_USAGE"
+          
+          # Check available disk space
+          AVAILABLE_SPACE=$(df -h . | awk 'NR==2 {print $4}')
+          echo "Available space: $AVAILABLE_SPACE"
+
+      - name: Generate cleanup report
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          echo "# Cleanup Report - $TIMESTAMP" > cleanup-report.md
+          echo "" >> cleanup-report.md
+          echo "## Cleanup Summary" >> cleanup-report.md
+          echo "- Artifact cleanup: ${{ needs.artifact-cleanup.result }}" >> cleanup-report.md
+          echo "- Cache cleanup: ${{ needs.cache-cleanup.result }}" >> cleanup-report.md
+          echo "- Log cleanup: ${{ needs.log-cleanup.result }}" >> cleanup-report.md
+          echo "- Temporary cleanup: ${{ needs.temporary-cleanup.result }}" >> cleanup-report.md
+          echo "" >> cleanup-report.md
+          echo "## System Status" >> cleanup-report.md
+          echo "- Disk usage: $(df -h . | awk 'NR==2 {print $5}')" >> cleanup-report.md
+          echo "- Available space: $(df -h . | awk 'NR==2 {print $4}')" >> cleanup-report.md
+          echo "- Memory usage: $(free -m | awk 'NR==2{printf "%.1f%%", $3*100/$2}')" >> cleanup-report.md
+          echo "" >> cleanup-report.md
+          echo "## Cleanup Type" >> cleanup-report.md
+          echo "Performed: ${{ github.event.inputs.cleanup_type || 'full' }}" >> cleanup-report.md
+          echo "Forced: ${{ github.event.inputs.force || 'false' }}" >> cleanup-report.md
+
+      - name: Upload cleanup report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-report-${{ github.run_id }}
+          path: cleanup-report.md
+          retention-days: 7
+
+  post-cleanup:
+    runs-on: ubuntu-latest
+    needs: system-maintenance
+    if: always()
+    steps:
+      - name: Cleanup completion notification
+        run: |
+          echo "🎉 Cleanup process completed successfully!"
+          echo "Cleanup type: ${{ github.event.inputs.cleanup_type || 'full' }}"
+          echo "Timestamp: $(date)"
+          
+          if [ "${{ needs.system-maintenance.result }}" == "success" ]; then
+            echo "✅ System maintenance completed successfully"
+          else
+            echo "⚠️ System maintenance had issues"
+          fi
+
+      - name: Schedule next cleanup
+        run: |
+          echo "📅 Next cleanup scheduled for:"
+          echo "Weekly on Sunday at 3:00 AM UTC"
+          echo "Or manually via workflow dispatch"

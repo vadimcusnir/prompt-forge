@@ -1,0 +1,9 @@
+---
+description: Baza proiectului. Agentul NU poate crea/edita fișiere în afara arborelui canonic.
+globs:
+alwaysApply: true
+---
+- Stack fix: Next.js App Router + TS. Nicio abatere de framework.
+- Arbore canonic obligatoriu (vezi /app, /components, /lib, /cursor, /db, /.github/workflows). Orice fișier în afara acestor directoare → **INTERZIS**.
+- PromptForge v3: fiecare run produce artefacte standard (txt/md/json/pdf + manifest + checksum). 
+- Dacă lipsește oricare din: ruleset.yml, .cursor/rules/*, /db/schema.sql → **oprești taskul** și raportezi motivul (nu improviza).

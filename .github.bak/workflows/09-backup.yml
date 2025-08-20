@@ -1,0 +1,266 @@
+name: 09 - Backup & Recovery
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Type of backup to perform'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - database
+        - config
+        - artifacts
+      retention_days:
+        description: 'Number of days to retain backups'
+        required: false
+        default: '30'
+        type: string
+
+env:
+  BACKUP_DIR: ./backups
+  RETENTION_DAYS: ${{ github.event.inputs.retention_days || '30' }}
+
+jobs:
+  database-backup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.backup_type == 'full' || github.event.inputs.backup_type == 'database'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: promptforge
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup backup directory
+        run: |
+          mkdir -p ${{ env.BACKUP_DIR }}/database
+          mkdir -p ${{ env.BACKUP_DIR }}/schema
+
+      - name: Backup database schema
+        run: |
+          echo "📋 Backing up database schema..."
+          pg_dump -h localhost -U postgres -d promptforge --schema-only \
+            --file=${{ env.BACKUP_DIR }}/schema/schema_$(date +%Y%m%d_%H%M%S).sql
+          echo "✅ Schema backup completed"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Backup database data
+        run: |
+          echo "💾 Backing up database data..."
+          pg_dump -h localhost -U postgres -d promptforge --data-only \
+            --file=${{ env.BACKUP_DIR }}/database/data_$(date +%Y%m%d_%H%M%S).sql
+          echo "✅ Data backup completed"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Create database backup archive
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          tar -czf ${{ env.BACKUP_DIR }}/database_backup_$TIMESTAMP.tar.gz \
+            -C ${{ env.BACKUP_DIR }} database/ schema/
+          echo "📦 Database backup archive created: database_backup_$TIMESTAMP.tar.gz"
+
+      - name: Upload database backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ github.run_id }}
+          path: ${{ env.BACKUP_DIR }}/database_backup_*.tar.gz
+          retention-days: ${{ env.RETENTION_DAYS }}
+
+  configuration-backup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.backup_type == 'full' || github.event.inputs.backup_type == 'config'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup backup directory
+        run: |
+          mkdir -p ${{ env.BACKUP_DIR }}/config
+
+      - name: Backup configuration files
+        run: |
+          echo "⚙️ Backing up configuration files..."
+          
+          # Backup package.json and lock files
+          cp package.json ${{ env.BACKUP_DIR }}/config/
+          cp pnpm-lock.yaml ${{ env.BACKUP_DIR }}/config/
+          cp next.config.mjs ${{ env.BACKUP_DIR }}/config/
+          cp tsconfig.json ${{ env.BACKUP_DIR }}/config/
+          
+          # Backup environment files (if they exist)
+          if [ -f ".env" ]; then
+            cp .env ${{ env.BACKUP_DIR }}/config/
+          fi
+          if [ -f ".env.local" ]; then
+            cp .env.local ${{ env.BACKUP_DIR }}/config/
+          fi
+          
+          # Backup GitHub workflows
+          cp -r .github/workflows ${{ env.BACKUP_DIR }}/config/
+          
+          # Backup cursor rules and configuration
+          cp -r cursor/ruleset.yml ${{ env.BACKUP_DIR }}/config/ 2>/dev/null || true
+          cp -r cursor/.cursor ${{ env.BACKUP_DIR }}/config/ 2>/dev/null || true
+          
+          echo "✅ Configuration backup completed"
+
+      - name: Create configuration backup archive
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          tar -czf ${{ env.BACKUP_DIR }}/config_backup_$TIMESTAMP.tar.gz \
+            -C ${{ env.BACKUP_DIR }} config/
+          echo "📦 Configuration backup archive created: config_backup_$TIMESTAMP.tar.gz"
+
+      - name: Upload configuration backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: config-backup-${{ github.run_id }}
+          path: ${{ env.BACKUP_DIR }}/config_backup_*.tar.gz
+          retention-days: ${{ env.RETENTION_DAYS }}
+
+  artifacts-backup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.backup_type == 'full' || github.event.inputs.backup_type == 'artifacts'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup backup directory
+        run: |
+          mkdir -p ${{ env.BACKUP_DIR }}/artifacts
+
+      - name: Backup generated artifacts
+        run: |
+          echo "🎨 Backing up generated artifacts..."
+          
+          # Backup prompt artifacts
+          if [ -d "cursor/docs/coming soon" ]; then
+            cp -r "cursor/docs/coming soon" ${{ env.BACKUP_DIR }}/artifacts/prompts
+          fi
+          
+          # Backup module specifications
+          if [ -d "cursor/docs" ]; then
+            find cursor/docs -name "*.spec.json" -exec cp {} ${{ env.BACKUP_DIR }}/artifacts/ \;
+          fi
+          
+          # Backup export manifests
+          if [ -d "cursor/docs" ]; then
+            find cursor/docs -name "*.manifest.json" -exec cp {} ${{ env.BACKUP_DIR }}/artifacts/ \;
+          fi
+          
+          echo "✅ Artifacts backup completed"
+
+      - name: Create artifacts backup archive
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          tar -czf ${{ env.BACKUP_DIR }}/artifacts_backup_$TIMESTAMP.tar.gz \
+            -C ${{ env.BACKUP_DIR }} artifacts/
+          echo "📦 Artifacts backup archive created: artifacts_backup_$TIMESTAMP.tar.gz"
+
+      - name: Upload artifacts backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-backup-${{ github.run_id }}
+          path: ${{ env.BACKUP_DIR }}/artifacts_backup_*.tar.gz
+          retention-days: ${{ env.RETENTION_DAYS }}
+
+  backup-verification:
+    runs-on: ubuntu-latest
+    needs: [database-backup, configuration-backup, artifacts-backup]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all backups
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.BACKUP_DIR }}
+
+      - name: Verify backup integrity
+        run: |
+          echo "🔍 Verifying backup integrity..."
+          
+          # Check backup files exist
+          BACKUP_COUNT=$(find ${{ env.BACKUP_DIR }} -name "*.tar.gz" | wc -l)
+          echo "Found $BACKUP_COUNT backup archives"
+          
+          # Verify each backup archive
+          for backup in ${{ env.BACKUP_DIR }}/*.tar.gz; do
+            if [ -f "$backup" ]; then
+              echo "Verifying: $backup"
+              if tar -tzf "$backup" > /dev/null 2>&1; then
+                echo "✅ $backup is valid"
+              else
+                echo "❌ $backup is corrupted"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ All backup archives verified successfully"
+
+      - name: Generate backup report
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          echo "# Backup Report - $TIMESTAMP" > backup-report.md
+          echo "" >> backup-report.md
+          echo "## Backup Summary" >> backup-report.md
+          echo "- Database backup: ${{ needs.database-backup.result }}" >> backup-report.md
+          echo "- Configuration backup: ${{ needs.configuration-backup.result }}" >> backup-report.md
+          echo "- Artifacts backup: ${{ needs.artifacts-backup.result }}" >> backup-report.md
+          echo "" >> backup-report.md
+          echo "## Files Backed Up" >> backup-report.md
+          find ${{ env.BACKUP_DIR }} -name "*.tar.gz" -exec basename {} \; | while read file; do
+            echo "- $file" >> backup-report.md
+          done
+          echo "" >> backup-report.md
+          echo "## Retention Policy" >> backup-report.md
+          echo "Backups will be retained for ${{ env.RETENTION_DAYS }} days" >> backup-report.md
+
+      - name: Upload backup report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-report-${{ github.run_id }}
+          path: backup-report.md
+          retention-days: ${{ env.RETENTION_DAYS }}
+
+  cleanup-old-backups:
+    runs-on: ubuntu-latest
+    needs: backup-verification
+    if: always()
+    steps:
+      - name: Cleanup old backups
+        run: |
+          echo "🧹 Cleaning up old backups..."
+          
+          # This would typically be done by GitHub Actions artifact retention
+          # But we can also clean up local backup files
+          if [ -d "${{ env.BACKUP_DIR }}" ]; then
+            find ${{ env.BACKUP_DIR }} -name "*.tar.gz" -mtime +${{ env.RETENTION_DAYS }} -delete
+            echo "✅ Cleaned up backups older than ${{ env.RETENTION_DAYS }} days"
+          fi
+
+      - name: Backup completion notification
+        run: |
+          echo "🎉 Backup process completed successfully!"
+          echo "Backup type: ${{ github.event.inputs.backup_type || 'full' }}"
+          echo "Retention period: ${{ env.RETENTION_DAYS }} days"
+          echo "Timestamp: $(date)"

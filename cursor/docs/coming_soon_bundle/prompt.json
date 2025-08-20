@@ -1,0 +1,208 @@
+{
+  "module_id": "COMING_SOON_001",
+  "name": "Coming Soon Page Implementation",
+  "version": "1.0.0",
+  "description": "Fully isolated Coming Soon page with waitlist management for PROMPTFORGE™ v3.0",
+  "category": "landing_page",
+  "tags": ["coming-soon", "waitlist", "landing-page", "bootstrap"],
+  
+  "7d_parameters": {
+    "domain": "Landing Page Management",
+    "depth": "Full Stack Implementation",
+    "detail": "Complete Feature Set",
+    "dynamism": "Real-time Toggle",
+    "deployment": "Auto-install Bootstrap",
+    "documentation": "Comprehensive Specs",
+    "distribution": "Export Bundle Ready"
+  },
+  
+  "requirements": [
+    "Next.js 15+ with App Router",
+    "Supabase database with RLS",
+    "Tailwind CSS for styling",
+    "React Hook Form for validation",
+    "Toast notifications system"
+  ],
+  
+  "spec": {
+    "auto_install": true,
+    "bootstrap_priority": "highest",
+    "isolation_level": "complete",
+    "removal_complexity": "low",
+    "admin_access": "keyboard_shortcut",
+    "persistence": "database_driven"
+  },
+  
+  "output_schema": {
+    "components": [
+      "ComingSoon",
+      "AdminToggle",
+      "useComingSoon"
+    ],
+    "api_endpoints": [
+      "/api/waitlist",
+      "/api/toggle-coming-soon"
+    ],
+    "database_tables": [
+      "waitlist_signups",
+      "site_settings"
+    ]
+  },
+  
+  "kpi": {
+    "installation_time": "< 5 minutes",
+    "removal_time": "< 3 minutes",
+    "performance_impact": "0% on main app",
+    "user_experience": "seamless transition",
+    "admin_control": "single toggle"
+  },
+  
+  "guardrails": [
+    "No interference with existing routes",
+    "RLS policies for data security",
+    "Email validation and deduplication",
+    "Admin authentication required",
+    "Graceful fallback on errors"
+  ],
+  
+  "database_schema": {
+    "waitlist_signups": {
+      "id": "uuid primary key default gen_random_uuid()",
+      "email": "text unique not null",
+      "name": "text not null",
+      "created_at": "timestamptz default now()",
+      "updated_at": "timestamptz default now()",
+      "indexes": ["idx_waitlist_email", "idx_waitlist_created_at"],
+      "rls_policies": ["waitlist_public_insert", "waitlist_admin_read"]
+    },
+    "site_settings": {
+      "id": "uuid primary key default gen_random_uuid()",
+      "key": "text unique not null",
+      "value": "jsonb not null",
+      "created_at": "timestamptz default now()",
+      "updated_at": "timestamptz default now()",
+      "indexes": ["idx_site_settings_key"],
+      "rls_policies": ["site_settings_admin_rw"]
+    }
+  },
+  
+  "api_specs": {
+    "waitlist": {
+      "method": "POST",
+      "endpoint": "/api/waitlist",
+      "body": {
+        "email": "string (required, validated)",
+        "name": "string (required)"
+      },
+      "response": {
+        "success": "201 Created",
+        "error_codes": ["400", "409", "500"]
+      }
+    },
+    "toggle_coming_soon": {
+      "method": "POST",
+      "endpoint": "/api/toggle-coming-soon",
+      "headers": {
+        "Authorization": "Bearer {admin_token}"
+      },
+      "body": {
+        "enabled": "boolean (required)"
+      },
+      "response": {
+        "success": "200 OK",
+        "error_codes": ["400", "401", "500"]
+      }
+    }
+  },
+  
+  "ui_components": {
+    "ComingSoon": {
+      "type": "full_page",
+      "features": [
+        "hero_section",
+        "signup_form",
+        "features_section",
+        "stats_section",
+        "thank_you_page"
+      ],
+      "styling": "promptforge_v3_theme",
+      "responsive": true
+    },
+    "AdminToggle": {
+      "type": "control_panel",
+      "features": [
+        "status_display",
+        "toggle_switch",
+        "configuration_view",
+        "action_buttons"
+      ],
+      "access": "keyboard_shortcut_ctrl_shift_a"
+    }
+  },
+  
+  "environment_variables": {
+    "required": [
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ],
+    "optional": [
+      "NEXT_PUBLIC_COMING_SOON",
+      "NEXT_PUBLIC_ADMIN_TOKEN",
+      "NEXT_PUBLIC_COMING_SOON_MESSAGE"
+    ]
+  },
+  
+  "installation_steps": [
+    "1. Copy component files to /components/",
+    "2. Copy API routes to /app/api/",
+    "3. Copy hooks to /hooks/",
+    "4. Run database migration",
+    "5. Set environment variables",
+    "6. Import in main page.tsx"
+  ],
+  
+  "removal_steps": [
+    "1. Delete component files",
+    "2. Delete API routes",
+    "3. Delete hook files",
+    "4. Remove imports from page.tsx",
+    "5. Drop database tables (optional)"
+  ],
+  
+  "testing": {
+    "unit_tests": "component rendering",
+    "integration_tests": "API endpoints",
+    "e2e_tests": "user flow",
+    "performance_tests": "bootstrap time"
+  },
+  
+  "monitoring": {
+    "metrics": [
+      "waitlist_signups_count",
+      "toggle_operations",
+      "error_rates",
+      "response_times"
+    ],
+    "alerts": [
+      "high_error_rate",
+      "database_connection_failure",
+      "admin_access_attempts"
+    ]
+  },
+  
+  "security": {
+    "authentication": "admin_token_required",
+    "authorization": "admin_only_operations",
+    "data_protection": "rls_enabled",
+    "input_validation": "email_format_check",
+    "sql_injection": "parameterized_queries"
+  },
+  
+  "compliance": {
+    "gdpr": "email_consent_required",
+    "data_retention": "configurable_policy",
+    "user_rights": "data_deletion_support",
+    "privacy": "minimal_data_collection"
+  }
+}

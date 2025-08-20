@@ -1,0 +1,33 @@
+# PROMPTFORGE™ v3.0 - Coming Soon Bundle Checksums
+# Generated: 2024-12-19T10:00:00Z
+# Algorithm: SHA-256
+
+# File: prompt.txt
+# SHA256: [TO_BE_CALCULATED_AFTER_FINALIZATION]
+# Size: [TO_BE_CALCULATED_AFTER_FINALIZATION] bytes
+
+# File: prompt.md  
+# SHA256: [TO_BE_CALCULATED_AFTER_FINALIZATION]
+# Size: [TO_BE_CALCULATED_AFTER_FINALIZATION] bytes
+
+# File: prompt.json
+# SHA256: [TO_BE_CALCULATED_AFTER_FINALIZATION]
+# Size: [TO_BE_CALCULATED_AFTER_FINALIZATION] bytes
+
+# File: manifest.json
+# SHA256: [TO_BE_CALCULATED_AFTER_FINALIZATION]
+# Size: [TO_BE_CALCULATED_AFTER_FINALIZATION] bytes
+
+# Bundle Integrity
+# Total Files: 4
+# Bundle Size: [TO_BE_CALCULATED_AFTER_FINALIZATION] bytes
+# Bundle Hash: [TO_BE_CALCULATED_AFTER_FINALIZATION]
+
+# Verification Instructions:
+# 1. Calculate SHA256 hash of each file
+# 2. Compare with checksums above
+# 3. Verify bundle integrity matches
+# 4. Check file sizes match expected values
+
+# Note: Checksums will be updated after final bundle compilation
+# Use: sha256sum filename to generate checksums

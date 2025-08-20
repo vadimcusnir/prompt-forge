@@ -1,0 +1,38 @@
+project: PROMPTFORGE_v3
+semver: 1.0.0
+
+enums:
+  domain: [saas, fintech, ecommerce, education, healthcare, legal, marketing, media, real_estate]
+  scale: [personal_brand, solo, startup, boutique_agency, smb, corporate, enterprise]
+  urgency: [low, planned, sprint, pilot, crisis]
+  complexity: [foundational, standard, advanced, expert]
+  resources: [minimal, solo, lean_team, agency_stack, full_stack_org, enterprise_budget]
+  application: [training, audit, implementation, strategy_design, crisis_response, experimentation, documentation]
+  output_format: [txt, md, json, pdf, bundle]
+
+rules:
+  enum_only: true
+  raise_on_invalid: true
+
+DoR:
+  - sevenD.valid
+  - entitlement.valid
+  - output_spec.loaded
+  - tests.defined
+
+DoD:
+  - score >= 80
+  - output.complete
+  - checksum.valid
+  - manifest.written
+  - telemetry.saved
+
+export:
+  canonical_order:
+    - prompt.txt
+    - prompt.json
+    - prompt.md
+    - prompt.pdf
+    - manifest.json
+    - telemetry.json
+    - checksum.txt

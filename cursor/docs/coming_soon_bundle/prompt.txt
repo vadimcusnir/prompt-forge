@@ -1,0 +1,94 @@
+Cursos Agent Prompt (in English), aligned with your requirements and with the PROMPTFORGE™ v3 blueprint:
+
+Prompt for Cursos Agent
+
+Instruction (English, precise, prod-ready):
+
+Generate a temporary Coming Soon homepage that:
+
+Auto-installs at project bootstrap (before any other modules, routes, or pages load).
+
+Uses the default site design and components from the PromptForge v3 UI (blueprint inside promptforge.zip).
+
+Displays a signup form for the waiting list:
+
+On submit, insert participant data (email, name, created_at) into Supabase → table waitlist_signups.
+
+Validate email, prevent duplicates.
+
+Persist with RLS (multi-tenant, org-scoped).
+
+Shows a thank-you page after submission, styled in the same UI theme.
+
+Must be fully isolated:
+
+No interference with other routes, modules, or systems.
+
+Can be enabled/disabled by a single toggle/flag (e.g. COMING_SOON=true in .env).
+
+When disabled, the system runs normally without residual effects.
+
+Must be easy to install and remove:
+
+One API endpoint: /api/toggle-coming-soon (admin-only) → flips state in Supabase table site_settings.
+
+State persisted per org/project (projects table).
+
+Bundle export:
+
+Save the generated Coming Soon prompt + UI spec as bundle (.txt/.md/.json/.pdf) in Supabase Storage.
+
+Apply checksum + manifest for audit.
+
+Database (Supabase/Postgres)
+-- Table: waitlist_signups
+create table if not exists public.waitlist_signups (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references public.orgs(id) on delete cascade,
+  email text not null unique,
+  name text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.waitlist_signups enable row level security;
+create policy select_by_org on public.waitlist_signups
+  for select using (org_id in (select org_id from org_members where user_id=auth.uid()));
+create policy insert_by_org on public.waitlist_signups
+  for insert with check (org_id in (select org_id from org_members where user_id=auth.uid()));
+
+Runtime logic
+
+At app bootstrap:
+If COMING_SOON=true or site_settings.coming_soon=on, override default routes → render Coming Soon page.
+
+On disable:
+Skip override → render site normally.
+
+Signup flow:
+POST /api/waitlist → validate email → insert into waitlist_signups → redirect /thankyou.
+
+Export bundle (aligned with PROMPTFORGE)
+
+Artifacts:
+
+prompt.txt → raw Cursos agent instruction
+
+prompt.md → readable spec
+
+prompt.json → config (7D + DB schema)
+
+prompt.pdf → branded PDF
+
+manifest.json + checksum.txt
+
+This prompt guarantees:
+
+Installed first, easy to remove.
+
+Aligned with your site design from promptforge.zip.
+
+Safe isolation from other systems.
+
+Supabase integration for waiting list.
+
+Exportable bundle for audit/licensing.

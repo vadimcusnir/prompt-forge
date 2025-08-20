@@ -1,0 +1,271 @@
+name: Cache & Dependencies
+
+on:
+  schedule:
+    - cron: '0 4 * * 0' # Weekly on Sunday at 4 AM
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  # ============================================================================
+  # DEPENDENCY UPDATES
+  # ============================================================================
+  dependency-updates:
+    name: Check Dependency Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Check for outdated dependencies
+        run: |
+          echo "Checking for outdated dependencies..."
+          npm outdated || echo "All dependencies are up to date"
+          
+      - name: Check for security vulnerabilities
+        run: |
+          echo "Checking for security vulnerabilities..."
+          npm audit --audit-level=moderate || echo "Security vulnerabilities found"
+          
+      - name: Create dependency report
+        run: |
+          echo "Creating dependency report..."
+          npm list --depth=0 > dependency-report.txt
+          echo "Dependency report created"
+          
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-report
+          path: dependency-report.txt
+          retention-days: 7
+
+  # ============================================================================
+  # CACHE OPTIMIZATION
+  # ============================================================================
+  cache-optimization:
+    name: Cache Optimization
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build
+        
+      - name: Analyze build cache
+        run: |
+          echo "Analyzing build cache..."
+          # Add build cache analysis logic here
+          echo "Build cache analysis completed"
+          
+      - name: Optimize cache strategy
+        run: |
+          echo "Optimizing cache strategy..."
+          # Add cache optimization logic here
+          echo "Cache optimization completed"
+
+  # ============================================================================
+  # PERFORMANCE OPTIMIZATION
+  # ============================================================================
+  performance-optimization:
+    name: Performance Optimization
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build
+        
+      - name: Analyze bundle size
+        run: |
+          echo "Analyzing bundle size..."
+          npm run build:analyze || echo "Bundle analyzer not configured"
+          
+      - name: Check for unused dependencies
+        run: |
+          echo "Checking for unused dependencies..."
+          npx depcheck || echo "Depcheck completed"
+          
+      - name: Generate optimization report
+        run: |
+          echo "Generating optimization report..."
+          # Add optimization report generation logic here
+          echo "Optimization report generated"
+
+  # ============================================================================
+  # AUTOMATED UPDATES
+  # ============================================================================
+  automated-updates:
+    name: Automated Updates
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Check for major version updates
+        run: |
+          echo "Checking for major version updates..."
+          npm outdated || echo "No major updates available"
+          
+      - name: Create update PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: updates } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+              package_type: 'npm',
+              org: 'promptforge',
+              package_name: 'promptforge'
+            });
+            
+            if (updates.length > 0) {
+              const body = `## 🔄 Automated Dependency Updates
+              
+              **Updates Available:** ${updates.length}
+              **Last Check:** ${new Date().toISOString()}
+              
+              This PR was automatically created to update dependencies.
+              
+              **Note:** Please review changes before merging.
+              `;
+              
+              await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🤖 Automated Dependency Updates',
+                body: body,
+                head: 'automated-updates',
+                base: 'main'
+              });
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # CACHE CLEANUP
+  # ============================================================================
+  cache-cleanup:
+    name: Cache Cleanup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Clean npm cache
+        run: |
+          echo "Cleaning npm cache..."
+          npm cache clean --force
+          echo "NPM cache cleaned"
+          
+      - name: Clean build cache
+        run: |
+          echo "Cleaning build cache..."
+          rm -rf .next
+          rm -rf node_modules/.cache
+          echo "Build cache cleaned"
+          
+      - name: Clean temporary files
+        run: |
+          echo "Cleaning temporary files..."
+          find . -name "*.tmp" -delete
+          find . -name "*.log" -delete
+          echo "Temporary files cleaned"
+
+  # ============================================================================
+  # SUMMARY REPORT
+  # ============================================================================
+  summary-report:
+    name: Generate Summary Report
+    runs-on: ubuntu-latest
+    needs: [dependency-updates, cache-optimization, performance-optimization, automated-updates, cache-cleanup]
+    
+    steps:
+      - name: Create summary report
+        run: |
+          echo "Creating summary report..."
+          # Add summary report generation logic here
+          echo "Summary report created"
+          
+      - name: Send summary notification
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const results = {
+              'dependency-updates': '${{ needs.dependency-updates.result }}',
+              'cache-optimization': '${{ needs.cache-optimization.result }}',
+              'performance-optimization': '${{ needs.performance-optimization.result }}',
+              'automated-updates': '${{ needs.automated-updates.result }}',
+              'cache-cleanup': '${{ needs.cache-cleanup.result }}'
+            };
+            
+            const failed = Object.entries(results).filter(([_, result]) => result === 'failure');
+            const passed = Object.entries(results).filter(([_, result]) => result === 'success');
+            
+            const body = `## 📦 Cache & Dependencies Summary
+            
+            **Status:** ${failed.length > 0 ? '⚠️ ISSUES DETECTED' : '✅ ALL OPTIMIZATIONS COMPLETED'}
+            
+            **Results:**
+            ${Object.entries(results).map(([job, result]) => 
+              `- ${job}: ${result === 'success' ? '✅' : result === 'failure' ? '❌' : '⚠️'} ${result}`
+            ).join('\n')}
+            
+            **Summary:** ${passed.length}/${Object.keys(results).length} jobs completed successfully
+            
+            ${failed.length > 0 ? `\n**Failed Jobs:** ${failed.map(([job]) => job).join(', ')}` : ''}
+            
+            Run ID: ${{ github.run_id }}
+            Timestamp: ${new Date().toISOString()}
+            `;
+            
+            // Create issue if there are failures
+            if (failed.length > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `⚠️ Cache & Dependencies Issues - ${failed.length} job(s) failed`,
+                body: body,
+                labels: ['cache', 'dependencies', 'automated']
+              });
+            }

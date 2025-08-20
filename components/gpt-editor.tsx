@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { simulateGPTEditing, type GPTEditResult, type GPTEditOptions } from "@/lib/gpt-editor"
+import { type GPTEditResult, type GPTEditOptions } from "@/lib/gpt-editor"
 import type { GeneratedPrompt } from "@/types/promptforge"
-import { Bot, Zap, CheckCircle, Clock, TrendingUp, Copy, Download } from "lucide-react"
+import { Bot, Zap, Check, Clock, TrendingUp, Copy, Download } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface GPTEditorProps {
@@ -40,18 +40,58 @@ export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
     setIsEditing(true)
 
     try {
-      const result = await simulateGPTEditing(generatedPrompt.prompt, options)
-      setEditResult(result)
-      onEditComplete?.(result)
+      // Call real GPT Editor API
+      const response = await fetch("/api/gpt-editor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: generatedPrompt.prompt,
+          options,
+          sevenD: {
+            domain: generatedPrompt.config.domain,
+            scale: generatedPrompt.config.scale,
+            urgency: generatedPrompt.config.urgency,
+            complexity: generatedPrompt.config.complexity,
+            resources: generatedPrompt.config.resources,
+            application: generatedPrompt.config.application,
+            output: generatedPrompt.config.outputFormat,
+          },
+          userId: "user-123", // TODO: Get from auth context
+          sessionId: `session-${Date.now()}`,
+          planId: "pro", // TODO: Get from user context
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to optimize prompt")
+      }
+
+      const result = await response.json()
+      
+      // Transform API response to match component interface
+      const transformedResult: GPTEditResult = {
+        originalPrompt: generatedPrompt.prompt,
+        editedPrompt: result.editedPrompt,
+        improvements: result.improvements,
+        confidence: result.confidence,
+        processingTime: result.processingTime,
+      }
+      
+      setEditResult(transformedResult)
+      onEditComplete?.(transformedResult)
 
       toast({
         title: "Prompt optimized successfully!",
-        description: `Confidence: ${result.confidence}% | Time: ${result.processingTime}ms`,
+        description: `Confidence: ${result.confidence}% | Score: ${result.overallScore}%`,
       })
     } catch (error) {
+      console.error("GPT Editor API Error:", error)
       toast({
         title: "Optimization error",
-        description: "Could not optimize prompt. Please try again.",
+        description: error instanceof Error ? error.message : "Could not optimize prompt. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -208,7 +248,7 @@ export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
       {editResult && (
         <div className="mb-6 p-4 glass-strong rounded-lg">
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="w-4 h-4 text-green-400" />
+            <Check className="w-4 h-4 text-green-400" />
             <h4 className="font-semibold text-foreground">Optimization Complete</h4>
           </div>
 
@@ -238,7 +278,7 @@ export function GPTEditor({ generatedPrompt, onEditComplete }: GPTEditorProps) {
             <div className="space-y-1">
               {editResult.improvements.map((improvement, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                  <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
                   <span className="text-muted-foreground">{improvement}</span>
                 </div>
               ))}

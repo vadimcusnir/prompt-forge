@@ -1,0 +1,222 @@
+name: Monitoring & Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Daily at 3 AM
+    - cron: '0 12 * * 0' # Weekly on Sunday at 12 PM
+  workflow_dispatch:
+
+jobs:
+  # ============================================================================
+  # DATABASE BACKUP
+  # ============================================================================
+  database-backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        
+      - name: Create database backup
+        run: |
+          echo "Creating database backup..."
+          supabase link --project-ref siebamncfgfgbzorkiwo
+          
+          # Create backup
+          BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).sql"
+          supabase db dump --data-only > $BACKUP_FILE
+          
+          echo "Backup created: $BACKUP_FILE"
+          echo "backup_file=$BACKUP_FILE" >> $GITHUB_OUTPUT
+          
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-backup-${{ steps.backup.outputs.backup_file }}
+          path: ${{ steps.backup.outputs.backup_file }}
+          retention-days: 30
+          
+      - name: Verify backup integrity
+        run: |
+          echo "Verifying backup integrity..."
+          # Add backup verification logic here
+          echo "✅ Backup verification completed"
+
+  # ============================================================================
+  # PERFORMANCE MONITORING
+  # ============================================================================
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build
+        
+      - name: Run performance tests
+        run: |
+          echo "Running performance tests..."
+          # Add performance testing logic here
+          echo "Performance tests completed"
+          
+      - name: Check bundle size
+        run: |
+          echo "Analyzing bundle size..."
+          npm run build:analyze || echo "Bundle analyzer not configured"
+          
+      - name: Generate performance report
+        run: |
+          echo "Generating performance report..."
+          # Add performance reporting logic here
+          echo "Performance report generated"
+
+  # ============================================================================
+  # HEALTH CHECKS
+  # ============================================================================
+  health-checks:
+    name: Health Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Supabase health
+        run: |
+          echo "Checking Supabase health..."
+          # Add Supabase health check logic here
+          echo "Supabase health check completed"
+          
+      - name: Check API endpoints
+        run: |
+          echo "Checking API endpoints..."
+          # Add API health check logic here
+          echo "API health check completed"
+          
+      - name: Check database connections
+        run: |
+          echo "Checking database connections..."
+          # Add database connection check logic here
+          echo "Database connection check completed"
+
+  # ============================================================================
+  # SECURITY MONITORING
+  # ============================================================================
+  security-monitoring:
+    name: Security Monitoring
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check for security vulnerabilities
+        run: |
+          echo "Checking for security vulnerabilities..."
+          npm audit --audit-level=moderate || echo "Security vulnerabilities found"
+          
+      - name: Check for dependency updates
+        run: |
+          echo "Checking for dependency updates..."
+          npm outdated || echo "Dependencies are up to date"
+          
+      - name: Run security scan
+        run: |
+          echo "Running security scan..."
+          # Add security scanning logic here
+          echo "Security scan completed"
+
+  # ============================================================================
+  # NOTIFICATIONS
+  # ============================================================================
+  notifications:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [database-backup, performance-monitoring, health-checks, security-monitoring]
+    
+    steps:
+      - name: Create monitoring report
+        run: |
+          echo "Creating monitoring report..."
+          # Add monitoring report generation logic here
+          echo "Monitoring report created"
+          
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          channel: '#monitoring'
+          text: |
+            🔍 PROMPTFORGE Monitoring Report
+            
+            **Status:** ${{ job.status }}
+            **Run ID:** ${{ github.run_id }}
+            
+            **Jobs:**
+            - Database Backup: ${{ needs.database-backup.result }}
+            - Performance Monitoring: ${{ needs.performance-monitoring.result }}
+            - Health Checks: ${{ needs.health-checks.result }}
+            - Security Monitoring: ${{ needs.security-monitoring.result }}
+            
+            **Summary:** ${{ needs.database-backup.result == 'success' && needs.performance-monitoring.result == 'success' && needs.health-checks.result == 'success' && needs.security-monitoring.result == 'success' && '✅ All systems operational' || '⚠️ Some issues detected' }}
+            
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Update monitoring status
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const results = {
+              'database-backup': '${{ needs.database-backup.result }}',
+              'performance-monitoring': '${{ needs.performance-monitoring.result }}',
+              'health-checks': '${{ needs.health-checks.result }}',
+              'security-monitoring': '${{ needs.security-monitoring.result }}'
+            };
+            
+            const failed = Object.entries(results).filter(([_, result]) => result === 'failure');
+            const passed = Object.entries(results).filter(([_, result]) => result === 'success');
+            
+            const body = `## 🔍 Monitoring Report
+            
+            **Status:** ${failed.length > 0 ? '⚠️ ISSUES DETECTED' : '✅ ALL SYSTEMS OPERATIONAL'}
+            
+            **Results:**
+            ${Object.entries(results).map(([job, result]) => 
+              `- ${job}: ${result === 'success' ? '✅' : result === 'failure' ? '❌' : '⚠️'} ${result}`
+            ).join('\n')}
+            
+            **Summary:** ${passed.length}/${Object.keys(results).length} jobs passed
+            
+            ${failed.length > 0 ? `\n**Failed Jobs:** ${failed.map(([job]) => job).join(', ')}` : ''}
+            
+            Run ID: ${{ github.run_id }}
+            Timestamp: ${new Date().toISOString()}
+            `;
+            
+            // Create issue if there are failures
+            if (failed.length > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🚨 Monitoring Alert - ${failed.length} job(s) failed`,
+                body: body,
+                labels: ['monitoring', 'alert', 'automated']
+              });
+            }

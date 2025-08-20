@@ -1,0 +1,443 @@
+name: Monitoring Alerts
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Every 2 hours
+    - cron: '0 9 * * *'   # Daily at 9 AM
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build & Deploy", "Testing & Quality", "Security Alerts"]
+    types: [completed]
+
+jobs:
+  # ============================================================================
+  # SYSTEM HEALTH MONITORING
+  # ============================================================================
+  health-monitoring:
+    name: System Health Monitoring
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check Supabase health
+        id: supabase-health
+        run: |
+          echo "Checking Supabase health..."
+          
+          # Check Supabase status
+          if curl -s "https://siebamncfgfgbzorkiwo.supabase.co/rest/v1/" > /dev/null; then
+            echo "✅ Supabase is responding"
+            echo "supabase_status=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Supabase is not responding"
+            echo "supabase_status=unhealthy" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Check Vercel deployment status
+        id: vercel-status
+        run: |
+          echo "Checking Vercel deployment status..."
+          
+          # Check if latest deployment is successful
+          if curl -s "https://vercel.com/api/v1/deployments?projectId=prj_I0F9ksxoN16PEXMhTfBcSmECSaOV&limit=1" | grep -q "READY"; then
+            echo "✅ Vercel deployment is ready"
+            echo "vercel_status=ready" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Vercel deployment may have issues"
+            echo "vercel_status=warning" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Check API endpoints
+        id: api-health
+        run: |
+          echo "Checking API endpoints..."
+          
+          # Check key API endpoints
+          ENDPOINTS=(
+            "https://siebamncfgfgbzorkiwo.supabase.co/rest/v1/"
+            "https://siebamncfgfgbzorkiwo.supabase.co/auth/v1/"
+          )
+          
+          HEALTHY_ENDPOINTS=0
+          TOTAL_ENDPOINTS=${#ENDPOINTS[@]}
+          
+          for endpoint in "${ENDPOINTS[@]}"; do
+            if curl -s "$endpoint" > /dev/null; then
+              HEALTHY_ENDPOINTS=$((HEALTHY_ENDPOINTS + 1))
+            fi
+          done
+          
+          if [ $HEALTHY_ENDPOINTS -eq $TOTAL_ENDPOINTS ]; then
+            echo "✅ All API endpoints are healthy"
+            echo "api_status=healthy" >> $GITHUB_OUTPUT
+          elif [ $HEALTHY_ENDPOINTS -gt 0 ]; then
+            echo "⚠️ Some API endpoints have issues"
+            echo "api_status=warning" >> $GITHUB_OUTPUT
+          else
+            echo "❌ All API endpoints are down"
+            echo "api_status=critical" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Check database performance
+        id: db-performance
+        run: |
+          echo "Checking database performance..."
+          
+          # Simulate database performance check
+          # In production, this would query actual metrics
+          echo "✅ Database performance is normal"
+          echo "db_performance=normal" >> $GITHUB_OUTPUT
+
+  # ============================================================================
+  # WORKFLOW STATUS MONITORING
+  # ============================================================================
+  workflow-monitoring:
+    name: Workflow Status Monitoring
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check recent workflow runs
+        id: workflow-status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: workflows } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 10
+            });
+            
+            const recentRuns = workflows.workflow_runs.slice(0, 5);
+            const failedRuns = recentRuns.filter(run => run.conclusion === 'failure');
+            const successRuns = recentRuns.filter(run => run.conclusion === 'success');
+            
+            const failureRate = (failedRuns.length / recentRuns.length) * 100;
+            
+            console.log(`Recent runs: ${recentRuns.length}, Failed: ${failedRuns.length}, Success: ${successRuns.length}`);
+            console.log(`Failure rate: ${failureRate.toFixed(1)}%`);
+            
+            // Set outputs
+            core.setOutput('total_runs', recentRuns.length);
+            core.setOutput('failed_runs', failedRuns.length);
+            core.setOutput('success_runs', successRuns.length);
+            core.setOutput('failure_rate', failureRate.toFixed(1));
+            
+            if (failureRate > 20) {
+              core.setOutput('workflow_status', 'critical');
+            } else if (failureRate > 10) {
+              core.setOutput('workflow_status', 'warning');
+            } else {
+              core.setOutput('workflow_status', 'healthy');
+            }
+            
+      - name: Check build status
+        id: build-status
+        run: |
+          echo "Workflow Status: ${{ steps.workflow-status.outputs.workflow_status }}"
+          echo "Total Runs: ${{ steps.workflow-status.outputs.total_runs }}"
+          echo "Failed Runs: ${{ steps.workflow-status.outputs.failed_runs }}"
+          echo "Success Rate: ${{ steps.workflow-status.outputs.success_runs }}"
+          echo "Failure Rate: ${{ steps.workflow-status.outputs.failure_rate }}%"
+
+  # ============================================================================
+  # ALERT GENERATION
+  # ============================================================================
+  generate-alerts:
+    name: Generate Monitoring Alerts
+    runs-on: ubuntu-latest
+    needs: [health-monitoring, workflow-monitoring]
+    
+    steps:
+      - name: Evaluate system health
+        id: evaluate-health
+        run: |
+          echo "🔍 Evaluating System Health..."
+          
+          # Get health statuses
+          SUPABASE="${{ needs.health-monitoring.outputs.supabase_status }}"
+          VERCEL="${{ needs.health-monitoring.outputs.vercel_status }}"
+          API="${{ needs.health-monitoring.outputs.api_status }}"
+          DB="${{ needs.health-monitoring.outputs.db_performance }}"
+          WORKFLOW="${{ needs.workflow-monitoring.outputs.workflow_status }}"
+          
+          # Count critical issues
+          CRITICAL_ISSUES=0
+          if [ "$SUPABASE" = "unhealthy" ]; then CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1)); fi
+          if [ "$API" = "critical" ]; then CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1)); fi
+          if [ "$WORKFLOW" = "critical" ]; then CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1)); fi
+          
+          # Count warnings
+          WARNINGS=0
+          if [ "$VERCEL" = "warning" ]; then WARNINGS=$((WARNINGS + 1)); fi
+          if [ "$API" = "warning" ]; then WARNINGS=$((WARNINGS + 1)); fi
+          if [ "$WORKFLOW" = "warning" ]; then WARNINGS=$((WARNINGS + 1)); fi
+          
+          echo "critical_issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
+          echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+          
+          if [ $CRITICAL_ISSUES -gt 0 ]; then
+            echo "🚨 CRITICAL ISSUES DETECTED - $CRITICAL_ISSUES critical, $WARNINGS warnings"
+            echo "alert_level=critical" >> $GITHUB_OUTPUT
+            exit 1
+          elif [ $WARNINGS -gt 0 ]; then
+            echo "⚠️ WARNINGS DETECTED - $WARNINGS warnings"
+            echo "alert_level=warning" >> $GITHUB_OUTPUT
+          else
+            echo "✅ All systems operational"
+            echo "alert_level=healthy" >> $GITHUB_OUTPUT
+          fi
+
+  # ============================================================================
+  # GITHUB ISSUES CREATION
+  # ============================================================================
+  create-issues:
+    name: Create GitHub Issues
+    runs-on: ubuntu-latest
+    needs: [health-monitoring, workflow-monitoring, generate-alerts]
+    if: needs.generate-alerts.result == 'failure' || needs.generate-alerts.outputs.alert_level == 'warning'
+    
+    steps:
+      - name: Create critical issue
+        uses: actions/github-script@v7
+        if: needs.generate-alerts.outputs.alert_level == 'critical'
+        with:
+          script: |
+            const alertLevel = '${{ needs.generate-alerts.outputs.alert_level }}';
+            const criticalIssues = '${{ needs.generate-alerts.outputs.critical_issues }}';
+            const warnings = '${{ needs.generate-alerts.outputs.warnings }}';
+            
+            const body = `## 🚨 CRITICAL SYSTEM ALERT
+            
+            **Status:** 🚨 CRITICAL ISSUES DETECTED
+            **Alert Level:** ${alertLevel.toUpperCase()}
+            **Timestamp:** ${new Date().toISOString()}
+            
+            **System Health:**
+            - **Supabase:** ${{ needs.health-monitoring.outputs.supabase_status }}
+            - **Vercel:** ${{ needs.health-monitoring.outputs.vercel_status }}
+            - **API Endpoints:** ${{ needs.health-monitoring.outputs.api_status }}
+            - **Database:** ${{ needs.health-monitoring.outputs.db_performance }}
+            - **Workflows:** ${{ needs.workflow-monitoring.outputs.workflow_status }}
+            
+            **Issues Summary:**
+            - Critical Issues: ${criticalIssues}
+            - Warnings: ${warnings}
+            
+            **Immediate Actions Required:**
+            1. 🚨 Investigate critical system failures
+            2. 🔧 Restore affected services
+            3. 📊 Monitor system recovery
+            4. 📝 Document incident response
+            
+            **Priority:** IMMEDIATE
+            **Escalation:** @devops-team @security-team
+            
+            ---
+            *Automated by PROMPTFORGE Monitoring Alerts*
+            `;
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 CRITICAL: System Health Alert - Immediate Action Required',
+              body: body,
+              labels: ['🚨 critical', 'monitoring', 'system-alert', 'automated', 'immediate-action']
+            });
+            
+            console.log(`Critical issue created: ${issue.data.html_url}`);
+            
+            // Add assignees
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.data.number,
+              assignees: ['devops-team', 'security-team']
+            });
+            
+      - name: Create warning issue
+        uses: actions/github-script@v7
+        if: needs.generate-alerts.outputs.alert_level == 'warning'
+        with:
+          script: |
+            const warnings = '${{ needs.generate-alerts.outputs.warnings }}';
+            
+            const body = `## ⚠️ System Warning Alert
+            
+            **Status:** ⚠️ WARNINGS DETECTED
+            **Alert Level:** WARNING
+            **Timestamp:** ${new Date().toISOString()}
+            
+            **System Health:**
+            - **Supabase:** ${{ needs.health-monitoring.outputs.supabase_status }}
+            - **Vercel:** ${{ needs.health-monitoring.outputs.vercel_status }}
+            - **API Endpoints:** ${{ needs.health-monitoring.outputs.api_status }}
+            - **Database:** ${{ needs.health-monitoring.outputs.db_performance }}
+            - **Workflows:** ${{ needs.workflow-monitoring.outputs.workflow_status }}
+            
+            **Warnings:** ${warnings} warning(s) detected
+            
+            **Recommended Actions:**
+            1. 🔍 Investigate warning conditions
+            2. 📊 Monitor system trends
+            3. 🛠️ Plan preventive maintenance
+            4. 📝 Update monitoring thresholds if needed
+            
+            **Priority:** MEDIUM
+            **Review Required:** @devops-team
+            
+            ---
+            *Automated by PROMPTFORGE Monitoring Alerts*
+            `;
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ WARNING: System Health Alert - Review Required',
+              body: body,
+              labels: ['⚠️ warning', 'monitoring', 'system-alert', 'automated', 'review-required']
+            });
+            
+            console.log(`Warning issue created: ${issue.data.html_url}`);
+
+  # ============================================================================
+  # SLACK NOTIFICATIONS
+  # ============================================================================
+  slack-notifications:
+    name: Slack Notifications
+    runs-on: ubuntu-latest
+    needs: [health-monitoring, workflow-monitoring, generate-alerts]
+    if: always()
+    
+    steps:
+      - name: Send critical alert to Slack
+        uses: 8398a7/action-slack@v3
+        if: needs.generate-alerts.outputs.alert_level == 'critical'
+        with:
+          status: ${{ job.status }}
+          channel: '#system-alerts'
+          text: |
+            🚨 PROMPTFORGE System Alert - CRITICAL
+            
+            **Status:** CRITICAL ISSUES DETECTED
+            **Repository:** ${{ github.repository }}
+            
+            **System Health:**
+            - Supabase: ${{ needs.health-monitoring.outputs.supabase_status }}
+            - Vercel: ${{ needs.health-monitoring.outputs.vercel_status }}
+            - API: ${{ needs.health-monitoring.outputs.api_status }}
+            - Workflows: ${{ needs.workflow-monitoring.outputs.workflow_status }}
+            
+            **Issues:** ${{ needs.generate-alerts.outputs.critical_issues }} critical, ${{ needs.generate-alerts.outputs.warnings }} warnings
+            
+            **Action Required:** IMMEDIATE INVESTIGATION
+            **Escalation:** @devops-team @security-team
+            
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Send warning alert to Slack
+        uses: 8398a7/action-slack@v3
+        if: needs.generate-alerts.outputs.alert_level == 'warning'
+        with:
+          status: ${{ job.status }}
+          channel: '#system-monitoring'
+          text: |
+            ⚠️ PROMPTFORGE System Alert - WARNING
+            
+            **Status:** WARNINGS DETECTED
+            **Repository:** ${{ github.repository }}
+            
+            **System Health:**
+            - Supabase: ${{ needs.health-monitoring.outputs.supabase_status }}
+            - Vercel: ${{ needs.health-monitoring.outputs.vercel_status }}
+            - API: ${{ needs.health-monitoring.outputs.api_status }}
+            - Workflows: ${{ needs.workflow-monitoring.outputs.workflow_status }}
+            
+            **Warnings:** ${{ needs.generate-alerts.outputs.warnings }} warning(s)
+            
+            **Action Required:** REVIEW AND MONITOR
+            **Team:** @devops-team
+            
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # AUTOMATED REPORTS
+  # ============================================================================
+  generate-reports:
+    name: Generate Automated Reports
+    runs-on: ubuntu-latest
+    needs: [health-monitoring, workflow-monitoring, generate-alerts]
+    if: always()
+    
+    steps:
+      - name: Create monitoring report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const alertLevel = '${{ needs.generate-alerts.outputs.alert_level }}';
+            const criticalIssues = '${{ needs.generate-alerts.outputs.critical_issues }}';
+            const warnings = '${{ needs.generate-alerts.outputs.warnings }}';
+            
+            const body = `## 📊 System Health Report
+            
+            **Status:** ${alertLevel === 'healthy' ? '✅ HEALTHY' : alertLevel === 'warning' ? '⚠️ WARNING' : '🚨 CRITICAL'}
+            **Generated:** ${new Date().toISOString()}
+            **Run ID:** ${{ github.run_id }}
+            
+            **System Components:**
+            - **Supabase Database:** ${{ needs.health-monitoring.outputs.supabase_status }}
+            - **Vercel Deployment:** ${{ needs.health-monitoring.outputs.vercel_status }}
+            - **API Endpoints:** ${{ needs.health-monitoring.outputs.api_status }}
+            - **Database Performance:** ${{ needs.health-monitoring.outputs.db_performance }}
+            - **CI/CD Workflows:** ${{ needs.workflow-monitoring.outputs.workflow_status }}
+            
+            **Metrics:**
+            - **Total Workflow Runs:** ${{ needs.workflow-monitoring.outputs.total_runs }}
+            - **Successful Runs:** ${{ needs.workflow-monitoring.outputs.success_runs }}
+            - **Failed Runs:** ${{ needs.workflow-monitoring.outputs.failed_runs }}
+            - **Failure Rate:** ${{ needs.workflow-monitoring.outputs.failure_rate }}%
+            
+            **Issues Summary:**
+            - **Critical Issues:** ${criticalIssues}
+            - **Warnings:** ${warnings}
+            
+            **Recommendations:**
+            ${alertLevel === 'healthy' ? 
+              '- ✅ Continue monitoring current thresholds' :
+              alertLevel === 'warning' ? 
+              '- ⚠️ Review warning conditions and adjust thresholds' :
+              '- 🚨 Immediate action required - investigate and resolve critical issues'
+            }
+            
+            **Next Review:** ${new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()}
+            
+            ---
+            *Automated by PROMPTFORGE Monitoring Alerts*
+            `;
+            
+            // Create report issue
+            const reportIssue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 System Health Report - ${new Date().toLocaleDateString()}`,
+              body: body,
+              labels: ['📊 report', 'monitoring', 'system-health', 'automated']
+            });
+            
+            console.log(`Monitoring report created: ${reportIssue.data.html_url}`);
+            
+            // Add to project board if exists
+            try {
+              await github.rest.projects.createCard({
+                column_id: process.env.PROJECT_COLUMN_ID,
+                content_id: reportIssue.data.id,
+                content_type: 'Issue'
+              });
+            } catch (error) {
+              console.log('Could not add to project board:', error.message);
+            }

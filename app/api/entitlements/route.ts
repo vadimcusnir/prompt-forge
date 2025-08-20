@@ -1,5 +1,31 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { createClient } from '@supabase/supabase-js'
 import { EntitlementChecker } from "@/lib/entitlements/useEntitlements"
+
+// Canonical gating flags
+const CANONICAL_FLAGS = [
+  'canUseGptTestReal',
+  'canExportPDF', 
+  'canExportJSON',
+  'canExportBundleZip',
+  'hasAPI'
+] as const
+
+type CanonicalFlag = typeof CANONICAL_FLAGS[number]
+
+interface EntitlementUpdate {
+  orgId?: string
+  userId?: string
+  flag: CanonicalFlag
+  enabled: boolean
+  source: 'effective_user' | 'effective_org'
+}
+
+// Create Supabase client with service role key (server-side only)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // Entitlements endpoint - provides plan information and entitlement checking
 export async function GET(request: NextRequest) {
@@ -10,9 +36,10 @@ export async function GET(request: NextRequest) {
     const feature = searchParams.get('feature')
     const moduleId = searchParams.get('moduleId')
     const userId = searchParams.get('userId')
+    const orgId = searchParams.get('orgId')
     const sessionId = searchParams.get('sessionId')
 
-    console.log("Plan ID:", planId, "Feature:", feature, "Module ID:", moduleId)
+    console.log("Plan ID:", planId, "Feature:", feature, "Module ID:", moduleId, "User ID:", userId, "Org ID:", orgId)
 
     // If specific feature check requested
     if (feature) {
@@ -39,6 +66,71 @@ export async function GET(request: NextRequest) {
         planId,
         timestamp: new Date().toISOString()
       })
+    }
+
+    // If orgId or userId provided, get canonical flags
+    if (orgId || userId) {
+      console.log("Getting canonical flags for:", { orgId, userId })
+      
+      try {
+        // Get entitlements from database
+        let query = supabase.from('entitlements').select('*')
+        
+        if (orgId) {
+          query = query.eq('org_id', orgId)
+        }
+        if (userId) {
+          query = query.eq('user_id', userId)
+        }
+        
+        const { data: entitlements, error } = await query
+        
+        if (error) {
+          console.error("Database error:", error)
+          throw error
+        }
+        
+        // Build canonical flags response
+        const canonicalFlags = CANONICAL_FLAGS.map(flag => {
+          const entitlement = entitlements?.find(e => e.flag === flag)
+          const isEnabled = entitlement?.enabled || false
+          const source = entitlement?.source || 'effective_org'
+          
+          return {
+            flag,
+            enabled: isEnabled,
+            source,
+            lastUpdated: entitlement?.updated_at || null,
+            metadata: entitlement?.metadata || {}
+          }
+        })
+        
+        return NextResponse.json({
+          orgId,
+          userId,
+          canonicalFlags,
+          timestamp: new Date().toISOString()
+        })
+        
+      } catch (dbError) {
+        console.error("Database error:", dbError)
+        // Fallback to plan-based entitlements
+        const fallbackFlags = CANONICAL_FLAGS.map(flag => ({
+          flag,
+          enabled: EntitlementChecker.checkFeature(planId, flag).allowed,
+          source: 'effective_org' as const,
+          lastUpdated: null,
+          metadata: {}
+        }))
+        
+        return NextResponse.json({
+          orgId,
+          userId,
+          canonicalFlags: fallbackFlags,
+          fallback: true,
+          timestamp: new Date().toISOString()
+        })
+      }
     }
 
     // Return general plan information
@@ -208,15 +300,86 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint for entitlement validation
+// POST endpoint for entitlement updates and validation
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json()
+    
+    // Handle entitlement updates
+    if (body.flag && typeof body.enabled === 'boolean') {
+      const { orgId, userId, flag, enabled, source }: EntitlementUpdate = body
+      
+      if (!orgId && !userId) {
+        return NextResponse.json({ 
+          error: "MISSING_FIELDS", 
+          details: "Either orgId or userId is required"
+        }, { status: 400 })
+      }
+      
+      if (!CANONICAL_FLAGS.includes(flag)) {
+        return NextResponse.json({ 
+          error: "INVALID_FLAG", 
+          details: `Flag ${flag} is not a valid canonical flag`
+        }, { status: 400 })
+      }
+      
+      try {
+        // Simulate upsert in entitlements table
+        const entitlementData: any = {
+          flag,
+          enabled,
+          source,
+          updated_at: new Date().toISOString(),
+          metadata: {
+            updated_by: 'admin',
+            reason: body.reason || 'Admin override',
+            timestamp: new Date().toISOString()
+          }
+        }
+        
+        if (orgId) {
+          entitlementData.org_id = orgId
+        }
+        if (userId) {
+          entitlementData.user_id = userId
+        }
+        
+        // In a real implementation, this would upsert to the entitlements table
+        console.log("Entitlement update:", entitlementData)
+        
+        // Log the gating event
+        logGateHit({
+          flag,
+          enabled,
+          source,
+          orgId,
+          userId,
+          action: 'admin_override'
+        })
+        
+        return NextResponse.json({
+          success: true,
+          entitlement: entitlementData,
+          message: `Flag ${flag} ${enabled ? 'enabled' : 'disabled'} successfully`,
+          timestamp: new Date().toISOString()
+        })
+        
+      } catch (dbError) {
+        console.error("Database error:", dbError)
+        return NextResponse.json({ 
+          error: "DATABASE_ERROR", 
+          details: "Failed to update entitlement"
+        }, { status: 500 })
+      }
+    }
+    
+    // Handle entitlement validation (existing logic)
     const { planId, feature, userId, sessionId }: { 
       planId: string
       feature: string
       userId?: string
       sessionId?: string
-    } = await request.json()
+    } = body
 
     // Validate required fields
     if (!planId || !feature) {
@@ -276,4 +439,23 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
+}
+
+// Log gating events for analytics and audit
+function logGateHit(data: {
+  flag: string
+  enabled: boolean
+  source: string
+  orgId?: string
+  userId?: string
+  action: string
+}) {
+  console.log("Gate hit logged:", {
+    ...data,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  })
+  
+  // In production, this would send to analytics service
+  // For now, just log to console
 }

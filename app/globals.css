@@ -1,96 +1,68 @@
-/* CSS custom fără Tailwind */
-
-/* GUARD GLOBAL PENTRU MIȘCARE */
+/* ——— PĂSTREAZĂ ——— */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
+  * { animation: none !important; transition: none !important; }
 }
+.motion-off * { animation: none !important; transition: none !important; }
 
-.motion-off * {
-  animation: none !important;
-  transition: none !important;
-}
-
-/* Asigură fundalul pe toată aplicația - fallback bg-black */
+/* Fallback anti-flash */
 html, body, #__next {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+  background-color: #000 !important;
+  color: #fff !important;
 }
 
-/* Elimină flash-ul alb - fundal negru pe toate elementele */
-* {
-  background-color: transparent;
-}
+/* ——— ÎNLOCUIEȘTE acest bloc (NU folosi universalul) ——— */
+/* * { background-color: transparent; } */
 
-html, body {
-  background-color: #000000 !important;
-}
+/* Folosește doar pe layer-ul de background și pe utilitare controlate */
+.bg-transparent { background-color: transparent !important; }
 
-/* Container full-bleed, fără "clătinare" */
-.bg-fixed-root {
-  position: fixed;
-  inset: 0;
-  height: 100dvh;
-  z-index: -1;
-  pointer-events: none;
+/* Poți lăsa html/body pe negru (ai deja) */
+html, body { background-color: #000 !important; }
+
+/* Container full-bleed, fără “clătinare” */
+.bg-fixed-root{
+  position: fixed; inset: 0; height: 100dvh;
+  z-index: -1; pointer-events: none;
   contain: layout paint style;
-  will-change: auto; /* Doar pe containerul mare */
+  will-change: transform; /* nu ‘auto’; lasă GPU pe transform */
 }
 
-main {
-  position: relative;
-  z-index: 1;
+/* main peste background */
+main { position: relative; z-index: 1; }
+
+/* Respectă reduced-motion și pe clasele animate */
+@media (prefers-reduced-motion: reduce){
+  .bg-anim, .matrix-token, .matrix-quote { animation: none !important; transition: none !important; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bg-anim, .matrix-token, .matrix-quote {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* Grid și noise pentru versiunea "Safe" */
-.bg-grid {
-  background-image: 
+/* Grid + noise „safe” */
+.bg-grid{
+  background-image:
     linear-gradient(to right, rgba(255,255,255,.08) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255,255,255,.08) 1px, transparent 1px);
   background-size: 32px 32px;
 }
-
-.bg-noise {
+.bg-noise{
   background-image: url('/noise.png');
   background-size: 256px 256px;
   mix-blend-mode: soft-light;
+  opacity: .05;            /* mai fin ca să nu murdărească UI-ul */
 }
 
-/* Matrix animations ready class */
-.matrix-animations-ready .bg-anim {
-  opacity: 1;
-  transition: opacity 0.3s ease-out;
-}
+/* Stare când animațiile s-au montat */
+.matrix-animations-ready .bg-anim{ opacity: 1; transition: opacity .3s ease-out; }
+.bg-anim{ opacity: 0; transition: opacity .3s ease-out; }
 
-/* Background animation classes */
-.bg-anim {
-  opacity: 0;
-  transition: opacity 0.3s ease-out;
-}
-
-/* Glass Effect pentru proof-bar */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.05);
+/* Glass */
+.glass-effect{
+  background: rgba(255,255,255,0.05);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
 }
+.proof-bar{ opacity: .9; }
+.proof-bar:hover{ opacity: 1; }
 
-/* Proof bar styling */
-.proof-bar {
-  opacity: 0.9;
-}
-
-.proof-bar:hover {
-  opacity: 1;
-}
+/* Opțional: anunță user-agent-ul că site-ul e dark */
+html { color-scheme: dark; }

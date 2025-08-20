@@ -8,6 +8,7 @@ export default function MatrixTokens({ density = 24 }: { density?: number }) {
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
   const tokensRef = useRef<{ x: number; y: number; vx: number; vy: number }[] | null>(null)
   const rafRef = useRef<number>(0)
+  const MatrixTokens = dynamic(() => import("@/components/background/matrix-tokens"), { ssr: false })
 
   useEffect(() => {
     const canvas = canvasRef.current!

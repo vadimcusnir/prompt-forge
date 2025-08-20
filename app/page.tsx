@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import BackgroundRoot from "@/components/bg/BackgroundRoot"
+import BackgroundRoot from "@/components/BackgroundRoot"
 
 export default function HomePage() {
   const [isHovered, setIsHovered] = useState<string | null>(null)

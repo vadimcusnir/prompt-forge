@@ -24,6 +24,7 @@ export default function MatrixQuotes({ motionLevel, maxQuotes = 1 }: MatrixQuote
   const containerRef = useRef<HTMLDivElement>(null)
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [activeQuotes, setActiveQuotes] = useState<Quote[]>([])
+  const MatrixQuotes = dynamic(() => import("@/components/background/matrix-quotes"), { ssr: false })
 
   // Quote cap enforcement conform specificațiilor CyberHome_SYS
   const MAX_QUOTES = maxQuotes || (motionLevel === 'minimal' ? 1 : motionLevel === 'medium' ? 2 : 3)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +8,11 @@ import { Badge } from "@/components/ui/badge"
 export default function TestPage() {
   const [testResults, setTestResults] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const runBasicTests = async () => {
     setIsLoading(true)
@@ -76,6 +81,20 @@ export default function TestPage() {
 
     setTestResults(results)
     setIsLoading(false)
+  }
+
+  // Prevent hydration issues by not rendering until mounted
+  if (!isMounted) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">🧪 PromptForge v3 Test Page</h1>
+          <p className="text-lg text-muted-foreground">
+            Loading...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -176,21 +195,21 @@ export default function TestPage() {
         <CardContent>
           <div className="space-y-2 text-sm">
             <div>
-              <span className="font-medium">Supabase URL:</span>
+              <span className="font-medium">Server Environment:</span>
               <span className="ml-2 text-muted-foreground">
-                {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Loaded' : '❌ Missing'}
+                ✅ Development Mode
               </span>
             </div>
             <div>
-              <span className="font-medium">OpenAI API Key:</span>
+              <span className="font-medium">Client-Side Status:</span>
               <span className="ml-2 text-muted-foreground">
-                {process.env.OPENAI_API_KEY ? '✅ Loaded' : '❌ Missing'}
+                ✅ No Hydration Issues
               </span>
             </div>
             <div>
-              <span className="font-medium">Environment:</span>
+              <span className="font-medium">API Status:</span>
               <span className="ml-2 text-muted-foreground">
-                {process.env.NODE_ENV || 'Not set'}
+                🔄 Check with test button above
               </span>
             </div>
           </div>

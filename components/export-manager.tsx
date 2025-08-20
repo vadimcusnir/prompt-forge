@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { historyManager } from "@/lib/history-manager"
 import { Download, Printer, Share2, Copy, Check } from "lucide-react"
+import { useEntitlements } from "@/hooks/use-entitlements"
+import { PDFExportButton, JSONExportButton, BundleExportButton } from "@/components/ProtectedButton"
 import type { GeneratedPrompt } from "@/types/promptforge"
 import type { GPTEditResult } from "@/lib/gpt-editor"
 import type { TestResult } from "@/lib/test-engine"
@@ -17,9 +19,10 @@ interface ExportManagerProps {
 }
 
 export function ExportManager({ currentPrompt, editResults = [], testResults = [] }: ExportManagerProps) {
-  const [exportFormat, setExportFormat] = useState<"json" | "csv" | "pdf" | "txt">("json")
+  const [exportFormat, setExportFormat] = useState<"json" | "csv" | "pdf" | "txt">("txt")
   const [exportScope, setExportScope] = useState<"current" | "session" | "all">("current")
   const [copied, setCopied] = useState(false)
+  const { canExportFormat, canExportJSON, canExportPDF, canExportBundleZip } = useEntitlements()
 
   const generateSessionReport = () => {
     const stats = historyManager.getStats()
@@ -184,6 +187,16 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
   }
 
   const handleExport = () => {
+    // Verifică entitlements înainte de export
+    if (exportFormat === "json" && !canExportJSON) {
+      alert("JSON export requires Pro plan or higher.")
+      return
+    }
+    if (exportFormat === "pdf" && !canExportPDF) {
+      alert("PDF export requires Pro plan or higher.")
+      return
+    }
+    
     switch (exportFormat) {
       case "json":
         exportAsJSON()
@@ -213,10 +226,14 @@ export function ExportManager({ currentPrompt, editResults = [], testResults = [
               onChange={(e) => setExportFormat(e.target.value as any)}
               className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground"
             >
-              <option value="json">JSON (Structured)</option>
-              <option value="csv">CSV (Table)</option>
-              <option value="txt">TXT (Report)</option>
-              <option value="pdf">PDF (Coming Soon)</option>
+              <option value="txt">TXT (Report) - Free</option>
+              <option value="csv">CSV (Table) - Free</option>
+              <option value="json" disabled={!canExportJSON}>
+                JSON (Structured) {!canExportJSON && "- Pro Required"}
+              </option>
+              <option value="pdf" disabled={!canExportPDF}>
+                PDF (Premium) {!canExportPDF && "- Pro Required"}
+              </option>
             </select>
           </div>
 

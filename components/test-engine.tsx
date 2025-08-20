@@ -26,6 +26,8 @@ import {
   Zap,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useEntitlements } from "@/hooks/use-entitlements"
+import { GPTTestPaywall } from "@/components/Paywall"
 
 interface TestEngineProps {
   generatedPrompt: GeneratedPrompt | null
@@ -43,6 +45,7 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
     simulateFailures: false,
   })
   const { toast } = useToast()
+  const { canUseGptTestReal } = useEntitlements()
 
   const handleRunTest = async () => {
     if (!generatedPrompt) {
@@ -112,6 +115,29 @@ export function TestEngine({ generatedPrompt, onTestComplete }: TestEngineProps)
   }
 
   const comparison = testResults.length > 1 ? compareTestResults(testResults) : null
+
+  // Dacă nu are acces la GPT real testing, afișează paywall
+  if (!canUseGptTestReal) {
+    return (
+      <GPTTestPaywall>
+        <Card className="glass-effect p-6 glow-accent">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold font-[var(--font-heading)] text-foreground flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              GPT Live Test Engine
+            </h2>
+          </div>
+          <p className="text-muted-foreground mb-4">
+            Run live tests against GPT models to validate your prompts in real-time.
+          </p>
+          <Button disabled className="w-full">
+            <Play className="w-4 h-4 mr-2" />
+            Run Live GPT Test
+          </Button>
+        </Card>
+      </GPTTestPaywall>
+    );
+  }
 
   return (
     <Card className="glass-effect p-6 glow-accent">

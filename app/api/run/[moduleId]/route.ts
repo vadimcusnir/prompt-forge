@@ -1,306 +1,239 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { sevenDValidator, type SevenDParams } from "@/lib/validator"
-import { EntitlementChecker } from "@/lib/entitlements/useEntitlements"
-import { telemetry, trackRun, trackGate } from "@/lib/telemetry"
-import { MODULES } from "@/lib/modules"
+/**
+ * app/api/run/[moduleId]/route.ts — Module Execution API
+ * 
+ * POST /api/run/{moduleId} - Executes a module with 7D parameters
+ * Returns prompt and artifacts based on user entitlements
+ */
 
-// Module execution endpoint - requires Pro+ plan
+import { NextRequest, NextResponse } from 'next/server'
+import { 
+  getEffectiveEntitlements, 
+  savePromptHistory, 
+  savePromptScores,
+  hasEntitlement 
+} from '@/lib/supabase'
+import { sessionManager } from '@/lib/auth/session-manager'
+import { simulateGptResponse, liveGptTest } from '@/lib/test-engine'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { moduleId: string } }
 ) {
-  const startTime = Date.now()
-  const moduleId = parseInt(params.moduleId)
-  
   try {
-    const { prompt, sevenD, userId, sessionId, planId }: { 
-      prompt: string
-      sevenD?: Partial<SevenDParams>
-      userId?: string
-      sessionId?: string
-      planId?: string
-    } = await request.json()
-
-    // 1. VALIDARE MODUL EXISTENT
-    if (!MODULES[moduleId]) {
-      return NextResponse.json({ 
-        error: "MODULE_NOT_FOUND", 
-        details: `Module ${moduleId} does not exist`,
-        availableModules: Object.keys(MODULES)
-      }, { status: 404 })
+    // Get authenticated user session
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Bearer token required' },
+        { status: 401 }
+      )
     }
 
-    const moduleData = MODULES[moduleId]
-
-    // 2. VALIDARE 7D STRICTĂ (enum_only: true, raise_on_invalid: true)
-    let validatedSevenD: SevenDParams
-    try {
-      validatedSevenD = sevenDValidator.validate(sevenD || {})
-    } catch (error) {
-      trackGate.hit({
-        gateId: 'seven_d_valid',
-        gateType: '7D_validation',
-        passed: false,
-        reason: error instanceof Error ? error.message : 'Unknown 7D validation error',
-        userId,
-        sessionId,
-        planId: planId || 'unknown'
-      })
-      
-      return NextResponse.json({ 
-        error: "7D_VALIDATION_ERROR", 
-        details: error instanceof Error ? error.message : 'Invalid 7D parameters',
-        required: 'Valid domain, scale, urgency, complexity, resources, application, output',
-        module: moduleData.name
-      }, { status: 400 })
-    }
-
-    // 3. GATING ENTITLEMENTS STRICT (Pro+ only pentru module execution)
-    const entitlementCheck = EntitlementChecker.checkFeature(
-      planId || 'pilot', 
-      'canUseAllModules'
-    )
+    const token = authHeader.substring(7)
+    const authResult = await sessionManager.validateSession(token)
     
-    if (!entitlementCheck.allowed) {
-      trackGate.hit({
-        gateId: 'entitlements_present',
-        gateType: 'entitlement',
-        passed: false,
-        reason: entitlementCheck.reason,
-        userId,
-        sessionId,
-        planId: planId || 'unknown'
-      })
-      
-      return NextResponse.json({ 
-        error: "ENTITLEMENT_REQUIRED", 
-        details: "Module execution requires Pro plan or higher",
-        requiredPlan: 'pro',
-        currentPlan: entitlementCheck.currentPlan,
-        upgradeUrl: '/pricing',
-        module: moduleData.name
-      }, { status: 403 })
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      )
     }
 
-    // 4. TELEMETRIE RUN START
-    trackRun.start({
-      moduleId,
-      sevenD: validatedSevenD,
-      userId,
-      sessionId,
-      planId: planId || 'pro'
-    })
+    const userId = authResult.user.id
+    const orgId = authResult.user.orgId
+    const moduleId = parseInt(params.moduleId)
 
-    // 5. VALIDARE INPUT (DoR gate: min input 64 bytes)
-    if (!prompt || prompt.length < 64) {
-      trackGate.hit({
-        gateId: 'min_input',
-        gateType: 'DoR',
-        passed: false,
-        reason: `Input too short: ${prompt?.length || 0} bytes, required: 64+`,
-        userId,
-        sessionId,
-        planId: planId || 'pro'
-      })
-      
-      return NextResponse.json({ 
-        error: "INSUFFICIENT_INPUT", 
-        details: "Input must be at least 64 bytes long",
-        required: 64,
-        provided: prompt?.length || 0,
-        module: module.name
-      }, { status: 400 })
+    if (!orgId) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 400 }
+      )
     }
 
-    // 6. VALIDARE REQUIREMENTS (DoR gate: module requirements met)
-    const requiredFields = module.requirements.match(/\[([^\]]+)\]/g) || []
-    const missingFields = requiredFields.filter(field => {
-      const fieldName = field.replace(/[\[\]]/g, '')
-      return !prompt.toLowerCase().includes(fieldName.toLowerCase())
-    })
-
-    if (missingFields.length > 0) {
-      trackGate.hit({
-        gateId: 'requirements_met',
-        gateType: 'DoR',
-        passed: false,
-        reason: `Missing required fields: ${missingFields.join(', ')}`,
-        userId,
-        sessionId,
-        planId: planId || 'pro'
-      })
-      
-      return NextResponse.json({ 
-        error: "REQUIREMENTS_NOT_MET", 
-        details: "Module requirements not satisfied",
-        missing: missingFields,
-        required: module.requirements,
-        module: module.name
-      }, { status: 400 })
+    if (isNaN(moduleId) || moduleId < 1 || moduleId > 50) {
+      return NextResponse.json(
+        { error: 'Invalid module ID. Must be between 1 and 50.' },
+        { status: 400 }
+      )
     }
 
-    // 7. EXECUȚIE MODUL (mock pentru acum)
-    // In real implementation, this would execute the specific module logic
-    const executionResult = {
-      moduleId,
-      moduleName: module.name,
-      prompt: prompt,
-      sevenD: validatedSevenD,
-      output: `# ${module.name} OUTPUT\n\n## Generated Content\n\nBased on your input and 7D context:\n- Domain: ${validatedSevenD.domain}\n- Scale: ${validatedSevenD.scale}\n- Urgency: ${validatedSevenD.urgency}\n- Complexity: ${validatedSevenD.complexity}\n- Resources: ${validatedSevenD.resources}\n- Application: ${validatedSevenD.application}\n- Output: ${validatedSevenD.output}\n\n## Result\n\n${module.output.replace(/\{([^}]+)\}/g, 'Generated $1')}`,
-      scores: {
-        clarity: 87,
-        execution: 92,
-        ambiguity: 89,
-        business_fit: 85
-      },
-      processingTime: Date.now() - startTime,
-      vector: module.vectors,
-      kpi: module.kpi,
-      guardrails: module.guardrails
+    // Parse request body
+    const body = await request.json()
+    const { sevenD, input } = body
+
+    if (!sevenD || !input) {
+      return NextResponse.json(
+        { error: 'Missing required fields: sevenD and input' },
+        { status: 400 }
+      )
     }
 
-    // 8. VALIDARE SCOR (DoD gate: score ≥80)
-    const overallScore = Object.values(executionResult.scores).reduce((sum, score) => sum + score, 0) / Object.keys(executionResult.scores).length
+    // Validate 7D parameters
+    const validParams = validate7DParams(sevenD)
+    if (!validParams) {
+      return NextResponse.json(
+        { error: 'Invalid 7D parameters' },
+        { status: 400 }
+      )
+    }
+
+    // Check entitlements
+    const entitlements = await getEffectiveEntitlements(userId, orgId)
     
-    if (overallScore < 80) {
-      trackGate.hit({
-        gateId: 'score_threshold',
-        gateType: 'DoD',
-        passed: false,
-        reason: `Overall score ${overallScore} below threshold 80`,
-        userId,
-        sessionId,
-        planId: planId || 'pro'
-      })
-      
-      return NextResponse.json({ 
-        error: "SCORE_THRESHOLD_FAILED", 
-        details: `Overall score ${overallScore} below required threshold 80`,
-        scores: executionResult.scores,
-        required: 80,
-        module: module.name
-      }, { status: 400 })
+    // Check if user can access this module
+    if (!entitlements.canUseAllModules && moduleId > 10) {
+      return NextResponse.json(
+        { 
+          error: 'Module access restricted',
+          requiredPlan: 'Pro or higher',
+          currentPlan: authResult.user.planId
+        },
+        { status: 403 }
+      )
     }
 
-    // 9. TELEMETRIE RUN FINISH (fără conținut brut)
-    trackRun.finish({
-      moduleId,
-      scores: executionResult.scores,
-      tokenCount: executionResult.output.length, // Mock token count
-      success: true,
-      userId,
-      sessionId,
-      planId: planId || 'pro'
-    })
+    // Execute module based on entitlements
+    let output: string
+    let scores: any = null
+    let executionTime = Date.now()
 
-    // 10. SUCCESS RESPONSE
+    if (entitlements.canUseGptTestReal) {
+      // Use live GPT testing for Pro/Enterprise users
+      const result = await liveGptTest(moduleId, sevenD, input)
+      output = result.output
+      scores = result.scores
+    } else {
+      // Use simulated response for Free/Creator users
+      const result = await simulateGptResponse(moduleId, sevenD, input)
+      output = result.output
+      scores = result.scores
+    }
+
+    executionTime = Date.now() - executionTime
+
+    // Save to prompt history if user has cloud history
+    let runId: string | null = null
+    if (entitlements.hasCloudHistory) {
+      runId = await savePromptHistory({
+        org_id: orgId,
+        user_id: userId,
+        module_id: moduleId,
+        input,
+        output,
+        seven_d_params: sevenD,
+        scores,
+        execution_time_ms: executionTime,
+        token_count: estimateTokenCount(input + output)
+      })
+    }
+
+    // Save scores if user has evaluator AI
+    if (entitlements.hasEvaluatorAI && scores) {
+      await savePromptScores({
+        org_id: orgId,
+        user_id: userId,
+        module_id: moduleId,
+        run_id: runId || 'local',
+        overall_score: scores.overall || 0,
+        quality_score: scores.quality || 0,
+        relevance_score: scores.relevance || 0,
+        clarity_score: scores.clarity || 0,
+        feedback: scores.feedback || 'No feedback available',
+        evaluator_version: '1.0.0'
+      })
+    }
+
+    // Prepare response with artifacts based on entitlements
+    const artifacts: any = {
+      txt: output,
+      md: entitlements.canExportMD ? output : null,
+      json: entitlements.canExportJSON ? {
+        module_id: moduleId,
+        seven_d: sevenD,
+        input,
+        output,
+        scores,
+        execution_time_ms: executionTime,
+        run_id: runId,
+        timestamp: new Date().toISOString()
+      } : null,
+      pdf: null // Will be handled separately if user has PDF export
+    }
+
+    // Add watermark for trial users
+    const isTrial = await checkIfTrialUser(orgId)
+    if (isTrial && (artifacts.json || artifacts.md)) {
+      artifacts.watermark = 'TRIAL VERSION - Upgrade to Pro for full features'
+    }
+
     return NextResponse.json({
-      ...executionResult,
-      overallScore,
-      runId: `run-${Date.now()}-${moduleId}`,
-      timestamp: new Date().toISOString(),
-      planRequired: 'pro',
-      module: {
-        id: module.id,
-        name: module.name,
-        description: module.description,
-        vectors: module.vectors
+      success: true,
+      data: {
+        module_id: moduleId,
+        output,
+        artifacts,
+        scores,
+        execution_time_ms: executionTime,
+        run_id: runId,
+        entitlements: {
+          canExportMD: entitlements.canExportMD,
+          canExportPDF: entitlements.canExportPDF,
+          canExportJSON: entitlements.canExportJSON,
+          hasCloudHistory: entitlements.hasCloudHistory,
+          hasEvaluatorAI: entitlements.hasEvaluatorAI
+        }
       }
     })
 
   } catch (error) {
-    console.error(`Module ${moduleId} Execution Error:`, error)
-    
-    // Track failed run
-    trackRun.finish({
-      moduleId,
-      success: false,
-      errorCode: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-      userId: 'unknown',
-      sessionId: 'unknown',
-      planId: 'unknown'
-    })
-    
-    return NextResponse.json({ 
-      error: "INTERNAL_ERROR", 
-      details: "Failed to execute module",
-      moduleId,
-      timestamp: new Date().toISOString()
-    }, { status: 500 })
+    console.error('Error in module execution API:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
-// GET endpoint for module information
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { moduleId: string } }
-) {
-  try {
-    const moduleId = parseInt(params.moduleId)
-    const { searchParams } = new URL(request.url)
-    const planId = searchParams.get('planId') || 'pilot'
-    
-    // Check if module exists
-    if (!MODULES[moduleId]) {
-      return NextResponse.json({ 
-        error: "MODULE_NOT_FOUND", 
-        details: `Module ${moduleId} does not exist`
-      }, { status: 404 })
-    }
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
 
-    const module = MODULES[moduleId]
-    
-    // Check entitlements for module access
-    const entitlementCheck = EntitlementChecker.checkFeature(
-      planId, 
-      'canUseAllModules'
-    )
-    
-    if (!entitlementCheck.allowed) {
-      return NextResponse.json({ 
-        error: "ENTITLEMENT_REQUIRED", 
-        details: "Module access requires Pro plan or higher",
-        requiredPlan: 'pro',
-        currentPlan: entitlementCheck.currentPlan,
-        module: {
-          id: module.id,
-          name: module.name,
-          description: module.description,
-          vectors: module.vectors
-        }
-      }, { status: 403 })
-    }
+/**
+ * Validate 7D parameters
+ */
+function validate7DParams(sevenD: any): boolean {
+  const validDomains = ['generic', 'ecommerce', 'education', 'fintech', 'healthcare', 'legal', 'marketing', 'sales', 'support', 'technical']
+  const validScales = ['individual', 'team', 'department', 'organization', 'enterprise']
+  const validUrgencies = ['low', 'normal', 'high', 'critical']
+  const validComplexities = ['simple', 'medium', 'complex', 'expert']
+  const validResources = ['minimal', 'standard', 'enhanced', 'premium']
+  const validApplications = ['content_ops', 'customer_support', 'sales_enablement', 'training', 'documentation', 'analysis']
+  const validOutputs = ['single', 'bundle', 'collection']
 
-    // Return full module information
-    return NextResponse.json({
-      module: {
-        id: module.id,
-        name: module.name,
-        description: module.description,
-        requirements: module.requirements,
-        spec: module.spec,
-        output: module.output,
-        kpi: module.kpi,
-        guardrails: module.guardrails,
-        vectors: module.vectors
-      },
-      planRequired: 'pro',
-      sevenDDefaults: {
-        domain: 'generic',
-        scale: 'team',
-        urgency: 'normal',
-        complexity: 'medium',
-        resources: 'standard',
-        application: 'content_ops',
-        output: 'bundle'
-      }
-    })
+  return (
+    sevenD.domain && validDomains.includes(sevenD.domain) &&
+    sevenD.scale && validScales.includes(sevenD.scale) &&
+    sevenD.urgency && validUrgencies.includes(sevenD.urgency) &&
+    sevenD.complexity && validComplexities.includes(sevenD.complexity) &&
+    sevenD.resources && validResources.includes(sevenD.resources) &&
+    sevenD.application && validApplications.includes(sevenD.application) &&
+    sevenD.output && validOutputs.includes(sevenD.output)
+  )
+}
 
-  } catch (error) {
-    console.error(`Module ${params.moduleId} Info Error:`, error)
-    return NextResponse.json({ 
-      error: "INTERNAL_ERROR", 
-      details: "Failed to get module information"
-    }, { status: 500 })
-  }
+/**
+ * Estimate token count (rough approximation)
+ */
+function estimateTokenCount(text: string): number {
+  // Rough approximation: 1 token ≈ 4 characters for English text
+  return Math.ceil(text.length / 4)
+}
+
+/**
+ * Check if user is in trial period
+ */
+async function checkIfTrialUser(orgId: string): Promise<boolean> {
+  // This would check the subscription status
+  // For now, return false (not in trial)
+  return false
 }

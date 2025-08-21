@@ -1,38 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ComingSoon } from "@/components/coming-soon";
+import { useComingSoon } from "@/hooks/use-coming-soon";
 
 // Fallback ENV (optional): dacă vrei să forțezi din .env
 const ENV_FALLBACK = process.env.NEXT_PUBLIC_COMING_SOON === "true";
 
 export default function ComingSoonInteractive() {
-  const [enabled, setEnabled] = useState<boolean | null>(ENV_FALLBACK ?? null);
+  const { status, loading } = useComingSoon();
+  
+  // Use ENV fallback if API is not responding
+  const enabled = ENV_FALLBACK || status?.enabled || false;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const checkComingSoon = async () => {
-      try {
-        const res = await fetch("/api/toggle-coming-soon", { cache: "no-store" });
-        const json = res.ok ? await res.json() : null;
-        if (!cancelled) setEnabled(Boolean(json?.data?.enabled));
-      } catch {
-        // dacă API-ul nu răspunde, respectă fallback-ul din ENV sau consideră dezactivat
-        if (!cancelled) setEnabled(ENV_FALLBACK || false);
-      }
-    };
-
-    // doar dacă nu avem deja un fallback explicit din ENV
-    if (!ENV_FALLBACK) checkComingSoon();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Show loading state briefly
+  if (loading && !ENV_FALLBACK) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Afișează pagina Coming Soon doar când flag-ul e activ
-  if (enabled === true) return <ComingSoon />;
+  if (enabled) return <ComingSoon />;
 
   // Altfel, nu randăm nimic (lasă homepage-ul să se ocupe de UI)
   return null;

@@ -1,15 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Clock, Target, Download, ArrowRight, Zap, Shield, User, Mail } from "lucide-react";
+import { Check, Clock, Target, Download, ArrowRight, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 export function ComingSoon() {
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
@@ -17,10 +15,10 @@ export function ComingSoon() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !name) {
+    if (!email) {
       toast({
         title: "Eroare",
-        description: "Completează numele și email-ul.",
+        description: "Completează email-ul.",
         variant: "destructive",
       });
       return;
@@ -32,7 +30,7 @@ export function ComingSoon() {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({ email }),
       });
 
       if (res.ok) {
@@ -62,14 +60,17 @@ export function ComingSoon() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-pf-black flex items-center justify-center">
-        <div className="text-center px-4 max-w-2xl mx-auto">
-          <div className="w-24 h-24 bg-gold-industrial/10 rounded-full flex items-center justify-center mx-auto mb-8">
-            <Check className="w-12 h-12 text-gold-industrial" />
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-pf-text mb-6">Mulțumim!</h1>
-          <p className="text-xl text-pf-text-muted mb-8 max-w-xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Mulțumim!</h1>
+          <p className="text-lg text-gray-600 mb-6">
             Ai fost adăugat pe lista noastră de așteptare.
+          </p>
+          <p className="text-sm text-gray-500">
+            Vei primi notificări despre lansarea PROMPTFORGE™.
           </p>
         </div>
       </div>
@@ -77,76 +78,78 @@ export function ComingSoon() {
   }
 
   return (
-    <div className="min-h-screen bg-pf-black flex items-center justify-center px-4">
-      <div className="max-w-2xl w-full text-center">
-        <Badge className="mb-6 bg-gold-industrial/10 text-gold-industrial border-gold-industrial/20 px-4 py-2 text-sm">
-          PROMPTFORGE™ v3.0 — Coming Soon!
-        </Badge>
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <div className="max-w-md w-full text-center">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            PROMPTFORGE™
+          </h1>
+          <p className="text-xl text-gray-600 mb-4">v3.0</p>
+          <div className="text-sm text-gray-500 space-y-1">
+            <p>V3 Content & Education</p>
+            <p>V5 Branding</p>
+          </div>
+        </div>
 
-        <h1 className="text-5xl font-bold text-pf-text mb-4">
-          Generatorul tău <span className="text-gold-industrial">operațional</span> de prompturi
-        </h1>
+        {/* Main Content */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            PROMPTFORGE™ is coming.
+          </h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Build prompt systems, not throwaway lines.
+          </p>
+        </div>
 
-        <p className="text-lg text-pf-text-muted mb-8">
-          50 module. 7 vectori. Export .md / .json / .pdf în <span className="text-gold-industrial">sub 60s</span>.
-        </p>
+        {/* Waitlist Form */}
+        <form onSubmit={handleSubmit} className="mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto">
+            <div className="relative flex-1">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+            >
+              {isSubmitting ? "Se procesează..." : "Join the Waitlist"}
+            </Button>
+          </div>
+        </form>
 
-        <Card className="bg-pf-surface/80 border-pf-text-muted/30 backdrop-blur-sm mb-8">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-pf-text text-xl">Înscrie-te pe lista de așteptare</CardTitle>
-            <CardDescription className="text-pf-text-muted">
-              Vei primi acces anticipat la PROMPTFORGE™
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-pf-text-muted" />
-                <Input
-                  type="text"
-                  placeholder="Numele tău"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-10 bg-pf-black border-pf-text-muted/30 text-pf-text"
-                  required
-                />
-              </div>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-pf-text-muted" />
-                <Input
-                  type="email"
-                  placeholder="Email-ul tău"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-pf-black border-pf-text-muted/30 text-pf-text"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-gold-industrial text-pf-black font-bold py-3 text-lg hover:bg-gold-industrial-dark transition-all flex justify-center items-center gap-2"
-              >
-                {isSubmitting ? "Se procesează..." : "Adaugă-mă pe listă"}
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-center gap-6 text-sm text-pf-text-muted">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-gold-industrial" />
+        {/* Features */}
+        <div className="space-y-4 text-sm text-gray-600">
+          <div className="flex items-center justify-center gap-2">
+            <Clock className="w-4 h-4 text-blue-600" />
             <span>TTA &lt; 60s</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-gold-industrial" />
+          <div className="flex items-center justify-center gap-2">
+            <Target className="w-4 h-4 text-blue-600" />
             <span>AI Score ≥ 80</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Download className="w-4 h-4 text-gold-industrial" />
+          <div className="flex items-center justify-center gap-2">
+            <Download className="w-4 h-4 text-blue-600" />
             <span>Export .md/.json/.pdf</span>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          <p className="text-sm text-gray-500 mb-2">
+            Zero spam. Doar notificări de lansare.
+          </p>
+          <p className="text-sm text-gray-400">
+            © PromptForge™ 2025 • Privacy / Terms
+          </p>
         </div>
       </div>
     </div>

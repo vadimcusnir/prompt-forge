@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { email, name } = await request.json()
+    const { email } = await request.json()
 
     // Validation
-    if (!email || !name) {
+    if (!email) {
       return NextResponse.json(
-        { message: 'Email and name are required' },
+        { message: 'Email is required' },
         { status: 400 }
       )
     }
@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           email: email.toLowerCase().trim(),
-          name: name.trim(),
+          name: null, // No name required
+          created_at: new Date().toISOString()
         }
       ])
       .select()
